@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>温暖的弦</title>
+  
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="https://pattyxp.github.io/"/>
+  <updated>2018-01-03T05:40:59.000Z</updated>
+  <id>https://pattyxp.github.io/</id>
+  
+  <author>
+    <name>Patty</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>博客搭建</title>
+    <link href="https://pattyxp.github.io/2018/01/02/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
+    <id>https://pattyxp.github.io/2018/01/02/博客搭建/</id>
+    <published>2018-01-02T09:43:15.000Z</published>
+    <updated>2018-01-03T05:40:59.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h3><p>之前一直有在收集一些大神的博客，自己也肖想了一把建立自己的博客地址，于是乎就有了个开端</p><p>在此之前，我也是小白一枚啊，遇到了一些非常浅显的坑，但是一直没有发现导致纠结了一下，整个整下来大概花了2小时吧 ~ ~ ~</p><h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><p>首先安装些必备的环境是分分钟的事情啦，网上有相关教程的，如有问题请自行google</p><ul><li>Node.js</li><li><p>Git (Xcode自带，可以绕行)</p></li><li><p>当Node.js和Git都安装好后就可以正式安装Hexo了，终端执行如下命令：<br>$ sudo npm install -g hexo</p></li><li><p>初始化</p></li></ul><p>本地自己建立存放的文件夹，cd到当前文件目录下，执行以下命令<br>$ hexo init xxx (xxx 是你建立的文件夹名称。cd到xxx文件夹下，执行如下命令，安装npm：)<br>$ npm install<br>执行如下命令，开启hexo服务器:<br>$ hexo s<br>此时，浏览器中打开网址<a href="http://localhost:4000，" target="_blank" rel="noopener">http://localhost:4000，</a><br>能看到helloWorld的页面，此时本地显示已经OK</p><ul><li>管理github<br>建立自己的github账号之后，将mac下的ssh内容上传到setting里相应的位置<br>选择新建一个responsity，注意，命名非常重要，我就是在这里被卡了一小时的感觉<br>比如我的Github名称是pattyXP,但是建立的仓库名称，需要符合规则: github名称.github.io ，我一开始写错了，写成了patty.github.io，为此哀伤一下下 ~ ~ ~<br>然后，进入到该仓库的主页下，选择setting，滑到GitHub Pages一级，将source选择为master，点击save，这是为什么呢？（因为之前在本地文件下有一个.yml，打开后往下滑到最后，修改成下边的样子：<br>deploy:<br>  type: git<br>  repository: <a href="https://github.com/pattyXP/pattyXP.github.io.git" target="_blank" rel="noopener">https://github.com/pattyXP/pattyXP.github.io.git</a><br> branch: master）<br>然后打开自己的<a href="https://pattyxp.github.io/">https://pattyxp.github.io/</a><br>效果就和本地的localhost:4000一模一样了(😅)</li></ul><h2 id="后面的维护"><a href="#后面的维护" class="headerlink" title="后面的维护"></a>后面的维护</h2><p>hexo支持markdown语法，所以本地的文章可以使用markdown语法来编写，之后保存为xx.md即可，放在博客的文件夹下的source/_posts/xx.md即可<br>最后，执行如下命令就可以上传成功了<br>hexo new xxx<br>hexo g （生成静态页面）<br>hexo d  (将文章部署到Github)</p><h2 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h2><p>可能还需要用到的命令<br>hexo clean</p><h2 id="参考教程"><a href="#参考教程" class="headerlink" title="参考教程"></a>参考教程</h2><p>博客搭建教程: <a href="http://jeasonstudio.github.io" target="_blank" rel="noopener">http://jeasonstudio.github.io</a><br>博客主题搭建: <a href="http://theme-next.iissnan.com/getting-started.html" target="_blank" rel="noopener">http://theme-next.iissnan.com/getting-started.html</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h3 id=&quot;起因&quot;&gt;&lt;a href=&quot;#起因&quot; class=&quot;headerlink&quot; title=&quot;起因&quot;&gt;&lt;/a&gt;起因&lt;/h3&gt;&lt;p&gt;之前一直有在收集一些大神的博客，自己也肖想了一把建立自己的博客地址，于是乎就有了个开端&lt;/p&gt;
+&lt;p&gt;在此之前，我也是小白一枚啊，遇到了一些
+      
+    
+    </summary>
+    
+    
+      <category term="工具" scheme="https://pattyxp.github.io/tags/%E5%B7%A5%E5%85%B7/"/>
+    
+  </entry>
+  
+</feed>
