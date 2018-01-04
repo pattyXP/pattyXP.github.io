@@ -96,17 +96,17 @@
 
 
 
-<meta name="description" content="解析前阅读apiMJRefreshComponent.h 1.MJRefreshState 有5个状态，我设计的话，肯定只有4个，在 willRefresh和 pulling状态，我会认为是一样的2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了 总结：设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。依据拖动的手势和位移，修改父类s">
+<meta name="description" content="解析前阅读apiMJRefreshComponent.h 1.MJRefreshState 有5个状态，如果我设计，只会想到4个， willRefresh和 pulling状态会认为是一致的2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了 解析前总结：设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。依据拖动的手势和位移，修改父类s">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MJRefresh解析">
 <meta property="og:url" content="https://pattyxp.github.io/2018/01/04/MJRefresh解析/index.html">
 <meta property="og:site_name" content="温暖的弦">
-<meta property="og:description" content="解析前阅读apiMJRefreshComponent.h 1.MJRefreshState 有5个状态，我设计的话，肯定只有4个，在 willRefresh和 pulling状态，我会认为是一样的2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了 总结：设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。依据拖动的手势和位移，修改父类s">
+<meta property="og:description" content="解析前阅读apiMJRefreshComponent.h 1.MJRefreshState 有5个状态，如果我设计，只会想到4个， willRefresh和 pulling状态会认为是一致的2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了 解析前总结：设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。依据拖动的手势和位移，修改父类s">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-04T02:54:01.000Z">
+<meta property="og:updated_time" content="2018-01-04T02:58:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MJRefresh解析">
-<meta name="twitter:description" content="解析前阅读apiMJRefreshComponent.h 1.MJRefreshState 有5个状态，我设计的话，肯定只有4个，在 willRefresh和 pulling状态，我会认为是一样的2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了 总结：设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。依据拖动的手势和位移，修改父类s">
+<meta name="twitter:description" content="解析前阅读apiMJRefreshComponent.h 1.MJRefreshState 有5个状态，如果我设计，只会想到4个， willRefresh和 pulling状态会认为是一致的2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了 解析前总结：设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。依据拖动的手势和位移，修改父类s">
 
 
 
@@ -352,8 +352,8 @@
 
       
         <h2 id="解析前阅读api"><a href="#解析前阅读api" class="headerlink" title="解析前阅读api"></a>解析前阅读api</h2><p>MJRefreshComponent.h</p>
-<p>1.<br>MJRefreshState 有5个状态，我设计的话，肯定只有4个，在 willRefresh和 pulling状态，我会认为是一样的<br>2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了</p>
-<p>总结：<br>设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。<br>依据拖动的手势和位移，修改父类scrollView的contentSize，显示刷新控件和隐藏控件，调用刷新的方法和回调方法即可。</p>
+<p>1.MJRefreshState 有5个状态，如果我设计，只会想到4个， willRefresh和 pulling状态会认为是一致的<br>2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了</p>
+<p>解析前总结：<br>设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。<br>依据拖动的手势和位移，修改父类scrollView的contentSize，显示刷新控件和隐藏控件，调用刷新的方法和回调方法即可。</p>
 <h2 id="疑问code"><a href="#疑问code" class="headerlink" title="疑问code"></a>疑问code</h2><p>beginRefreshing方法里，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (self.window) &#123;</span><br><span class="line">    self.state = MJRefreshStateRefreshing;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>有时候window为null，原因是view没有完全加载完成或者在ViewDidload中才刚刚加载完,view的window属性无法被获取<br>正确应该使用UIApplication.keywindow</p>
 <h2 id="文件结构功能图-Github上已有-http-t-cn-RYHwK6n"><a href="#文件结构功能图-Github上已有-http-t-cn-RYHwK6n" class="headerlink" title="文件结构功能图 Github上已有(http://t.cn/RYHwK6n)"></a>文件结构功能图 Github上已有(<a href="http://t.cn/RYHwK6n" target="_blank" rel="noopener">http://t.cn/RYHwK6n</a>)</h2><p><strong>MJRefreshComponent</strong> 这个类作为该控件的基类，涵盖了基类所具备的一些：状态，回调block，子类继承的方法等</p>
@@ -369,29 +369,19 @@
 <p>在视图添加或者移除的时候，设置setMj_reloadDataBlock方法，之前奇怪为什么header的时候没有，这个功能是为了刷新数据结束的时候根据当前的cell个数（tableview或collectionview的数据源为空）来判断是否需要隐藏footerView</p>
 <p><strong>MJRefreshBackFooter</strong> 需要上拉才会触发刷新动作<br>当状态结束，恢复初始状态 （？？？ 回弹体现什么）<br><strong>MJRefreshAutoFooter</strong> 自动上拉加载类。滑动到底部触发刷新动作，无需上拉操作。<br>triggerAutomaticallyRefreshPercent 底部控件出现多少就开始自动刷新<br>automaticallyRefresh 是否自动刷新，默认YES</p>
 <p><strong>MJRefreshBackStateFooter</strong> 提供label ，可以设置不同状态下的标签内容<br><strong>MJRefreshBackNormalFooter</strong> 提供箭头和loading圆圈，根据状态显示和隐藏<br><strong>MJRefreshBackGifFooter</strong> 提供设置gif动画的一组图片</p>
-<p><strong>MJRefreshAutoStateFooter</strong> 相比较MJRefreshBackStateFooter，给stateLabel添加了手势，当点击的时候如果当前是默认状态就执行刷新<br><strong>MJRefreshAutoNormalFooter</strong>提供箭头和loading圆圈，根据状态显示和隐藏<br><strong>MJRefreshAutoGifFooter</strong>提供设置gif动画的一组图片</p>
+<p><strong>MJRefreshAutoStateFooter</strong> 相比较MJRefreshBackStateFooter，给stateLabel添加了手势，当点击的时候如果当前是默认状态就执行刷新<br><strong>MJRefreshAutoNormalFooter</strong> 提供箭头和loading圆圈，根据状态显示和隐藏<br><strong>MJRefreshAutoGifFooter</strong> 提供设置gif动画的一组图片</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>MJRefreshHeader: 负责header的高度和调整header自身在外部的位置。<br>MJRefreshStateHeader:负责header内部的stateLabel和lastUpdatedTimeLabel的布局和不同状态下内部文字的显示。<br>MJRefreshNormalHeader:负责header内部的loadingView以及arrowView的布局和不同状态下的显示。<br>MJRefreshGifHeader:负责header内部的Gif动画的布局和不同状态下的显示。</p>
 <p>MJRefreshFooter: 负责footer高度和监听scrollView数据的变化<br>MJRefreshBackFooter:跟Header的封装思路是一样的<br>MJRefreshAutoFooter:类似于MJRefreshHeader类的功能</p>
 <p>以下设计思路和对应的header一致<br>MJRefreshBackStateFooter：封装思路类似于MJRefreshStateHeader<br>MJRefreshBackNormalFooter：封装思路类似于MJRefreshNormalHeader<br>MJRefreshBackGifFooter：封装思路类似于MJRefreshGifHeader<br>MJRefreshAutoStateFooter：封装思路类似于MJRefreshStateHeader<br>MJRefreshAutoNormalFooter：封装思路类似于MJRefreshNormalHeader<br>MJRefreshAutoGifFooter：封装思路类似于MJRefreshGifHeader</p>
 <p>通过一个基类来定义一些状态和一些需要子类实现的接口。通过一层一层地继承，让每一层的子类各司其职，只完成真正属于自己的任务，提高了框架的可定制性，而且对于功能的扩展和bug的追踪也很有帮助，非常值得我们参考与借鉴。</p>
 <p>##优秀code</p>
-<p>1.很多地方设置控件的frame的时候，都是通过先判断其约束的个数如<br><figure class="highlight plain"><figcaption><span>(self.lastUpdatedTimeLabel.constraints.count </span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">然后再设置约束，就比较仔细</span><br><span class="line"></span><br><span class="line">2.</span><br></pre></td></tr></table></figure></p>
-<p>MJRefreshCheckState 状态检查，通过宏来与之前状态比较，一样就return<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">3.</span><br></pre></td></tr></table></figure></p>
-<p>willMoveToSuperview方法，在里面判断移除之前的观察者<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">4.</span><br></pre></td></tr></table></figure></p>
-<ul>
-<li><p>(CGFloat)mj_textWith {<br>  CGFloat stringWidth = 0;<br>  CGSize size = CGSizeMake(MAXFLOAT, MAXFLOAT);<br>  if (self.text.length &gt; 0) {<br>#if defined(<strong>IPHONE_OS_VERSION_MAX_ALLOWED) &amp;&amp; </strong>IPHONE_OS_VERSION_MAX_ALLOWED &gt;= 70000</p>
-<pre><code>stringWidth =[self.text
-              boundingRectWithSize:size
-              options:NSStringDrawingUsesLineFragmentOrigin
-              attributes:@{NSFontAttributeName:self.font}
-              context:nil].size.width;
-</code></pre><p>#else</p>
-<pre><code>stringWidth = [self.text sizeWithFont:self.font
-                     constrainedToSize:size
-                         lineBreakMode:NSLineBreakByCharWrapping].width;
-</code></pre><p>#endif<br>  }<br>  return stringWidth;<br>}<br>```<br>5.<br>多语言设置</p>
-</li>
-</ul>
+<p>1.很多地方设置控件的frame的时候，都是通过先判断其约束的个数如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (self.lastUpdatedTimeLabel.constraints.count == 0) &#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>然后再设置约束，就比较仔细</p>
+<p>2.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MJRefreshCheckState 状态检查，通过宏来与之前状态比较，一样就return</span><br></pre></td></tr></table></figure></p>
+<p>3.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">willMoveToSuperview方法，在里面判断移除之前的观察者</span><br></pre></td></tr></table></figure></p>
+<p>4.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (CGFloat)mj_textWith &#123;</span><br><span class="line">    CGFloat stringWidth = 0;</span><br><span class="line">    CGSize size = CGSizeMake(MAXFLOAT, MAXFLOAT);</span><br><span class="line">    if (self.text.length &gt; 0) &#123;</span><br><span class="line">#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) &amp;&amp; __IPHONE_OS_VERSION_MAX_ALLOWED &gt;= 70000</span><br><span class="line">        stringWidth =[self.text</span><br><span class="line">                      boundingRectWithSize:size</span><br><span class="line">                      options:NSStringDrawingUsesLineFragmentOrigin</span><br><span class="line">                      attributes:@&#123;NSFontAttributeName:self.font&#125;</span><br><span class="line">                      context:nil].size.width;</span><br><span class="line">#else</span><br><span class="line"></span><br><span class="line">        stringWidth = [self.text sizeWithFont:self.font</span><br><span class="line">                             constrainedToSize:size</span><br><span class="line">                                 lineBreakMode:NSLineBreakByCharWrapping].width;</span><br><span class="line">#endif</span><br><span class="line">    &#125;</span><br><span class="line">    return stringWidth;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>5.多语言设置</p>
 <h2 id="阅读资料："><a href="#阅读资料：" class="headerlink" title="阅读资料："></a>阅读资料：</h2><p><a href="http://www.jianshu.com/p/89ca6437c5e9" target="_blank" rel="noopener">http://www.jianshu.com/p/89ca6437c5e9</a></p>
 
       
@@ -438,6 +428,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/04/YYImage解析/" rel="prev" title="YYImage解析">
+                YYImage解析 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -514,7 +508,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-count">3</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -618,7 +612,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共2.1k字</span>
+<span class="post-count"> 博客全站共4.5k字</span>
 </div>
 
 
