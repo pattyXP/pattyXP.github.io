@@ -356,8 +356,7 @@
       
         
           
-            <p>我的头像:<br><img src="/images/flower.jpg" alt="YYImage文件结构"></p>
-<p>文件结构图如下:</p>
+            <p>文件结构图如下:</p>
 <p><img src="/images/YYImage文件结构.png" alt="YYImage文件结构"></p>
 <h2 id="解析前api阅读实现思路"><a href="#解析前api阅读实现思路" class="headerlink" title="解析前api阅读实现思路:"></a>解析前api阅读实现思路:</h2><p>视图层<br>YYImage ：用于生成单张图片，可以根据图片的名称或者路径或者data实例化，接口和UIIImage相似<br>YYFrameImage: 用于记录一组图片，可以传入图片的数组、时间间隔数组，循环的次数，默认显示首图并初始化参数<br>YYSpriteSheetImage: 传入单张大图片，以及一组图片的每帧显示内容区域、图片显示的时间、循环的次数</p>
 <p>显示层<br>YYAnimatedImageView</p>
@@ -697,7 +696,7 @@
 <li><p>初始化</p>
 </li>
 </ul>
-<p>本地自己建立存放的文件夹，cd到当前文件目录下，执行以下命令<br>$ hexo init xxx (xxx 是你建立的文件夹名称。cd到xxx文件夹下，执行如下命令，安装npm：)<br>$ npm install<br>执行如下命令，开启hexo服务器:<br>$ hexo s<br>此时，浏览器中打开网址<a href="http://localhost:4000，" target="_blank" rel="noopener">http://localhost:4000，</a><br>能看到helloWorld的页面，此时本地显示已经OK</p>
+<p>本地自己建立存放的文件夹，cd到当前文件目录下，执行以下命令<br>$ hexo init xxx (xxx 是你建立的文件夹名称。cd到xxx文件夹下，执行如下命令，安装npm：)<br>$ npm install<br>执行如下命令，开启hexo服务器:<br>$ hexo s<br>此时，浏览器中打开网址<a href="http://localhost:4000，" target="_blank" rel="noopener">http://localhost:4000，</a><br>能看到helloWorld的页面，此时本地显示已经OK<br>效果如图:<br><img src="/images/初建博客.png" alt="效果如图"></p>
 <ul>
 <li>管理github<br>建立自己的github账号之后，将mac下的ssh内容上传到setting里相应的位置<br>选择新建一个responsity，注意，命名非常重要，我就是在这里被卡了一小时的感觉<br>比如我的Github名称是pattyXP,但是建立的仓库名称，需要符合规则: github名称.github.io ，我一开始写错了，写成了patty.github.io，为此哀伤一下下 ~ ~ ~<br>然后，进入到该仓库的主页下，选择setting，滑到GitHub Pages一级，将source选择为master，点击save，这是为什么呢？（因为之前在本地文件下有一个.yml，打开后往下滑到最后，修改成下边的样子：<br>deploy:<br>  type: git<br>  repository: <a href="https://github.com/pattyXP/pattyXP.github.io.git" target="_blank" rel="noopener">https://github.com/pattyXP/pattyXP.github.io.git</a><br> branch: master）<br>然后打开自己的<a href="https://pattyxp.github.io/">https://pattyxp.github.io/</a><br>效果就和本地的localhost:4000一模一样了(😅)</li>
 </ul>
