@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://pattyxp.github.io/"/>
-  <updated>2018-01-04T08:28:55.000Z</updated>
+  <updated>2018-01-05T03:49:59.000Z</updated>
   <id>https://pattyxp.github.io/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Log</title>
+    <link href="https://pattyxp.github.io/2018/01/05/Log/"/>
+    <id>https://pattyxp.github.io/2018/01/05/Log/</id>
+    <published>2018-01-05T03:45:17.000Z</published>
+    <updated>2018-01-05T03:49:59.000Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="define-DLog-fmt-…-NSLog-”-文件名-s-n”-“-函数名-s-n”-“-行号-d-n”-fmt-FILE-FUNCTION-LINE-VA-ARGS"><a href="#define-DLog-fmt-…-NSLog-”-文件名-s-n”-“-函数名-s-n”-“-行号-d-n”-fmt-FILE-FUNCTION-LINE-VA-ARGS" class="headerlink" title="define DLog(fmt, …) NSLog((@”[文件名:%s]\n” “[函数名:%s]\n” “[行号:%d] \n” fmt), FILE, FUNCTION, LINE, ##VA_ARGS);"></a>define DLog(fmt, …) NSLog((@”[文件名:%s]\n” “[函数名:%s]\n” “[行号:%d] \n” fmt), <strong>FILE</strong>, <strong>FUNCTION</strong>, <strong>LINE</strong>, ##<strong>VA_ARGS</strong>);</h1><p>/*<br> 参数解释：</p><ol><li><p><strong>VA_ARGS</strong>是一个可变参数的宏，很少人知道这个宏，这个可变参数的宏是新的C99规范中新增的，目前似乎只有gcc支（VC6.0的编译器不支持）。宏前面加上##的作用在于，当可变参数的个数为0时，这里的##起到把前面多余的”,”去掉的作用,否则会编译出错, 你可以试试。</p><p>2.<strong>FILE</strong>宏在预编译时会替换成当前的源文件名</p><p>3.<strong>LINE</strong>宏在预编译时会替换成当前的行号</p><p>4.<strong>FUNCTION</strong>宏在预编译时会替换成当前的函数名称</p><p>5.<strong>PRETTY_FUNCTION</strong> 底层库函数名</p><p>6.fmt实际上就是自己输入的参数 format<br>*/</p></li></ol>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;define-DLog-fmt-…-NSLog-”-文件名-s-n”-“-函数名-s-n”-“-行号-d-n”-fmt-FILE-FUNCTION-LINE-VA-ARGS&quot;&gt;&lt;a href=&quot;#define-DLog-fmt-…-NSLog-”-文件名-s-n”
+      
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>WebViewJavascriptBridge</title>

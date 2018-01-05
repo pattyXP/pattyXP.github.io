@@ -275,6 +275,138 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/05/Log/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/05/Log/" itemprop="url">Log</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-05T11:45:17+08:00">
+                2018-01-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="define-DLog-fmt-…-NSLog-”-文件名-s-n”-“-函数名-s-n”-“-行号-d-n”-fmt-FILE-FUNCTION-LINE-VA-ARGS"><a href="#define-DLog-fmt-…-NSLog-”-文件名-s-n”-“-函数名-s-n”-“-行号-d-n”-fmt-FILE-FUNCTION-LINE-VA-ARGS" class="headerlink" title="define DLog(fmt, …) NSLog((@”[文件名:%s]\n” “[函数名:%s]\n” “[行号:%d] \n” fmt), FILE, FUNCTION, LINE, ##VA_ARGS);"></a>define DLog(fmt, …) NSLog((@”[文件名:%s]\n” “[函数名:%s]\n” “[行号:%d] \n” fmt), <strong>FILE</strong>, <strong>FUNCTION</strong>, <strong>LINE</strong>, ##<strong>VA_ARGS</strong>);</h1><p>/*<br> 参数解释：</p>
+<ol>
+<li><p><strong>VA_ARGS</strong>是一个可变参数的宏，很少人知道这个宏，这个可变参数的宏是新的C99规范中新增的，目前似乎只有gcc支（VC6.0的编译器不支持）。宏前面加上##的作用在于，当可变参数的个数为0时，这里的##起到把前面多余的”,”去掉的作用,否则会编译出错, 你可以试试。</p>
+<p>2.<strong>FILE</strong>宏在预编译时会替换成当前的源文件名</p>
+<p>3.<strong>LINE</strong>宏在预编译时会替换成当前的行号</p>
+<p>4.<strong>FUNCTION</strong>宏在预编译时会替换成当前的函数名称</p>
+<p>5.<strong>PRETTY_FUNCTION</strong> 底层库函数名</p>
+<p>6.fmt实际上就是自己输入的参数 format<br>*/</p>
+</li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/04/WebViewJavascriptBdidge/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1103,7 +1235,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">6</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1191,7 +1323,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共6.6k字</span>
+<span class="post-count"> 博客全站共6.8k字</span>
 </div>
 
 
