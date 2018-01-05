@@ -96,18 +96,18 @@
 
 
 
-<meta name="description" content="1# define DLog(fmt, ...) NSLog((@&amp;quot;[文件名:%s]\n&amp;quot; &amp;quot;[函数名:%s]\n&amp;quot; &amp;quot;[行号:%d] \n&amp;quot; fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__); 参数解释： 1__VA_ARGS__  是一个可变参数的宏，很少人知道这个宏，这个可">
+<meta name="description" content="1# define DLog(fmt, ...) NSLog((@&amp;quot;[文件名:%s]\n&amp;quot; &amp;quot;[函数名:%s]\n&amp;quot; &amp;quot;[行号:%d] \n&amp;quot; fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__); 参数解释： 123__VA_ARGS__是一个可变参数的宏，很少人知道这个宏，这个可">
 <meta name="keywords" content="小知识点">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Log">
 <meta property="og:url" content="https://pattyxp.github.io/2018/01/05/Log/index.html">
 <meta property="og:site_name" content="温暖的弦">
-<meta property="og:description" content="1# define DLog(fmt, ...) NSLog((@&amp;quot;[文件名:%s]\n&amp;quot; &amp;quot;[函数名:%s]\n&amp;quot; &amp;quot;[行号:%d] \n&amp;quot; fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__); 参数解释： 1__VA_ARGS__  是一个可变参数的宏，很少人知道这个宏，这个可">
+<meta property="og:description" content="1# define DLog(fmt, ...) NSLog((@&amp;quot;[文件名:%s]\n&amp;quot; &amp;quot;[函数名:%s]\n&amp;quot; &amp;quot;[行号:%d] \n&amp;quot; fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__); 参数解释： 123__VA_ARGS__是一个可变参数的宏，很少人知道这个宏，这个可">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-05T05:43:37.000Z">
+<meta property="og:updated_time" content="2018-01-05T05:58:50.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Log">
-<meta name="twitter:description" content="1# define DLog(fmt, ...) NSLog((@&amp;quot;[文件名:%s]\n&amp;quot; &amp;quot;[函数名:%s]\n&amp;quot; &amp;quot;[行号:%d] \n&amp;quot; fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__); 参数解释： 1__VA_ARGS__  是一个可变参数的宏，很少人知道这个宏，这个可">
+<meta name="twitter:description" content="1# define DLog(fmt, ...) NSLog((@&amp;quot;[文件名:%s]\n&amp;quot; &amp;quot;[函数名:%s]\n&amp;quot; &amp;quot;[行号:%d] \n&amp;quot; fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__); 参数解释： 123__VA_ARGS__是一个可变参数的宏，很少人知道这个宏，这个可">
 
 
 
@@ -343,30 +343,12 @@
 
       
         <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># define DLog(fmt, ...) NSLog((@&quot;[文件名:%s]\n&quot; &quot;[函数名:%s]\n&quot; &quot;[行号:%d] \n&quot; fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__);</span><br></pre></td></tr></table></figure>
-<p>参数解释：<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__VA_ARGS__</span><br></pre></td></tr></table></figure></p>
-<ul>
-<li>是一个可变参数的宏，很少人知道这个宏，这个可变参数的宏是新的C99规范中新增的，目前似乎只有gcc支（VC6.0的编译器不支持）。宏前面加上##的作用在于，当可变参数的个数为0时，这里的##起到把前面多余的”,”去掉的作用,否则会编译出错, 你可以试试。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__FILE__</span><br></pre></td></tr></table></figure>
-<ul>
-<li>宏在预编译时会替换成当前的源文件名</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__LINE__</span><br></pre></td></tr></table></figure>
-<ul>
-<li>宏在预编译时会替换成当前的行号</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__FUNCTION__</span><br></pre></td></tr></table></figure>
-<ul>
-<li>宏在预编译时会替换成当前的函数名称</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__PRETTY_FUNCTION__</span><br></pre></td></tr></table></figure>
-<ul>
-<li>底层库函数名</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fmt</span><br></pre></td></tr></table></figure>
-<ul>
-<li>实际上就是自己输入的参数 format</li>
-</ul>
+<p>参数解释：<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">__VA_ARGS__</span><br><span class="line"></span><br><span class="line">是一个可变参数的宏，很少人知道这个宏，这个可变参数的宏是新的C99规范中新增的，目前似乎只有gcc支（VC6.0的编译器不支持）。宏前面加上##的作用在于，当可变参数的个数为0时，这里的##起到把前面多余的&quot;,&quot;去掉的作用,否则会编译出错, 你可以试试。</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__FILE__   宏在预编译时会替换成当前的源文件名</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__LINE__  宏在预编译时会替换成当前的行号</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__FUNCTION__  宏在预编译时会替换成当前的函数名称</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__PRETTY_FUNCTION__  底层库函数名</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fmt  实际上就是自己输入的参数 format</span><br></pre></td></tr></table></figure>
 
       
     </div>
