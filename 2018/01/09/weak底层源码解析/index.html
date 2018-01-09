@@ -78,7 +78,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, Patty" />
+  <meta name="keywords" content="源码解析," />
 
 
 
@@ -97,13 +97,14 @@
 
 
 <meta name="description" content="本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject.mm123456789101112idobjc_initWeak(id *lo">
+<meta name="keywords" content="源码解析">
 <meta property="og:type" content="article">
 <meta property="og:title" content="weak底层源码解析">
 <meta property="og:url" content="https://pattyxp.github.io/2018/01/09/weak底层源码解析/index.html">
 <meta property="og:site_name" content="温暖的弦">
 <meta property="og:description" content="本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject.mm123456789101112idobjc_initWeak(id *lo">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-09T08:42:08.000Z">
+<meta property="og:updated_time" content="2018-01-09T11:16:53.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="weak底层源码解析">
 <meta name="twitter:description" content="本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject.mm123456789101112idobjc_initWeak(id *lo">
@@ -382,6 +383,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/源码解析/" rel="tag"><i class="fa fa-tag"></i> 源码解析</a>
+          
+        </div>
+      
 
       
       
@@ -584,7 +591,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共10.1k字</span>
+<span class="post-count"> 博客全站共10.2k字</span>
 </div>
 
 

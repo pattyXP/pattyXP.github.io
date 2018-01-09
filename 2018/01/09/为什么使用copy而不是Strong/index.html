@@ -78,7 +78,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, Patty" />
+  <meta name="keywords" content="源码解析," />
 
 
 
@@ -97,13 +97,14 @@
 
 
 <meta name="description" content="123456789101112131415161718192021222324252627//下面使用打印下指针看下NSMutableString *str1 = [NSMutableString stringWithFormat:@&amp;quot;iOS&amp;quot;];NSLog(@&amp;quot;%p&amp;quot;, str1);  //0x7b0c0006e0a0NSString *str_a1 =">
+<meta name="keywords" content="源码解析">
 <meta property="og:type" content="article">
 <meta property="og:title" content="为什么使用copy而不是Strong">
 <meta property="og:url" content="https://pattyxp.github.io/2018/01/09/为什么使用copy而不是Strong/index.html">
 <meta property="og:site_name" content="温暖的弦">
 <meta property="og:description" content="123456789101112131415161718192021222324252627//下面使用打印下指针看下NSMutableString *str1 = [NSMutableString stringWithFormat:@&amp;quot;iOS&amp;quot;];NSLog(@&amp;quot;%p&amp;quot;, str1);  //0x7b0c0006e0a0NSString *str_a1 =">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-09T11:12:44.000Z">
+<meta property="og:updated_time" content="2018-01-09T11:57:01.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="为什么使用copy而不是Strong">
 <meta name="twitter:description" content="123456789101112131415161718192021222324252627//下面使用打印下指针看下NSMutableString *str1 = [NSMutableString stringWithFormat:@&amp;quot;iOS&amp;quot;];NSLog(@&amp;quot;%p&amp;quot;, str1);  //0x7b0c0006e0a0NSString *str_a1 =">
@@ -347,8 +348,9 @@
 <p>NSString copy方法，返回的是self自身，属于浅拷贝<br>mutableCopyWithZone方法，返回新初始化的对象NSMutableString，所以是深拷贝</p>
 <p><a href="https://searchcode.com/file/68838008/jni%20w:%20itoa%20runtime%20and%20allocator/Foundation/NSMutableString.m" target="_blank" rel="noopener">NSMutableString.m</a> 中只发现了copyWithZone:和copy:方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-(id)copy &#123;</span><br><span class="line">    return [[NSString alloc] initWithString:self];</span><br><span class="line">&#125;</span><br><span class="line">-(id)copyWithZone:(NSZone*)zone &#123;</span><br><span class="line">    return [[NSString allocWithZone:zone] initWithString:self];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>NSMutableString copy方法，会变成深复制，因为返回的对象如源码所示，调用了 NSString 的全能初始化方法，并且由一个新的 NSString 持有。<br>在源码中并没有重写mutableCopy方法，也没有实现mutableCopyWithZone:方法，所以会调用父类的mutableCopyWithZone。而在父类中 mutableCopyWithZone:方法中调用了 NSMutableString 的全局初始化方法，所以依旧是深复制。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Q 经典面试题：为什么 NSString 类型成员变量的修饰属性用 copy 而不是 strong (或 retain ) ？</p>
-<p>A 当我们通过一个 NSMutableString 对 NSString 变量进行赋值，如果 NSString 的 property 是 strong 类型的时候，就会随着 NSMutableString 类型的变量一起变化。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">@interface Man : NSObject</span><br><span class="line">@property (nonatomic, strong) NSString *eat;</span><br><span class="line">@property (nonatomic, copy) NSString *drink;</span><br><span class="line">@end</span><br><span class="line">@implementation Man</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">- (void)test</span><br><span class="line">&#123;</span><br><span class="line">  Man *man = [[Man alloc] init];</span><br><span class="line">  NSMutableString *str = [NSMutableString stringWithFormat:@&quot;山珍海味&quot;];</span><br><span class="line"></span><br><span class="line">  man.eat = str;</span><br><span class="line">  man.drink = str;</span><br><span class="line">  NSLog(@&quot;%@-%@&quot;,man.eat,man.drink); // 山珍海味-山珍海味</span><br><span class="line"></span><br><span class="line">  [str appendString:@&quot;白开水&quot;];</span><br><span class="line">  NSLog(@&quot;%@-%@&quot;,man.eat,man.drink); //山珍海味白开水-山珍海味</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Q 经典面试题：为什么 NSString 类型成员变量的修饰属性用 copy 而不是 strong (或 retain ) ？</p>
+<p>A 当我们通过一个 NSMutableString 对 NSString 变量进行赋值，如果 NSString 的 property 是 strong 类型的时候，就会随着 NSMutableString 类型的变量一起变化。<br>strong修饰，仅仅是指针引用，增加了引用计数器</p>
 <h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="http://www.desgard.com/copy/" target="_blank" rel="noopener">http://www.desgard.com/copy/</a></p>
 
       
@@ -376,6 +378,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/源码解析/" rel="tag"><i class="fa fa-tag"></i> 源码解析</a>
+          
+        </div>
       
 
       
@@ -575,7 +583,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共10.1k字</span>
+<span class="post-count"> 博客全站共10.2k字</span>
 </div>
 
 
