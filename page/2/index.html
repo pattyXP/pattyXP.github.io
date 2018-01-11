@@ -78,7 +78,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="源码解析," />
+  <meta name="keywords" content="Hexo, Patty" />
 
 
 
@@ -96,18 +96,16 @@
 
 
 
-<meta name="description" content="解析前阅读apiMJRefreshComponent.h 1.MJRefreshState 有5个状态，如果我设计，只会想到4个， willRefresh和 pulling状态会认为是一致的2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了 解析前总结：设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。依据拖动的手势和位移，修改父类s">
-<meta name="keywords" content="源码解析">
-<meta property="og:type" content="article">
-<meta property="og:title" content="MJRefresh解析">
-<meta property="og:url" content="https://pattyxp.github.io/2018/01/04/MJRefresh解析/index.html">
+<meta name="description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="温暖的弦">
+<meta property="og:url" content="https://pattyxp.github.io/page/2/index.html">
 <meta property="og:site_name" content="温暖的弦">
-<meta property="og:description" content="解析前阅读apiMJRefreshComponent.h 1.MJRefreshState 有5个状态，如果我设计，只会想到4个， willRefresh和 pulling状态会认为是一致的2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了 解析前总结：设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。依据拖动的手势和位移，修改父类s">
+<meta property="og:description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-04T03:34:49.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="MJRefresh解析">
-<meta name="twitter:description" content="解析前阅读apiMJRefreshComponent.h 1.MJRefreshState 有5个状态，如果我设计，只会想到4个， willRefresh和 pulling状态会认为是一致的2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了 解析前总结：设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。依据拖动的手势和位移，修改父类s">
+<meta name="twitter:title" content="温暖的弦">
+<meta name="twitter:description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
 
 
 
@@ -136,13 +134,13 @@
 
 
 
-  <link rel="canonical" href="https://pattyxp.github.io/2018/01/04/MJRefresh解析/"/>
+  <link rel="canonical" href="https://pattyxp.github.io/page/2/"/>
 
 
 
 
 
-  <title>MJRefresh解析 | 温暖的弦</title>
+  <title>温暖的弦</title>
   
 
 
@@ -167,7 +165,9 @@
     
   
 
-  <div class="container sidebar-position-left page-post-detail ">
+  <div class="container sidebar-position-left 
+   page-home 
+ ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -260,9 +260,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-
-  <div id="posts" class="posts-expand">
+  <section id="posts" class="posts-expand">
     
+      
 
   
 
@@ -292,7 +292,9 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">MJRefresh解析</h1>
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/04/MJRefresh解析/" itemprop="url">MJRefresh解析</a></h1>
         
 
         <div class="post-meta">
@@ -342,7 +344,9 @@
       
 
       
-        <h2 id="解析前阅读api"><a href="#解析前阅读api" class="headerlink" title="解析前阅读api"></a>解析前阅读api</h2><p>MJRefreshComponent.h</p>
+        
+          
+            <h2 id="解析前阅读api"><a href="#解析前阅读api" class="headerlink" title="解析前阅读api"></a>解析前阅读api</h2><p>MJRefreshComponent.h</p>
 <p>1.MJRefreshState 有5个状态，如果我设计，只会想到4个， willRefresh和 pulling状态会认为是一致的<br>2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了</p>
 <p>解析前总结：<br>设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。<br>依据拖动的手势和位移，修改父类scrollView的contentSize，显示刷新控件和隐藏控件，调用刷新的方法和回调方法即可。</p>
 <h2 id="疑问code"><a href="#疑问code" class="headerlink" title="疑问code"></a>疑问code</h2><p>beginRefreshing方法里，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (self.window) &#123;</span><br><span class="line">    self.state = MJRefreshStateRefreshing;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
@@ -375,6 +379,8 @@
 <p>5.多语言设置</p>
 <h2 id="阅读资料："><a href="#阅读资料：" class="headerlink" title="阅读资料："></a>阅读资料：</h2><p><a href="http://www.jianshu.com/p/89ca6437c5e9" target="_blank" rel="noopener">http://www.jianshu.com/p/89ca6437c5e9</a></p>
 
+          
+        
       
     </div>
     
@@ -385,15 +391,6 @@
 
 
     
-      <div>
-      <div>
-    
-        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
-    
-</div>
-
-      </div>
-    
 
     
 
@@ -401,40 +398,14 @@
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/源码解析/" rel="tag"><i class="fa fa-tag"></i> 源码解析</a>
-          
-        </div>
+
+      
+
       
 
       
       
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2018/01/02/博客搭建/" rel="next" title="博客搭建">
-                <i class="fa fa-chevron-left"></i> 博客搭建
-              </a>
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/01/04/YYImage解析/" rel="prev" title="YYImage解析">
-                YYImage解析 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
+        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -444,11 +415,155 @@
   </article>
 
 
+    
+      
 
-    <div class="post-spread">
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/02/博客搭建/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/02/博客搭建/" itemprop="url">博客搭建</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-02T17:43:15+08:00">
+                2018-01-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h3><p>之前一直有在收集一些大神的博客，自己也肖想了一把建立自己的博客地址，于是乎就有了个开端</p>
+<p>在此之前，我也是小白一枚啊，遇到了一些非常浅显的坑，但是一直没有发现导致纠结了一下，整个整下来大概花了2小时吧 ~ ~ ~</p>
+<h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><p>首先安装些必备的环境是分分钟的事情啦，网上有相关教程的，如有问题请自行google</p>
+<ul>
+<li>Node.js</li>
+<li><p>Git (Xcode自带，可以绕行)</p>
+</li>
+<li><p>当Node.js和Git都安装好后就可以正式安装Hexo了，终端执行如下命令：<br>$ sudo npm install -g hexo</p>
+</li>
+<li><p>初始化</p>
+</li>
+</ul>
+<p>本地自己建立存放的文件夹，cd到当前文件目录下，执行以下命令<br>$ hexo init xxx (xxx 是你建立的文件夹名称。cd到xxx文件夹下，执行如下命令，安装npm：)<br>$ npm install<br>执行如下命令，开启hexo服务器:<br>$ hexo s<br>此时，浏览器中打开网址<a href="http://localhost:4000，" target="_blank" rel="noopener">http://localhost:4000，</a><br>能看到helloWorld的页面，此时本地显示已经OK<br>效果如图:<br><img src="/images/初建博客.png" alt="效果如图"></p>
+<ul>
+<li>管理github<br>建立自己的github账号之后，将mac下的ssh内容上传到setting里相应的位置<br>选择新建一个responsity，注意，命名非常重要，我就是在这里被卡了一小时的感觉<br>比如我的Github名称是pattyXP,但是建立的仓库名称，需要符合规则: github名称.github.io ，我一开始写错了，写成了patty.github.io，为此哀伤一下下 ~ ~ ~<br>然后，进入到该仓库的主页下，选择setting，滑到GitHub Pages一级，将source选择为master，点击save，这是为什么呢？（因为之前在本地文件下有一个.yml，打开后往下滑到最后，修改成下边的样子：<br>deploy:<br>  type: git<br>  repository: <a href="https://github.com/pattyXP/pattyXP.github.io.git" target="_blank" rel="noopener">https://github.com/pattyXP/pattyXP.github.io.git</a><br> branch: master）<br>然后打开自己的<a href="https://pattyxp.github.io/">https://pattyxp.github.io/</a><br>效果就和本地的localhost:4000一模一样了(😅)</li>
+</ul>
+<h2 id="后面的维护"><a href="#后面的维护" class="headerlink" title="后面的维护"></a>后面的维护</h2><p>hexo支持markdown语法，所以本地的文章可以使用markdown语法来编写，之后保存为xx.md即可，放在博客的文件夹下的source/_posts/xx.md即可<br>最后，执行如下命令就可以上传成功了<br>hexo new xxx<br>hexo g （生成静态页面）<br>hexo d  (将文章部署到Github)</p>
+<h2 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h2><p>可能还需要用到的命令<br>hexo clean<br>hexo d -g</p>
+<h2 id="参考教程"><a href="#参考教程" class="headerlink" title="参考教程"></a>参考教程</h2><p>博客搭建教程: <a href="http://jeasonstudio.github.io" target="_blank" rel="noopener">http://jeasonstudio.github.io</a><br>博客主题搭建: <a href="http://theme-next.iissnan.com/getting-started.html" target="_blank" rel="noopener">http://theme-next.iissnan.com/getting-started.html</a><br>博客主题定制化: <a href="http://shenzekun.cn/" target="_blank" rel="noopener">http://shenzekun.cn/</a></p>
+
+          
+        
       
     </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
   </div>
+  
+  
+  
+  </article>
+
+
+    
+  </section>
+
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
+
 
 
           </div>
@@ -456,10 +571,6 @@
 
 
           
-  <div class="comments" id="comments">
-    
-  </div>
-
 
         </div>
         
@@ -480,17 +591,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <section class="site-overview sidebar-panel">
+      <section class="site-overview sidebar-panel sidebar-panel-active">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/flower.jpg"
@@ -550,22 +652,6 @@
 
       </section>
 
-      
-      <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-              
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#解析前阅读api"><span class="nav-number">1.</span> <span class="nav-text">解析前阅读api</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#疑问code"><span class="nav-number">2.</span> <span class="nav-text">疑问code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件结构功能图-Github上已有-http-t-cn-RYHwK6n"><span class="nav-number">3.</span> <span class="nav-text">文件结构功能图 Github上已有(http://t.cn/RYHwK6n)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#阅读资料："><span class="nav-number">5.</span> <span class="nav-text">阅读资料：</span></a></li></ol></div>
-            
-
-          </div>
-        </section>
-      <!--/noindex-->
       
 
       
@@ -697,10 +783,10 @@
 
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+    <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
 <script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
 
-
+  
 
   
 

@@ -275,6 +275,311 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/11/图片压缩算法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/11/图片压缩算法/" itemprop="url">图片压缩算法</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-11T10:16:25+08:00">
+                2018-01-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>压缩，可以拆分为压 和 缩</p>
+<p>压，就是将图片的体积变小，图片的质量肯定下降<br>缩，就是将图片的尺寸变小，这样图片体积也会变小</p>
+<p>有时候，需要上传图片到后台服务器，但是如单反照相机拍出来的图片轻则十几兆，一般服务器都会有一个图片压缩的上限，不可能接收很大的图片体积的，所以我们前端需要做处理。根据服务端能够接受的图片大小和图片体积，处理上传需要的最大图片质量。</p>
+<p>因此可以先处理图片的尺寸，压缩到符合要求的尺寸之后，再看图片的大小是否还超过规定范围，超过的话再继续压缩体积</p>
+<p>设计上可以设计为UIImage的分类，因为这是对图片的处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line">static const float kMaxFileSize = xxx;</span><br><span class="line">static const float kMaxLayout = xxx;</span><br><span class="line"></span><br><span class="line">- (NSData *)imageCompressTargetPx:(NSInteger)targetPx maxFileSize:(uint64_t)maxFileSize &#123;</span><br><span class="line">    UIImage *newImage = nil;             // 尺寸压缩后的新图</span><br><span class="line">    BOOL drawImge = NO;                  // 是否需要重绘图片 默认是NO</span><br><span class="line"></span><br><span class="line">    CGFloat width = self.size.width;     // 源图片的宽</span><br><span class="line">    CGFloat height = self.size.height;   // 原图片的高</span><br><span class="line">    CGFloat scaledWidth = targetPx;      // 压缩时的宽度 默认是参照像素</span><br><span class="line">    CGFloat scaledHeight = targetPx;     // 压缩时的高度 默认是参照像素</span><br><span class="line"></span><br><span class="line">    if (maxFileSize &lt;= 0) &#123;</span><br><span class="line">        maxFileSize = kMaxFileSize;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">   //压缩指定尺寸</span><br><span class="line">    CGSize newSize = [self copressTargetLimitSize:self.size];</span><br><span class="line">    if (newSize.width != width ||newSize.height != height) &#123;</span><br><span class="line">        drawImge = YES;</span><br><span class="line">        scaledWidth = newSize.width;</span><br><span class="line">        scaledHeight = newSize.height;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 如果图片需要重绘 就按照新的宽高压缩重绘图片</span><br><span class="line">    if (drawImge == YES) &#123;</span><br><span class="line">        UIGraphicsBeginImageContext(CGSizeMake(scaledWidth, scaledHeight));</span><br><span class="line">        [self drawInRect:CGRectMake(0, 0, scaledWidth,scaledHeight)];</span><br><span class="line">        newImage =UIGraphicsGetImageFromCurrentImageContext();</span><br><span class="line">        // 使当前的context出堆栈</span><br><span class="line">        UIGraphicsEndImageContext();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (newImage == nil) &#123;</span><br><span class="line">        newImage = self;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 如果图片大小大于要求大小,进行质量压缩</span><br><span class="line">    NSData * scaledImageData = nil;</span><br><span class="line">    if (UIImageJPEGRepresentation(newImage, 1) == nil) &#123;</span><br><span class="line">        scaledImageData = UIImagePNGRepresentation(newImage);</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        scaledImageData = UIImageJPEGRepresentation(newImage, 1.0);</span><br><span class="line">        CGFloat scale = 0.9;</span><br><span class="line">        while(scaledImageData.length &gt;= maxFileSize)&#123;</span><br><span class="line">            scaledImageData = UIImageJPEGRepresentation(newImage, scale);</span><br><span class="line">            scale -= 0.1;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return scaledImageData;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#pragma mark -private</span><br><span class="line"></span><br><span class="line">- (CGSize)copressTargetLimitSize:(CGSize)originSize</span><br><span class="line">&#123;</span><br><span class="line">    CGFloat width = originSize.width;     // 源图片的宽</span><br><span class="line">    CGFloat height = originSize.height;   // 原图片的高</span><br><span class="line">    BOOL drawImge = NO;                  // 是否需要重绘图片 默认是NO</span><br><span class="line">    CGFloat scaledWidth = kMaxLayout;      // 压缩时的宽度 默认是参照像素</span><br><span class="line">    CGFloat scaledHeight = kMaxLayout;     // 压缩时的高度 默认是参照像素</span><br><span class="line"></span><br><span class="line">    CGFloat targetPx = kMaxLayout;         // 压缩时的宽度 默认是参照像素</span><br><span class="line"></span><br><span class="line">    CGFloat max = MAX(width, height);</span><br><span class="line">    CGFloat min = MIN(width, height);</span><br><span class="line">    CGFloat factor = min/max;</span><br><span class="line"></span><br><span class="line">    if (width &lt;= 0 &amp;&amp; height &lt;= 0) &#123;</span><br><span class="line">        return originSize;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        drawImge = YES;</span><br><span class="line"></span><br><span class="line">        if (width &gt; height) &#123;</span><br><span class="line">            scaledWidth = targetPx;</span><br><span class="line">            scaledHeight = targetPx *factor;</span><br><span class="line">        &#125;else if (height &gt; width) &#123;</span><br><span class="line">            scaledHeight = targetPx;</span><br><span class="line">            scaledWidth = targetPx *factor;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return CGSizeMake(scaledWidth, scaledHeight);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/10/isa的存在/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/10/isa的存在/" itemprop="url">isa的存在</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-10T14:20:40+08:00">
+                2018-01-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">struct objc_object &#123;</span><br><span class="line">private:</span><br><span class="line">    isa_t isa;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">struct objc_class : objc_object &#123;</span><br><span class="line">    // Class ISA;</span><br><span class="line">    Class superclass;</span><br><span class="line">    cache_t cache;             // formerly cache pointer and vtable</span><br><span class="line">    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p><img src="/images/isa.png" alt="结构图"></p>
+<p>在 Objective-C 中，对象的方法并没有存储于对象的结构体中（如果每一个对象都保存了自己能执行的方法，那么对内存的占用有极大的影响）。</p>
+<p>当实例方法被调用时，它要通过自己持有的 isa 来查找对应的类，然后在这里的 class_data_bits_t 结构体中查找对应方法的实现。同时，每一个 objc_class 也有一个指向自己的父类的指针 super_class 用来查找继承的方法。</p>
+<p>isa分析<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">union isa_t</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">  isa_t() &#123; &#125;</span><br><span class="line">  isa_t(uintptr_t value) : bits(value) &#123; &#125;</span><br><span class="line"></span><br><span class="line">  Class cls;</span><br><span class="line">  uintptr_t bits;</span><br><span class="line"></span><br><span class="line">  //如果是X86的结构，大致信息如下，还有arm_64这里就不贴了，大致字段差不多，多少有点差别</span><br><span class="line">  if __x86_64__  </span><br><span class="line">#   define ISA_MASK        0x00007ffffffffff8ULL</span><br><span class="line">#   define ISA_MAGIC_MASK  0x001f800000000001ULL</span><br><span class="line">#   define ISA_MAGIC_VALUE 0x001d800000000001ULL</span><br><span class="line"></span><br><span class="line">    struct &#123;</span><br><span class="line">    uintptr_t nonpointer        : 1;</span><br><span class="line">    uintptr_t has_assoc         : 1;</span><br><span class="line">    uintptr_t has_cxx_dtor      : 1;</span><br><span class="line">    uintptr_t shiftcls          : 44; // MACH_VM_MAX_ADDRESS 0x7fffffe00000</span><br><span class="line">    uintptr_t magic             : 6;</span><br><span class="line">    uintptr_t weakly_referenced : 1;</span><br><span class="line">    uintptr_t deallocating      : 1;</span><br><span class="line">    uintptr_t has_sidetable_rc  : 1;</span><br><span class="line">    uintptr_t extra_rc          : 8;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>首先，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">union isa_t &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>union结构体 结构比较灵活，如下所示，一次只能容纳一件事，但是这个东西可能是一个int，一个浮点数等，这取决于你如何声明它。<br>isa_t、cls、 bits 还有结构体共用同一块地址空间，isa 总共会占据 64 位的内存空间（决定于其中的结构体）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">typedef union MyUnion MYUNION;</span><br><span class="line">union MyUnion</span><br><span class="line">&#123;</span><br><span class="line">   int MyInt;</span><br><span class="line">   float MyFloat;</span><br><span class="line">&#125;;</span><br><span class="line">MyUnion将只包含一个int或一个浮点数，取决于你最近设置的。所以这样做：</span><br><span class="line"></span><br><span class="line">MYUNION u;</span><br><span class="line">u.MyInt = 10;</span><br><span class="line">你现在保持一个int等于10;</span><br><span class="line"></span><br><span class="line">u.MyFloat = 1.0;</span><br><span class="line">你现在拥有一个等于1.0的浮动。</span><br></pre></td></tr></table></figure></p>
+<p>isa的内存结构图<br><img src="images/isa内存结构图.png" alt="isa结构图"></p>
+<p>初始化<br>对于bits的设置可以在初始化中进行设置 objc-object.h<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">inline void</span><br><span class="line">objc_object::initInstanceIsa(Class cls, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!cls-&gt;instancesRequireRawIsa());</span><br><span class="line">    assert(hasCxxDtor == cls-&gt;hasCxxDtor());</span><br><span class="line"></span><br><span class="line">    initIsa(cls, true, hasCxxDtor);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">inline void</span><br><span class="line">objc_object::initIsa(Class cls, bool nonpointer, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!isTaggedPointer());</span><br><span class="line"></span><br><span class="line">    if (!nonpointer) &#123;</span><br><span class="line">        isa.cls = cls;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        assert(!DisableNonpointerIsa);</span><br><span class="line">        assert(!cls-&gt;instancesRequireRawIsa());</span><br><span class="line"></span><br><span class="line">        isa_t newisa(0);</span><br><span class="line"></span><br><span class="line">#if SUPPORT_INDEXED_ISA</span><br><span class="line">        assert(cls-&gt;classArrayIndex() &gt; 0);</span><br><span class="line">        newisa.bits = ISA_INDEX_MAGIC_VALUE; //赋值0x001d800000000001ULL</span><br><span class="line">        // isa.magic is part of ISA_MAGIC_VALUE</span><br><span class="line">        // isa.nonpointer is part of ISA_MAGIC_VALUE</span><br><span class="line">        newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">        newisa.indexcls = (uintptr_t)cls-&gt;classArrayIndex();</span><br><span class="line">#else</span><br><span class="line">        newisa.bits = ISA_MAGIC_VALUE;</span><br><span class="line">        // isa.magic is part of ISA_MAGIC_VALUE</span><br><span class="line">        // isa.nonpointer is part of ISA_MAGIC_VALUE</span><br><span class="line">        newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">        newisa.shiftcls = (uintptr_t)cls &gt;&gt; 3;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">        // This write must be performed in a single store in some cases</span><br><span class="line">        // (for example when realizing a class because other threads</span><br><span class="line">        // may simultaneously try to use the class).</span><br><span class="line">        // fixme use atomics here to guarantee single-store and to</span><br><span class="line">        // guarantee memory order w.r.t. the class index table</span><br><span class="line">        // ...but not too atomic because we don&apos;t want to hurt instantiation</span><br><span class="line">        isa = newisa;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>newisa.bits = ISA_INDEX_MAGIC_VALUE; //赋值0x001d800000000001ULL则对应的64位显示的值如下图<br><img src="/images/isa赋值.png" alt="isa赋值后"></p>
+<p>从图中了解到，在使用 ISA_MAGIC_VALUE 设置 isa_t 结构体之后，实际上只是设置了 indexed 以及 magic 这两部分的值。</p>
+<ul>
+<li>indexed 表示 isa_t 的类型<ul>
+<li>0 表示 raw isa，也就是没有结构体的部分，访问对象的 isa 会直接返回一个指向 cls 的指针，也就是在 iPhone 迁移到 64 位系统之前时 isa 的类型。</li>
+<li>1 表示当前 isa 不是指针，但是其中也有 cls 的信息，只是其中关于类的指针都是保存在 shiftcls 中。</li>
+</ul>
+</li>
+<li><p>magic 的值为 0x3b 用于调试器判断当前对象是真的对象还是没有初始化的空间</p>
+</li>
+<li><p>has_cxx_dtor:在设置 indexed 和 magic 值之后，会设置 isa 的 has_cxx_dtor，这一位表示当前对象有 C++ 或者 ObjC 的析构器(destructor)，如果没有析构器就会快速释放内存。</p>
+</li>
+<li><p>shiftcls: 将当前对象对应的类指针存入 isa 结构体中</p>
+<blockquote>
+<p>isa.shiftcls = (uintptr_t)cls &gt;&gt; 3;<br>所有类指针十六进制地址的最后一位都为 8 或者 0<br>将当前地址右移三位的主要原因是用于将 Class 指针中无用的后三位清除减小内存的消耗，因为类的指针要按照字节（8 bits）对齐内存，其指针后三位都是没有意义的 0。</p>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li><p>ISA() 方法<br>因为我们使用结构体取代了原有的 isa 指针，所以要提供一个方法 ISA() 来返回类指针。</p>
+<p>其中 ISA_MASK 是宏定义，这里通过掩码的方式获取类指针：</p>
+<p>#define ISA_MASK 0x00007ffffffffff8ULL<br>inline Class<br>objc_object::ISA()<br>{</p>
+<pre><code>return (Class)(isa.bits &amp; ISA_MASK);//返回64bit中shiftcls位对应的值
+</code></pre><p>}</p>
+</li>
+</ul>
+<h2 id="其它-bits"><a href="#其它-bits" class="headerlink" title="其它 bits"></a>其它 bits</h2><p>  在 isa_t 中，我们还有一些没有介绍的其它 bits，在这个小结就简单介绍下这些 bits 的作用</p>
+<ul>
+<li>has_assoc<br>对象含有或者曾经含有关联引用，没有关联引用的可以更快地释放内存</li>
+<li>weakly_referenced<br>对象被指向或者曾经指向一个 ARC 的弱变量，没有弱引用的对象可以更快释放</li>
+<li>deallocating<br>对象正在释放内存</li>
+<li>has_sidetable_rc<br>对象的引用计数太大了，存不下</li>
+<li>extra_rc<br>对象的引用计数超过 1，会存在这个这个里面，如果引用计数为 10，extra_rc 的值就为 9</li>
+</ul>
+<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>1、前缀：<br>0开头表示8进制，0x或0X开头表示16进制。</p>
+<p>2、后缀：用来表示类型。<br>—— l或L表示long常量<br>—— u或U表示unsigned int常量<br>—— ul、uL、Ul、UL、lU、lu、LU、Lu表示unsigned long常量。（lu可以采用任意顺序和大小写表示）<br>—— ll、LL表示long long 常量。<br>—— ull、Ull、uLL、ULL表示unsigned long long常量。</p>
+<blockquote>
+<p>当希望常量被当作unsigned long long表示就在后面加上后缀ULL</p>
+</blockquote>
+<p>3、对于浮点常量，<br>—— f或F表示float<br>—— l或L表示long double<br>—— 其他都表示double</p>
+<p>4、不带后缀时的规则——尽可能采用小的类型：<br>—— 对于10进制：int-&gt;long-&gt;long long<br>—— 对于8进制或16进制：int-&gt;unsigned int-&gt;long-&gt;unsigned long-&gt;long long -&gt;unsigned long long</p>
+<h2 id="元类"><a href="#元类" class="headerlink" title="元类"></a>元类</h2><p>元类是Class对象的类。<br>简单的说：<br>将消息发送给对象时，会在对象的类的方法列表中查找该消息。<br>当你发送消息给一个类时，这个消息在类的元类的方法列表中查找。<br>元类是必不可少的，因为它存储了类的方法Class。Class因为每个类Class都有一个潜在唯一的类方法列表，所以每个方法都必须有一个唯一的元类。意味着所有的Class对象本身都不是同一个类。</p>
+<p>元类具有NSObject元类作为它的类。<br>元类，也是一个对象，元类的class就是NSObject,NSObject的元类是自身。这意味着元类isa上的指针指向NSObject自己（这是它自己的一个实例）。</p>
+<p>code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">Class newClass =</span><br><span class="line">    objc_allocateClassPair([NSError class], &quot;RuntimeErrorSubclass&quot;, 0);</span><br><span class="line">class_addMethod(newClass, @selector(report), (IMP)ReportFunction, &quot;v@:&quot;);</span><br><span class="line">objc_registerClassPair(newClass);</span><br><span class="line"></span><br><span class="line">void ReportFunction(id self, SEL _cmd)</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;This object is %p.&quot;, self);</span><br><span class="line">    NSLog(@&quot;Class is %@, and super is %@.&quot;, [self class], [self superclass]);</span><br><span class="line"></span><br><span class="line">    Class currentClass = [self class];</span><br><span class="line">    for (int i = 1; i &lt; 5; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;Following the isa pointer %d times gives %p&quot;, i, currentClass);</span><br><span class="line">        currentClass = object_getClass(currentClass);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    NSLog(@&quot;NSObject&apos;s class is %p&quot;, [NSObject class]);</span><br><span class="line">    NSLog(@&quot;NSObject&apos;s meta class is %p&quot;, object_getClass([NSObject class]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">调用</span><br><span class="line">id instanceOfNewClass =</span><br><span class="line">    [[newClass alloc] initWithDomain:@&quot;someDomain&quot; code:0 userInfo:nil];</span><br><span class="line">[instanceOfNewClass performSelector:@selector(report)];</span><br><span class="line">[instanceOfNewClass release];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">在运行时创建一个类只需三个简单的步骤：</span><br><span class="line"></span><br><span class="line">为“类对”分配存储（使用objc_allocateClassPair）。</span><br><span class="line">根据需要将方法和ivars添加到类中（我已经添加了一个方法class_addMethod）。</span><br><span class="line">注册该类，以便可以使用（使用objc_registerClassPair）。</span><br><span class="line"></span><br><span class="line">该函数objc_allocateClassPair只返回一个值：类。另一半就是元类</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">打印如下:</span><br><span class="line">This object is 0x10010c810.</span><br><span class="line">Class is RuntimeErrorSubclass, and super is NSError.</span><br><span class="line">Following the isa pointer 1 times gives 0x10010c600</span><br><span class="line">Following the isa pointer 2 times gives 0x10010c630</span><br><span class="line">Following the isa pointer 3 times gives 0x7fff71038480</span><br><span class="line">Following the isa pointer 4 times gives 0x7fff71038480</span><br><span class="line">NSObject&apos;s class is 0x7fff710384a8</span><br><span class="line">NSObject&apos;s meta class is 0x7fff71038480</span><br><span class="line"></span><br><span class="line">通过isa重复的值来查看所到达的地址：</span><br><span class="line"></span><br><span class="line">该对象是地址0x10010c810。</span><br><span class="line">类是地址0x10010c600。</span><br><span class="line">元类是地址0x10010c630。</span><br><span class="line">元类的类（即NSObject元类）是地址0x7fff71038480。</span><br><span class="line">在NSObject元类的类本身。</span><br><span class="line">地址的价值并不重要，只是它展示了从类到元类到NSObject元类的进展。</span><br></pre></td></tr></table></figure></p>
+<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%20NSObject%20%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BA%86%E8%A7%A3%20isa.md" target="_blank" rel="noopener">isa解读</a>以上图片链接均来自于下面的文章中</p>
+<p><a href="http://www.cocoawithlove.com/2010/01/what-is-meta-class-in-objective-c.html" target="_blank" rel="noopener">关于元类</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/09/为什么使用copy而不是Strong/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -481,7 +786,7 @@
             <p>本文分析是runtime源码 <a href="https://github.com/isaacselement/objc4-706" target="_blank" rel="noopener">objc4-706版本</a><br>OC code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// NSObject *obj = ...;</span><br><span class="line">__weak id weakPtr = obj;</span><br></pre></td></tr></table></figure></p>
 <p>底层转为源码为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// NSObject *obj = ...;</span><br><span class="line">objc_initWeak(&amp;weakPtr, obj);</span><br></pre></td></tr></table></figure></p>
 <p>来看下NSObject.mm<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line">objc_initWeak(id *location, id newObj)</span><br><span class="line">&#123;</span><br><span class="line">    if (!newObj) &#123;</span><br><span class="line">        *location = nil;</span><br><span class="line">        return nil;</span><br><span class="line">    &#125;</span><br><span class="line">    // 这里传递了三个 bool 数值</span><br><span class="line">    // 使用 template 进行常量参数传递是为了优化性能</span><br><span class="line">    return storeWeak&lt;false/*old*/, true/*new*/, true/*crash*/&gt;</span><br><span class="line">        (location, (objc_object*)newObj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>继续阅读 storeWeak() 的实现：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line">// HaveOld:	 true - 变量有值</span><br><span class="line">// 			false - 需要被及时清理，当前值可能为 nil</span><br><span class="line">// HaveNew:	 true - 需要被分配的新值，当前值可能为 nil</span><br><span class="line">// 			false - 不需要分配新值</span><br><span class="line">// CrashIfDeallocating: true - 说明 newObj 已经释放或者 newObj 不支持弱引用，该过程需要暂停</span><br><span class="line">// 			false - 用 nil 替代存储</span><br><span class="line"></span><br><span class="line">template &lt;bool HaveOld, bool HaveNew, bool CrashIfDeallocating&gt;</span><br><span class="line">static id</span><br><span class="line">storeWeak(id *location, objc_object *newObj)</span><br><span class="line">&#123;</span><br><span class="line">    assert(HaveOld  ||  HaveNew);</span><br><span class="line">    if (!HaveNew) assert(newObj == nil);</span><br><span class="line">    // 用于标记已经初始化的类</span><br><span class="line">    Class previouslyInitializedClass = nil;</span><br><span class="line">    id oldObj;</span><br><span class="line">     // 声明新旧辅助表</span><br><span class="line">    SideTable *oldTable;</span><br><span class="line">    SideTable *newTable;</span><br><span class="line"></span><br><span class="line">    // 获取新旧值（存在的话）的辅助表，并且加锁，</span><br><span class="line">    // 如果新旧值辅助表同时存在时，以锁的地址大小排序，防止锁的顺序问题</span><br><span class="line"> retry:</span><br><span class="line">    if (HaveOld) &#123;</span><br><span class="line">        // 如果有旧值的话，通过指针获取目标对象，</span><br><span class="line">        // 再以目标对象的地址为索引，取得旧值对应的辅助表</span><br><span class="line">        oldObj = *location;</span><br><span class="line">        oldTable = &amp;SideTables()[oldObj];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        oldTable = nil;</span><br><span class="line">    &#125;</span><br><span class="line">    if (HaveNew) &#123;</span><br><span class="line">        // 如果有新值，以新值的地址为索引，取得新值对应的辅助表</span><br><span class="line">        newTable = &amp;SideTables()[newObj];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        newTable = nil;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    SideTable::lockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line"></span><br><span class="line">    if (HaveOld  &amp;&amp;  *location != oldObj) &#123;</span><br><span class="line">        // 线程冲突处理，</span><br><span class="line">        // 如果有旧值，但 location 指向的对象不为 oldObj，那很可能被其它线程修改过，</span><br><span class="line">        // 解锁并重试</span><br><span class="line">        SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line">        goto retry;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    if (HaveNew  &amp;&amp;  newObj) &#123;</span><br><span class="line">        Class cls = newObj-&gt;getIsa();</span><br><span class="line">        if (cls != previouslyInitializedClass  &amp;&amp;  </span><br><span class="line">            !((objc_class *)cls)-&gt;isInitialized())</span><br><span class="line">        &#123;</span><br><span class="line">            SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line">            _class_initialize(_class_getNonMetaClass(cls, (id)newObj));</span><br><span class="line"></span><br><span class="line">            previouslyInitializedClass = cls;</span><br><span class="line"></span><br><span class="line">            goto retry;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Clean up old value, if any.</span><br><span class="line">    // 从 oldObj 的弱引用条目删除弱引用的地址</span><br><span class="line">    if (HaveOld) &#123;</span><br><span class="line">        weak_unregister_no_lock(&amp;oldTable-&gt;weak_table, oldObj, location);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Assign new value, if any.</span><br><span class="line">    // 把弱引用的地址注册到 newObj 的弱引用条目</span><br><span class="line">    if (HaveNew) &#123;</span><br><span class="line">        newObj = (objc_object *)weak_register_no_lock(&amp;newTable-&gt;weak_table,</span><br><span class="line">                                                      (id)newObj, location,</span><br><span class="line">                                                      CrashIfDeallocating);</span><br><span class="line">        // weak_register_no_lock returns nil if weak store should be rejected</span><br><span class="line"></span><br><span class="line">        // Set is-weakly-referenced bit in refcount table.</span><br><span class="line">        if (newObj  &amp;&amp;  !newObj-&gt;isTaggedPointer()) &#123;</span><br><span class="line">            newObj-&gt;setWeaklyReferenced_nolock();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // Do not set *location anywhere else. That would introduce a race.</span><br><span class="line">        *location = (id)newObj;</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // No new value. The storage is not changed.</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line"></span><br><span class="line">    return (id)newObj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>继续阅读 storeWeak() 的实现：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line">// HaveOld:	 true - 变量有值</span><br><span class="line">// 			false - 需要被及时清理，当前值可能为 nil</span><br><span class="line">// HaveNew:	 true - 需要被分配的新值，当前值可能为 nil</span><br><span class="line">// 			false - 不需要分配新值</span><br><span class="line">// CrashIfDeallocating: true - 说明 newObj 已经释放或者 newObj 不支持弱引用，该过程需要暂停</span><br><span class="line">// 			false - 用 nil 替代存储</span><br><span class="line"></span><br><span class="line">template &lt;bool HaveOld, bool HaveNew, bool CrashIfDeallocating&gt;</span><br><span class="line">static id</span><br><span class="line">storeWeak(id *location, objc_object *newObj)</span><br><span class="line">&#123;</span><br><span class="line">    assert(HaveOld  ||  HaveNew);</span><br><span class="line">    if (!HaveNew) assert(newObj == nil);</span><br><span class="line">    // 用于标记已经初始化的类</span><br><span class="line">    Class previouslyInitializedClass = nil;</span><br><span class="line">    id oldObj;</span><br><span class="line">     // 声明新旧辅助表</span><br><span class="line">    SideTable *oldTable;</span><br><span class="line">    SideTable *newTable;</span><br><span class="line"></span><br><span class="line">    // 获取新旧值（存在的话）的辅助表，并且加锁，</span><br><span class="line">    // 如果新旧值辅助表同时存在时，以锁的地址大小排序，防止锁的顺序问题</span><br><span class="line"> retry:</span><br><span class="line">    if (HaveOld) &#123;</span><br><span class="line">        // 如果有旧值的话，通过指针获取目标对象，  Q： 旧值的情况是不是指这个地址*location之前存的值？？？</span><br><span class="line">        // 再以目标对象的地址为索引，取得旧值对应的辅助表</span><br><span class="line">        oldObj = *location;</span><br><span class="line">        oldTable = &amp;SideTables()[oldObj];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        oldTable = nil;</span><br><span class="line">    &#125;</span><br><span class="line">    if (HaveNew) &#123;</span><br><span class="line">        // 如果有新值，以新值的地址为索引，取得新值对应的辅助表</span><br><span class="line">        newTable = &amp;SideTables()[newObj];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        newTable = nil;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    SideTable::lockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line"></span><br><span class="line">    if (HaveOld  &amp;&amp;  *location != oldObj) &#123;</span><br><span class="line">        // 线程冲突处理，</span><br><span class="line">        // 如果有旧值，但 location 指向的对象不为 oldObj，那很可能被其它线程修改过，</span><br><span class="line">        // 解锁并重试</span><br><span class="line">        SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line">        goto retry;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    if (HaveNew  &amp;&amp;  newObj) &#123;</span><br><span class="line">        Class cls = newObj-&gt;getIsa();</span><br><span class="line">        if (cls != previouslyInitializedClass  &amp;&amp;  </span><br><span class="line">            !((objc_class *)cls)-&gt;isInitialized())</span><br><span class="line">        &#123;</span><br><span class="line">            SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line">            _class_initialize(_class_getNonMetaClass(cls, (id)newObj));</span><br><span class="line"></span><br><span class="line">            previouslyInitializedClass = cls;</span><br><span class="line"></span><br><span class="line">            goto retry;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Clean up old value, if any.</span><br><span class="line">    // 从 oldObj 的弱引用条目删除弱引用的地址</span><br><span class="line">    if (HaveOld) &#123;</span><br><span class="line">        weak_unregister_no_lock(&amp;oldTable-&gt;weak_table, oldObj, location);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Assign new value, if any.</span><br><span class="line">    // 把弱引用的地址注册到 newObj 的弱引用条目</span><br><span class="line">    if (HaveNew) &#123;</span><br><span class="line">        newObj = (objc_object *)weak_register_no_lock(&amp;newTable-&gt;weak_table,</span><br><span class="line">                                                      (id)newObj, location,</span><br><span class="line">                                                      CrashIfDeallocating);</span><br><span class="line">        // weak_register_no_lock returns nil if weak store should be rejected</span><br><span class="line"></span><br><span class="line">        // Set is-weakly-referenced bit in refcount table.</span><br><span class="line">        if (newObj  &amp;&amp;  !newObj-&gt;isTaggedPointer()) &#123;</span><br><span class="line">            newObj-&gt;setWeaklyReferenced_nolock();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // Do not set *location anywhere else. That would introduce a race.</span><br><span class="line">        *location = (id)newObj;</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // No new value. The storage is not changed.</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line"></span><br><span class="line">    return (id)newObj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <h2 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h2><ul>
 <li>SideTable 这个结构体 : 主要用于管理对象的引用计数和 weak 表</li>
 <li>&amp;SideTables()[oldObj] : 根据对象的地址在缓存中取出对应的 SideTable 实例<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">static StripedMap&lt;SideTable&gt;&amp; SideTables() &#123;</span><br><span class="line">    return *reinterpret_cast&lt;StripedMap&lt;SideTable&gt;*&gt;(SideTableBuf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -618,7 +923,7 @@
 <p>经过clang -rewrite-objc xx.m 之后得到 TestObject.cpp ，精简之后得到如下源码</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"> // @interface TestObject ()</span><br><span class="line"> // @property (nonatomic, strong) NSString *name;</span><br><span class="line"> /* @end */</span><br><span class="line"></span><br><span class="line">// @implementation TestObject</span><br><span class="line"></span><br><span class="line">struct __TestObject__test_block_impl_0 &#123;</span><br><span class="line">    struct __block_impl impl;</span><br><span class="line">    struct __TestObject__test_block_desc_0* Desc;</span><br><span class="line">    TestObject *self;</span><br><span class="line">    __TestObject__test_block_impl_0(void *fp, struct __TestObject__test_block_desc_0 *desc, TestObject *_self, int flags=0) : self(_self) &#123;</span><br><span class="line">        impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">        impl.Flags = flags;</span><br><span class="line">        impl.FuncPtr = fp;</span><br><span class="line">        Desc = desc;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">static void __TestObject__test_block_func_0(struct __TestObject__test_block_impl_0 *__cself) &#123;</span><br><span class="line">    TestObject *self = __cself-&gt;self; // bound by copy</span><br><span class="line"></span><br><span class="line">    NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_TestObject_b2287f_mi_0,((NSString *(*)(id, SEL))(void *)objc_msgSend)((id)self, sel_registerName(&quot;name&quot;)));</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">  //这里可以观察到，在test_block_impl中，block持有了对象TestObject *self;</span><br></pre></td></tr></table></figure>
 <h2 id="第二段"><a href="#第二段" class="headerlink" title="第二段"></a>第二段</h2><p> OC源码<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">@interface TestObject ()</span><br><span class="line">@end</span><br><span class="line">@implementation TestObject</span><br><span class="line"></span><br><span class="line">int global_i = 1;</span><br><span class="line">static int static_global_j = 2;</span><br><span class="line"></span><br><span class="line">- (void)test</span><br><span class="line">&#123;</span><br><span class="line">    static int static_global_k = 3;</span><br><span class="line">    __block int value = 4;</span><br><span class="line"></span><br><span class="line">    void(^pig)()= ^()&#123;</span><br><span class="line">        global_i++;</span><br><span class="line">        static_global_j++;</span><br><span class="line">        static_global_k++;</span><br><span class="line">        value++;</span><br><span class="line">         NSLog(@&quot;Block中 变量 = %d  %d %d %d&quot;, global_i,static_global_j,static_global_k,value);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    global_i++;</span><br><span class="line">    static_global_j++;</span><br><span class="line">    static_global_k++;</span><br><span class="line">    value++;</span><br><span class="line">    NSLog(@&quot;Block中 变量 = %d  %d %d %d&quot;, global_i,static_global_j,static_global_k,value);</span><br><span class="line"></span><br><span class="line">    pig();</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
-<p>经过编译之后，得到大致的源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">可见block里没有引用全局变量，静态全局变量</span><br><span class="line"></span><br><span class="line">struct __Block_byref_value_0 &#123;</span><br><span class="line">  void *__isa;</span><br><span class="line">__Block_byref_value_0 *__forwarding;</span><br><span class="line"> int __flags;</span><br><span class="line"> int __size;</span><br><span class="line"> int value;  //新增一个对象，与外部的value同名</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">struct __TestObject__test_block_impl_0 &#123;</span><br><span class="line">  struct __block_impl impl;</span><br><span class="line">  struct __TestObject__test_block_desc_0* Desc;</span><br><span class="line">  int *static_global_k;   </span><br><span class="line">  __Block_byref_value_0 *value; // by ref</span><br><span class="line">  __TestObject__test_block_impl_0(void *fp, struct __TestObject__test_block_desc_0 *desc, int *_static_global_k, __Block_byref_value_0 *_value, int flags=0) : static_global_k(_static_global_k), value(_value-&gt;__forwarding) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">在__TestObject__test_block_impl_0中</span><br><span class="line">static_global_k和__Block_byref_value_0 *value</span><br><span class="line">被Block从外面捕获进来，成为__TestObject__test_block_impl_0这个结构体的成员变量了。</span><br></pre></td></tr></table></figure></p>
+<p>经过编译之后，得到大致的源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">可见block里没有引用全局变量，静态全局变量，静态变量</span><br><span class="line"></span><br><span class="line">struct __Block_byref_value_0 &#123;</span><br><span class="line">  void *__isa;</span><br><span class="line">__Block_byref_value_0 *__forwarding;</span><br><span class="line"> int __flags;</span><br><span class="line"> int __size;</span><br><span class="line"> int value;  //新增一个对象，与外部的变量value同名</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">struct __TestObject__test_block_impl_0 &#123;</span><br><span class="line">  struct __block_impl impl;</span><br><span class="line">  struct __TestObject__test_block_desc_0* Desc;</span><br><span class="line">  int *static_global_k;   </span><br><span class="line">  __Block_byref_value_0 *value; // by ref</span><br><span class="line">  __TestObject__test_block_impl_0(void *fp, struct __TestObject__test_block_desc_0 *desc, int *_static_global_k, __Block_byref_value_0 *_value, int flags=0) : static_global_k(_static_global_k), value(_value-&gt;__forwarding) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">在__TestObject__test_block_impl_0中</span><br><span class="line">static_global_k和__Block_byref_value_0 *value</span><br><span class="line">被Block从外面捕获进来，成为__TestObject__test_block_impl_0这个结构体的成员变量了。</span><br></pre></td></tr></table></figure></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">static void __TestObject__test_block_func_0(struct __TestObject__test_block_impl_0 *__cself) &#123;</span><br><span class="line">  __Block_byref_value_0 *value = __cself-&gt;value; // bound by ref  </span><br><span class="line">  int *static_global_k = __cself-&gt;static_global_k; // bound by copy</span><br><span class="line"></span><br><span class="line">        global_i++;</span><br><span class="line">        static_global_j++;</span><br><span class="line">        (*static_global_k)++;</span><br><span class="line">        (value-&gt;__forwarding-&gt;value)++;</span><br><span class="line">         NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_TestObject_fb5e34_mi_0, global_i,static_global_j,(*static_global_k),(value-&gt;__forwarding-&gt;value));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <p>block捕获了自动变量value的值而不是地址，所以不会改变value在block外的值</p>
 <h2 id="循环引用"><a href="#循环引用" class="headerlink" title="循环引用"></a>循环引用</h2><p>OC代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">typedef void (^drink)();</span><br><span class="line"></span><br><span class="line">@interface Person : NSObject</span><br><span class="line">@property (nonatomic, strong) drink doDrink;</span><br><span class="line">@property (nonatomic, strong) NSString *eat;</span><br><span class="line">@end</span><br><span class="line">@implementation Person</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@interface BlockViewController ()</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation BlockViewController</span><br><span class="line"></span><br><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line"></span><br><span class="line">    Person *person = [[Person alloc] init];</span><br><span class="line">    person.eat = @&quot;山珍海味&quot;;</span><br><span class="line">    __weak typeof(Person*) weakSelf = person;</span><br><span class="line">    person.doDrink = ^&#123;</span><br><span class="line">        NSLog(@&quot;person eat = %@&quot;,weakSelf.eat);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
@@ -1440,304 +1745,13 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/04/MJRefresh解析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/04/MJRefresh解析/" itemprop="url">MJRefresh解析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-04T10:53:46+08:00">
-                2018-01-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="解析前阅读api"><a href="#解析前阅读api" class="headerlink" title="解析前阅读api"></a>解析前阅读api</h2><p>MJRefreshComponent.h</p>
-<p>1.MJRefreshState 有5个状态，如果我设计，只会想到4个， willRefresh和 pulling状态会认为是一致的<br>2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了</p>
-<p>解析前总结：<br>设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。<br>依据拖动的手势和位移，修改父类scrollView的contentSize，显示刷新控件和隐藏控件，调用刷新的方法和回调方法即可。</p>
-<h2 id="疑问code"><a href="#疑问code" class="headerlink" title="疑问code"></a>疑问code</h2><p>beginRefreshing方法里，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (self.window) &#123;</span><br><span class="line">    self.state = MJRefreshStateRefreshing;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>有时候window为null，原因是view没有完全加载完成或者在ViewDidload中才刚刚加载完,view的window属性无法被获取<br>正确应该使用UIApplication.keywindow</p>
-<h2 id="文件结构功能图-Github上已有-http-t-cn-RYHwK6n"><a href="#文件结构功能图-Github上已有-http-t-cn-RYHwK6n" class="headerlink" title="文件结构功能图 Github上已有(http://t.cn/RYHwK6n)"></a>文件结构功能图 Github上已有(<a href="http://t.cn/RYHwK6n" target="_blank" rel="noopener">http://t.cn/RYHwK6n</a>)</h2><p><strong>MJRefreshComponent</strong> 这个类作为该控件的基类，涵盖了基类所具备的一些：状态，回调block，子类继承的方法等</p>
-<p>##Header<br><strong>MJRefreshHeader</strong>    MJRefreshHeader继承于MJRefreshComponent，它做了这几件事：初始化方法，初始化y和高度，状态切换等</p>
-<p>疑问点:<br>一开始不明白基类MJRefreshComponent为什么申明的状态有五个<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">/** 刷新控件的状态 */</span><br><span class="line">typedef NS_ENUM(NSInteger, MJRefreshState) &#123;</span><br><span class="line">    /** 普通闲置状态 */</span><br><span class="line">    MJRefreshStateIdle = 1,</span><br><span class="line">    /** 松开就可以进行刷新的状态 */</span><br><span class="line">    MJRefreshStatePulling,</span><br><span class="line">    /** 正在刷新中的状态 */</span><br><span class="line">    MJRefreshStateRefreshing,</span><br><span class="line">    /** 即将刷新的状态 */</span><br><span class="line">    MJRefreshStateWillRefresh,</span><br><span class="line">    /** 所有数据加载完毕，没有更多的数据了 */</span><br><span class="line">    MJRefreshStateNoMoreData</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>以为MJRefreshStatePulling是多余的，我设计的话应该只会有4个，<br>现在明白了，header刷新的时候，状态切换的因素有两个：一个是下拉的距离是否超过临界值，另一个是 手指是否离开屏幕。<br>即使在下拉的距离超过了临界距离（状态栏 + 导航栏 + header高度），如果手指没有离开屏幕，那么也不能马上进行刷新，而是将状态切换为：可以刷新。<br>一旦手指离开了屏幕，马上将状态切换为正在刷新。</p>
-<p><strong>MJRefreshStateHeader</strong> 带有状态文字的刷新控件<br>stateLabel 和 lastUpdatedTimeLabel ，根据状态的切换变化内容，显示时间的label还可以依据用户自定义的日期格式显示，<br>lastUpdatedTimeLabel可以隐藏</p>
-<p><strong>MJRefreshNormalHeader</strong> 带有_arrowView和loadingView<br>根据刷新的state来隐藏和显示这两个视图</p>
-<p><strong>MJRefreshGifHeader</strong> 左侧是一个gif动画<br>可以根据不同状态配置不同的照片和动画时间</p>
-<p>##Footer</p>
-<p><strong>MJRefreshFooter:</strong><br>与header相比，只是多了设置MJRefreshStateNoMoreData状态</p>
-<p>提供以下几个功能:<br>初始化视图<br>没有数据时候重设对应状态<br>没有数据时候对应的操作<br>是否支持自动隐藏视图，如果支持，将替换系统的reloadData方法为自定义的方法，内部实现是多执行一句mj_reloadDataBlock回调</p>
-<p>在视图添加或者移除的时候，设置setMj_reloadDataBlock方法，之前奇怪为什么header的时候没有，这个功能是为了刷新数据结束的时候根据当前的cell个数（tableview或collectionview的数据源为空）来判断是否需要隐藏footerView</p>
-<p><strong>MJRefreshBackFooter</strong> 需要上拉才会触发刷新动作<br>当状态结束，恢复初始状态 （？？？ 回弹体现什么）<br><strong>MJRefreshAutoFooter</strong> 自动上拉加载类。滑动到底部触发刷新动作，无需上拉操作。<br>triggerAutomaticallyRefreshPercent 底部控件出现多少就开始自动刷新<br>automaticallyRefresh 是否自动刷新，默认YES</p>
-<p><strong>MJRefreshBackStateFooter</strong> 提供label ，可以设置不同状态下的标签内容<br><strong>MJRefreshBackNormalFooter</strong> 提供箭头和loading圆圈，根据状态显示和隐藏<br><strong>MJRefreshBackGifFooter</strong> 提供设置gif动画的一组图片</p>
-<p><strong>MJRefreshAutoStateFooter</strong> 相比较MJRefreshBackStateFooter，给stateLabel添加了手势，当点击的时候如果当前是默认状态就执行刷新<br><strong>MJRefreshAutoNormalFooter</strong> 提供箭头和loading圆圈，根据状态显示和隐藏<br><strong>MJRefreshAutoGifFooter</strong> 提供设置gif动画的一组图片</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>MJRefreshHeader: 负责header的高度和调整header自身在外部的位置。<br>MJRefreshStateHeader:负责header内部的stateLabel和lastUpdatedTimeLabel的布局和不同状态下内部文字的显示。<br>MJRefreshNormalHeader:负责header内部的loadingView以及arrowView的布局和不同状态下的显示。<br>MJRefreshGifHeader:负责header内部的Gif动画的布局和不同状态下的显示。</p>
-<p>MJRefreshFooter: 负责footer高度和监听scrollView数据的变化<br>MJRefreshBackFooter:跟Header的封装思路是一样的<br>MJRefreshAutoFooter:类似于MJRefreshHeader类的功能</p>
-<p>以下设计思路和对应的header一致<br>MJRefreshBackStateFooter：封装思路类似于MJRefreshStateHeader<br>MJRefreshBackNormalFooter：封装思路类似于MJRefreshNormalHeader<br>MJRefreshBackGifFooter：封装思路类似于MJRefreshGifHeader<br>MJRefreshAutoStateFooter：封装思路类似于MJRefreshStateHeader<br>MJRefreshAutoNormalFooter：封装思路类似于MJRefreshNormalHeader<br>MJRefreshAutoGifFooter：封装思路类似于MJRefreshGifHeader</p>
-<p>通过一个基类来定义一些状态和一些需要子类实现的接口。通过一层一层地继承，让每一层的子类各司其职，只完成真正属于自己的任务，提高了框架的可定制性，而且对于功能的扩展和bug的追踪也很有帮助，非常值得我们参考与借鉴。</p>
-<p>##优秀code</p>
-<p>1.很多地方设置控件的frame的时候，都是通过先判断其约束的个数如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (self.lastUpdatedTimeLabel.constraints.count == 0) &#123;&#125;</span><br></pre></td></tr></table></figure>
-<p>然后再设置约束，就比较仔细</p>
-<p>2.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MJRefreshCheckState 状态检查，通过宏来与之前状态比较，一样就return</span><br></pre></td></tr></table></figure></p>
-<p>3.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">willMoveToSuperview方法，在里面判断移除之前的观察者</span><br></pre></td></tr></table></figure></p>
-<p>4.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (CGFloat)mj_textWith &#123;</span><br><span class="line">    CGFloat stringWidth = 0;</span><br><span class="line">    CGSize size = CGSizeMake(MAXFLOAT, MAXFLOAT);</span><br><span class="line">    if (self.text.length &gt; 0) &#123;</span><br><span class="line">#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) &amp;&amp; __IPHONE_OS_VERSION_MAX_ALLOWED &gt;= 70000</span><br><span class="line">        stringWidth =[self.text</span><br><span class="line">                      boundingRectWithSize:size</span><br><span class="line">                      options:NSStringDrawingUsesLineFragmentOrigin</span><br><span class="line">                      attributes:@&#123;NSFontAttributeName:self.font&#125;</span><br><span class="line">                      context:nil].size.width;</span><br><span class="line">#else</span><br><span class="line"></span><br><span class="line">        stringWidth = [self.text sizeWithFont:self.font</span><br><span class="line">                             constrainedToSize:size</span><br><span class="line">                                 lineBreakMode:NSLineBreakByCharWrapping].width;</span><br><span class="line">#endif</span><br><span class="line">    &#125;</span><br><span class="line">    return stringWidth;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>5.多语言设置</p>
-<h2 id="阅读资料："><a href="#阅读资料：" class="headerlink" title="阅读资料："></a>阅读资料：</h2><p><a href="http://www.jianshu.com/p/89ca6437c5e9" target="_blank" rel="noopener">http://www.jianshu.com/p/89ca6437c5e9</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/02/博客搭建/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/02/博客搭建/" itemprop="url">博客搭建</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-02T17:43:15+08:00">
-                2018-01-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h3><p>之前一直有在收集一些大神的博客，自己也肖想了一把建立自己的博客地址，于是乎就有了个开端</p>
-<p>在此之前，我也是小白一枚啊，遇到了一些非常浅显的坑，但是一直没有发现导致纠结了一下，整个整下来大概花了2小时吧 ~ ~ ~</p>
-<h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><p>首先安装些必备的环境是分分钟的事情啦，网上有相关教程的，如有问题请自行google</p>
-<ul>
-<li>Node.js</li>
-<li><p>Git (Xcode自带，可以绕行)</p>
-</li>
-<li><p>当Node.js和Git都安装好后就可以正式安装Hexo了，终端执行如下命令：<br>$ sudo npm install -g hexo</p>
-</li>
-<li><p>初始化</p>
-</li>
-</ul>
-<p>本地自己建立存放的文件夹，cd到当前文件目录下，执行以下命令<br>$ hexo init xxx (xxx 是你建立的文件夹名称。cd到xxx文件夹下，执行如下命令，安装npm：)<br>$ npm install<br>执行如下命令，开启hexo服务器:<br>$ hexo s<br>此时，浏览器中打开网址<a href="http://localhost:4000，" target="_blank" rel="noopener">http://localhost:4000，</a><br>能看到helloWorld的页面，此时本地显示已经OK<br>效果如图:<br><img src="/images/初建博客.png" alt="效果如图"></p>
-<ul>
-<li>管理github<br>建立自己的github账号之后，将mac下的ssh内容上传到setting里相应的位置<br>选择新建一个responsity，注意，命名非常重要，我就是在这里被卡了一小时的感觉<br>比如我的Github名称是pattyXP,但是建立的仓库名称，需要符合规则: github名称.github.io ，我一开始写错了，写成了patty.github.io，为此哀伤一下下 ~ ~ ~<br>然后，进入到该仓库的主页下，选择setting，滑到GitHub Pages一级，将source选择为master，点击save，这是为什么呢？（因为之前在本地文件下有一个.yml，打开后往下滑到最后，修改成下边的样子：<br>deploy:<br>  type: git<br>  repository: <a href="https://github.com/pattyXP/pattyXP.github.io.git" target="_blank" rel="noopener">https://github.com/pattyXP/pattyXP.github.io.git</a><br> branch: master）<br>然后打开自己的<a href="https://pattyxp.github.io/">https://pattyxp.github.io/</a><br>效果就和本地的localhost:4000一模一样了(😅)</li>
-</ul>
-<h2 id="后面的维护"><a href="#后面的维护" class="headerlink" title="后面的维护"></a>后面的维护</h2><p>hexo支持markdown语法，所以本地的文章可以使用markdown语法来编写，之后保存为xx.md即可，放在博客的文件夹下的source/_posts/xx.md即可<br>最后，执行如下命令就可以上传成功了<br>hexo new xxx<br>hexo g （生成静态页面）<br>hexo d  (将文章部署到Github)</p>
-<h2 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h2><p>可能还需要用到的命令<br>hexo clean<br>hexo d -g</p>
-<h2 id="参考教程"><a href="#参考教程" class="headerlink" title="参考教程"></a>参考教程</h2><p>博客搭建教程: <a href="http://jeasonstudio.github.io" target="_blank" rel="noopener">http://jeasonstudio.github.io</a><br>博客主题搭建: <a href="http://theme-next.iissnan.com/getting-started.html" target="_blank" rel="noopener">http://theme-next.iissnan.com/getting-started.html</a><br>博客主题定制化: <a href="http://shenzekun.cn/" target="_blank" rel="noopener">http://shenzekun.cn/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+  </nav>
+
 
 
           </div>
@@ -1781,7 +1795,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1794,7 +1808,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">5</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -1869,7 +1883,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共10.2k字</span>
+<span class="post-count"> 博客全站共13.0k字</span>
 </div>
 
 
