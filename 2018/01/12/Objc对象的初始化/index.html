@@ -105,7 +105,7 @@
 <meta property="og:description" content="本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试  alloc先看下大致的流程 断点首先进入 NSObject.mm中1234567891011121314151617181920212223+ (id)alloc &amp;">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/alloc流程图.png">
-<meta property="og:updated_time" content="2018-01-13T03:29:17.000Z">
+<meta property="og:updated_time" content="2018-01-13T05:39:49.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc对象的初始化">
 <meta name="twitter:description" content="本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试  alloc先看下大致的流程 断点首先进入 NSObject.mm中1234567891011121314151617181920212223+ (id)alloc &amp;">
@@ -360,7 +360,7 @@
 
 __builtin_expect的作用
   这个指令是gcc引入的，作用是&quot;允许程序员将最有可能执行的分支告诉编译器&quot;。这个指令的写法为：__builtin_expect(EXP, N)。意思是：EXP==N的概率很大。一般的使用方法是将__builtin_expect指令封装为宏
-</code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文内容还是比较简单的，对象的初始化，只是分配内存空间，初始化isa结构体，isa的初始化，可以查看另一篇文章<a href="_posts/isa的存在.md">isa的存在</a></p>
+</code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文内容还是比较简单的，对象的初始化，只是分配内存空间，初始化isa结构体，isa的初始化，可以查看另一篇文章isa的存在</p>
 <h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2>
       
     </div>
