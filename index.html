@@ -275,6 +275,145 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/12/Objc对象的初始化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/12/Objc对象的初始化/" itemprop="url">Objc对象的初始化</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-12T14:13:13+08:00">
+                2018-01-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <blockquote>
+<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试</p>
+</blockquote>
+<h2 id="alloc"><a href="#alloc" class="headerlink" title="alloc"></a>alloc</h2><p>先看下大致的流程<br><img src="/images/alloc流程图.png" alt="alloc流程"></p>
+<p>断点首先进入 NSObject.mm中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">+ (id)alloc &#123;</span><br><span class="line">    return _objc_rootAlloc(self);</span><br><span class="line">&#125;</span><br><span class="line">id</span><br><span class="line">_objc_rootAlloc(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    return callAlloc(cls, false/*checkNil*/, true/*allocWithZone*/);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static ALWAYS_INLINE id</span><br><span class="line">callAlloc(Class cls, bool checkNil, bool allocWithZone=false)</span><br><span class="line">&#123;</span><br><span class="line">    if (slowpath(checkNil &amp;&amp; !cls)) return nil; //根据传参，此行不执行</span><br><span class="line"></span><br><span class="line">#if __OBJC2__</span><br><span class="line">    if (fastpath(!cls-&gt;ISA()-&gt;hasCustomAWZ())) &#123;</span><br><span class="line">            bool dtor = cls-&gt;hasCxxDtor();</span><br><span class="line">            id obj = (id)calloc(1, cls-&gt;bits.fastInstanceSize());</span><br><span class="line">            if (slowpath(!obj)) return callBadAllocHandler(cls);</span><br><span class="line">            obj-&gt;initInstanceIsa(cls, dtor);</span><br><span class="line">            return obj;</span><br><span class="line">      ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>执行断点调试，发现最终调用class_createInstance<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line">class_createInstance(Class cls, size_t extraBytes)</span><br><span class="line">&#123;</span><br><span class="line">    return _class_createInstanceFromZone(cls, extraBytes, nil);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>对象初始化中最重要的操作都在_class_createInstanceFromZone 方法中执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static __attribute__((always_inline))</span><br><span class="line">id</span><br><span class="line">_class_createInstanceFromZone(Class cls, size_t extraBytes, void *zone,</span><br><span class="line">                              bool cxxConstruct = true,</span><br><span class="line">                              size_t *outAllocatedSize = nil)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    size_t size = cls-&gt;instanceSize(extraBytes);</span><br><span class="line"></span><br><span class="line">    id obj;</span><br><span class="line">    if (!zone  &amp;&amp;  fast) &#123;</span><br><span class="line">        obj = (id)calloc(1, size);</span><br><span class="line">        if (!obj) return nil;</span><br><span class="line">        obj-&gt;initInstanceIsa(cls, hasCxxDtor);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>到此，alloc方法执行完毕，所以重点就是分配了一块内存空间，初始化isa<br>在分配空间之前，需要先获取cls实例内存空间的大小，方法cls-&gt;instanceSize可以分析下</p>
+<p>可见这是按照16字节对齐的方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">size_t instanceSize(size_t extraBytes) &#123;</span><br><span class="line">       size_t size = alignedInstanceSize() + extraBytes;</span><br><span class="line">       // CF requires all objects be at least 16 bytes.</span><br><span class="line">       if (size &lt; 16) size = 16;</span><br><span class="line">       return size;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// Class&apos;s ivar size rounded up to a pointer-size boundary.</span><br><span class="line">uint32_t alignedInstanceSize() &#123;</span><br><span class="line">    return word_align(unalignedInstanceSize());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static inline uint32_t word_align(uint32_t x) &#123;</span><br><span class="line">    return (x + WORD_MASK) &amp; ~WORD_MASK;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// May be unaligned depending on class&apos;s ivars.</span><br><span class="line">uint32_t unalignedInstanceSize() &#123;</span><br><span class="line">    assert(isRealized());</span><br><span class="line">    return data()-&gt;ro-&gt;instanceSize;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>拿到对象的大小之后，calloc分配空间，然后初始化对象的initIsa<br>obj-&gt;initInstanceIsa(cls, hasCxxDtor);进行对象的isa结构体初始化<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">inline void</span><br><span class="line">objc_object::initInstanceIsa(Class cls, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!cls-&gt;instancesRequireRawIsa());</span><br><span class="line">    assert(hasCxxDtor == cls-&gt;hasCxxDtor());</span><br><span class="line"></span><br><span class="line">    initIsa(cls, true, hasCxxDtor);</span><br><span class="line">&#125;</span><br><span class="line">inline void</span><br><span class="line">objc_object::initIsa(Class cls, bool nonpointer, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">        ...</span><br><span class="line">        isa_t newisa(0);</span><br><span class="line">        ...</span><br><span class="line">        newisa.bits = ISA_MAGIC_VALUE;</span><br><span class="line">        newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">        newisa.shiftcls = (uintptr_t)cls &gt;&gt; 3;</span><br><span class="line">        isa = newisa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="init"><a href="#init" class="headerlink" title="init"></a>init</h2><p>可见init只是返回了当前的对象obj<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- (id)init &#123;</span><br><span class="line">    return _objc_rootInit(self);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">id</span><br><span class="line">_objc_rootInit(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    // In practice, it will be hard to rely on this function.</span><br><span class="line">    // Many classes do not properly chain -init calls.</span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><pre><code>#define fastpath(x) (__builtin_expect(bool(x), 1))
+#define slowpath(x) (__builtin_expect(bool(x), 0))
+
+__builtin_expect的作用
+  这个指令是gcc引入的，作用是&quot;允许程序员将最有可能执行的分支告诉编译器&quot;。这个指令的写法为：__builtin_expect(EXP, N)。意思是：EXP==N的概率很大。一般的使用方法是将__builtin_expect指令封装为宏
+</code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文内容还是比较简单的，对象的初始化，只是分配内存空间，初始化isa结构体，isa的初始化，可以查看另一篇文章<a href="./isa的存在.md">isa的存在</a></p>
+<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/11/图片压缩算法/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1577,180 +1716,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/04/YYImage解析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/04/YYImage解析/" itemprop="url">YYImage解析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-04T11:00:02+08:00">
-                2018-01-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>文件结构图如下:</p>
-<p><img src="/images/YYImage文件结构.png" alt="YYImage文件结构"></p>
-<h2 id="解析前api阅读实现思路"><a href="#解析前api阅读实现思路" class="headerlink" title="解析前api阅读实现思路:"></a>解析前api阅读实现思路:</h2><p>视图层<br>YYImage ：用于生成单张图片，可以根据图片的名称或者路径或者data实例化，接口和UIIImage相似<br>YYFrameImage: 用于记录一组图片，可以传入图片的数组、时间间隔数组，循环的次数，默认显示首图并初始化参数<br>YYSpriteSheetImage: 传入单张大图片，以及一组图片的每帧显示内容区域、图片显示的时间、循环的次数</p>
-<p>显示层<br>YYAnimatedImageView</p>
-<p>图片解码层<br>YYImageCoder</p>
-<p>图片生成相对简单，对于多帧处理，以前很少接触，内存缓存和显示（编码解码方面）也都陌生些，<br>其实是有UIImageView来显示图片，动图可能含有多图或者多帧，所以需要动画来轮播，根据每张图片需要显示的动画时间来设置<br>阅读源码感受，实现比较优化，使用的预加载内存的方式提高效率，设置缓冲区，设置显示图片，如果没有就加入队列请求，开始重绘，播放动画。</p>
-<p>##源码解读：</p>
-<p>###YYImage</p>
-<p><strong>支持的图片类型</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">typedef NS_ENUM(NSUInteger, YYImageType) &#123;</span><br><span class="line">    YYImageTypeUnknown = 0, ///&lt; unknown</span><br><span class="line">    YYImageTypeJPEG,        ///&lt; jpeg, jpg</span><br><span class="line">    YYImageTypeJPEG2000,    ///&lt; jp2</span><br><span class="line">    YYImageTypeTIFF,        ///&lt; tiff, tif</span><br><span class="line">    YYImageTypeBMP,         ///&lt; bmp</span><br><span class="line">    YYImageTypeICO,         ///&lt; ico</span><br><span class="line">    YYImageTypeICNS,        ///&lt; icns</span><br><span class="line">    YYImageTypeGIF,         ///&lt; gif</span><br><span class="line">    YYImageTypePNG,         ///&lt; png</span><br><span class="line">    YYImageTypeWebP,        ///&lt; webp</span><br><span class="line">    YYImageTypeOther,       ///&lt; other image format</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h3 id="YYFrameImage"><a href="#YYFrameImage" class="headerlink" title="YYFrameImage"></a>YYFrameImage</h3><p>专门用来显示基于帧的动画图像类<br>仅支持系统图片格式例如 png 和 jpeg<br>YYFrameImage 可以把静态图片类型如 png 和 jpeg 格式的静态图像用帧切换的方式以动态图片的形式显示，并且提供了 4 个常用的初始化方法方便我们使用。如:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (nullable instancetype)initWithImagePaths:(NSArray&lt;NSString *&gt; *)paths</span><br><span class="line">                           oneFrameDuration:(NSTimeInterval)oneFrameDuration</span><br><span class="line">                                  loopCount:(NSUInteger)loopCount;</span><br><span class="line">- (nullable instancetype)initWithImagePaths:(NSArray&lt;NSString *&gt; *)paths</span><br><span class="line">                             frameDurations:(NSArray&lt;NSNumber *&gt; *)frameDurations</span><br><span class="line">                                  loopCount:(NSUInteger)loopCount;</span><br><span class="line">- (nullable instancetype)initWithImageDataArray:(NSArray&lt;NSData *&gt; *)dataArray</span><br><span class="line">                               oneFrameDuration:(NSTimeInterval)oneFrameDuration</span><br><span class="line">                                      loopCount:(NSUInteger)loopCount;</span><br><span class="line">- (nullable instancetype)initWithImageDataArray:(NSArray&lt;NSData *&gt; *)dataArray</span><br><span class="line">                                 frameDurations:(NSArray *)frameDurations</span><br><span class="line">                                      loopCount:(NSUInteger)loopCount;</span><br></pre></td></tr></table></figure></p>
-<p>疑问code</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">- (UIImage *)animatedImageFrameAtIndex:(NSUInteger)index &#123;</span><br><span class="line">    if (_imagePaths) &#123;</span><br><span class="line">        ...</span><br><span class="line">        return [[UIImage imageWithData:data scale:scale] imageByDecoded];</span><br><span class="line">        //Q:为什么需要实现imageByDecoded</span><br><span class="line">        //A:解码 否则只是先加载进入内存</span><br><span class="line">       ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (instancetype)imageByDecoded &#123;</span><br><span class="line">    if (self.isDecodedForDisplay) return self;//第一次decodecopy之后，下一次就不需要进行了</span><br><span class="line"></span><br><span class="line">    CGImageRef imageRef = self.CGImage;</span><br><span class="line">    if (!imageRef) return self;</span><br><span class="line"></span><br><span class="line">    CGImageRef newImageRef = YYCGImageCreateDecodedCopy(imageRef, YES);</span><br><span class="line">    if (!newImageRef) return self;</span><br><span class="line"></span><br><span class="line">    UIImage *newImage = [[self.class alloc] initWithCGImage:newImageRef scale:self.scale orientation:self.imageOrientation];</span><br><span class="line">    CGImageRelease(newImageRef);</span><br><span class="line">    if (!newImage) newImage = self; // decode failed, return self.</span><br><span class="line">    newImage.isDecodedForDisplay = YES;</span><br><span class="line">    return newImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>###YYSpriteSheetImage<br>提供一个初始化方法</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (nullable instancetype)initWithSpriteSheetImage:(UIImage *)image</span><br><span class="line">                                     contentRects:(NSArray&lt;NSValue *&gt; *)contentRects</span><br><span class="line">                                   frameDurations:(NSArray&lt;NSNumber *&gt; *)frameDurations</span><br><span class="line">                                        loopCount:(NSUInteger)loopCount;</span><br><span class="line"></span><br><span class="line">一个实例方法</span><br><span class="line">- (CGRect)contentsRectForCALayerAtIndex:(NSUInteger)index;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">- (CGRect)contentsRectForCALayerAtIndex:(NSUInteger)index &#123;</span><br><span class="line">    CGRect layerRect = CGRectMake(0, 0, 1, 1);</span><br><span class="line">    if (index &gt;= _contentRects.count) return layerRect; //校验入参索引</span><br><span class="line"></span><br><span class="line">    CGSize imageSize = self.size;</span><br><span class="line">    CGRect rect = [self animatedImageContentsRectAtIndex:index];//找到对应索引的真实位置 RealRect</span><br><span class="line">    if (imageSize.width &gt; 0.01 &amp;&amp; imageSize.height &gt; 0.01) &#123;</span><br><span class="line">        layerRect.origin.x = rect.origin.x / imageSize.width;</span><br><span class="line">        layerRect.origin.y = rect.origin.y / imageSize.height;</span><br><span class="line">        layerRect.size.width = rect.size.width / imageSize.width;</span><br><span class="line">        layerRect.size.height = rect.size.height / imageSize.height;//得到指定索引帧的逻辑定位 LogicRect</span><br><span class="line">        layerRect = CGRectIntersection(layerRect, CGRectMake(0, 0, 1, 1));//确保逻辑定位没有超出画布的部分</span><br><span class="line">        if (CGRectIsNull(layerRect) || CGRectIsEmpty(layerRect)) &#123;</span><br><span class="line">            layerRect = CGRectMake(0, 0, 1, 1);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return layerRect;//将处理后的逻辑定位 LogicRect 作为图层定位 LayerRect 返回</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">根据索引找到对应帧的 CALayer 位置，该接口返回一个由 0.0~1.0 之间的数值组成的图层定位 LayerRect</span><br></pre></td></tr></table></figure>
-<p>###YYAnimatedImageView</p>
-<h4 id="图片更改4步骤"><a href="#图片更改4步骤" class="headerlink" title="图片更改4步骤:"></a>图片更改4步骤:</h4><p>改变图片<br>重置动画<br>初始化动画参数<br>重绘</p>
-<h4 id="YYAnimatedImageView"><a href="#YYAnimatedImageView" class="headerlink" title="YYAnimatedImageView"></a>YYAnimatedImageView</h4><p>使图片动起来是依靠 CADisplayLink</p>
-<p>变量切换帧图像，其内部的实现逻辑可以简单理解为：<br>根据当前帧索引推出下一帧索引<br>使用下一帧索引去帧缓冲区尝试获取对应帧图像<br>如果找到对应帧图像则使用渲染绘制功能<br>如果没找到则根据条件向图片请求队列加入请求操作</p>
-<h4 id="值得一提的实现细节"><a href="#值得一提的实现细节" class="headerlink" title="值得一提的实现细节"></a>值得一提的实现细节</h4><p>YYAnimatedImageView 实现<br>&gt;<br>对帧缓冲区_buffer 的操作都使用_lock 上锁<br>通过将图片请求队列_requestQueue 的 maxConcurrentOperationCount 设置为 1 使图片请求队列成为串行队列（最大并发数为 1）<br>图片请求队列中加入的操作均为_YYAnimatedImageViewFetchOperation<br>为了避免使用 CADisplayLink 可能造成的循环引用设计了_YYImageWeakProxy</p>
-<p>YYAnimatedImageViewFetchOperation</p>
-<p>####这里简单描述一下 main 函数内部实现逻辑：<br>&gt;<br>判断帧缓冲区大小<br>扫描下一帧以及当前允许缓冲范围内之后的帧图片<br>如果发现丢失的帧则尝试重新获取帧图像并加入到帧缓冲<br>操作中对于 view 缓冲区的操作也都上了锁<br>操作由于是放入图片请求队列中进行的，内部有对 isCancelled 做判断，如果操作已经被取消（发生在更改图片、停止动画、手动更改当前帧、收到内存警告或 App 进入后台等）则需要及时跳出<br>对于新的线程优先级只在 main 方法范围内有效，所以推荐把操作的实现放在 main 中而非 start（如需覆盖 start 方法时，需要关注 isExecuting 和 isFinished 两个 key paths）</p>
-<h2 id="疑问code"><a href="#疑问code" class="headerlink" title="疑问code"></a>疑问code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"> LOCK(</span><br><span class="line">         if (_buffer.count) &#123;</span><br><span class="line">             NSMutableDictionary *holder = _buffer;</span><br><span class="line">             _buffer = [NSMutableDictionary new];</span><br><span class="line">             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^&#123;</span><br><span class="line">                 // Capture the dictionary to global queue,</span><br><span class="line">                 // release these images in background to avoid blocking UI thread.</span><br><span class="line">                 [holder class];</span><br><span class="line">             &#125;);</span><br><span class="line">         &#125;</span><br><span class="line">    );</span><br><span class="line">Q:怎么做到的  [holder class]怎么就能够release these images</span><br><span class="line">A: 每个异步线程，其实内部都有一个对应的autoreleasePool，当执行 [holder class]，这个holder类就被放进了当前的线程池，当方法结束，线程池就将改对象进行释放，因此buffer里的数据也就慢慢清掉了，缓存的图片数据就不占用内存空间了</span><br></pre></td></tr></table></figure>
-<p>##扩展 NSOperation</p>
-<ul>
-<li><p>执行主任务</p>
-<blockquote>
-<p>从最低限度上来说，每一个 operation 都应该至少实现以下两个方法：<br>1.一个自定义的初始化方法；<br>2.main 方法。</p>
-</blockquote>
-</li>
-<li><p>响应取消事件</p>
-</li>
-</ul>
-<blockquote>
-<p>当一个 operation 开始执行后，它会一直执行它的任务直到完成或被取消为止。我们可以在任意时间点取消一个 operation ，甚至是在它还未开始执行之前。为了让我们自定义的 operation 能够支持取消事件，我们需要在代码中定期地检查 isCancelled 方法的返回值，一旦检查到这个方法返回 YES ，我们就需要立即停止执行接下来的任务。根据苹果官方的说法，isCancelled 方法本身是足够轻量的，所以就算是频繁地调用它也不会给系统带来太大的负担。<br>The isCancelled method itself is very lightweight and can be called frequently without any significant performance penalty.<br>通常来说，当我们自定义一个 operation 类时，我们需要考虑在以下几个关键点检查 isCancelled 方法的返回值：<br>在真正开始执行任务之前；<br>至少在每次循环中检查一次，而如果一次循环的时间本身就比较长的话，则需要检查得更加频繁；<br>在任何相对来说比较容易中止 operation 的地方。<br>看到这里，我想你应该可以意识到一点，那就是尽管 operation 是支持取消操作的，但却并不是立即取消的，而是在你调用了 operation 的 cancel 方法之后的下一个 isCancelled 的检查点取消的。</p>
-</blockquote>
-<h2 id="YYImageCoder-源码解析"><a href="#YYImageCoder-源码解析" class="headerlink" title="YYImageCoder  源码解析"></a>YYImageCoder  源码解析</h2><p>主要就是对于图片的解压缩，解压缩到位图才能够正常的渲染，但是图片的解压缩一般都在显示的时候才会去做而且是在主线程，非常耗CPU，所以需要提前在子线程先进行解压缩操作是非常必要的</p>
-<p>这里主要就是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CG_EXTERN CGContextRef __nullable CGBitmapContextCreate(void * __nullable data,</span><br><span class="line">    size_t width, size_t height, size_t bitsPerComponent, size_t bytesPerRow,</span><br><span class="line">    CGColorSpaceRef cg_nullable space, uint32_t bitmapInfo)</span><br><span class="line">    CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0);</span><br></pre></td></tr></table></figure></p>
-<ul>
-<li>data ：如果不为 NULL ，那么它应该指向一块大小至少为 bytesPerRow * height 字节的内存；如果 为 NULL ，那么系统就会为我们自动分配和释放所需的内存，所以一般指定 NULL 即可；</li>
-<li>width 和 height ：位图的宽度和高度，分别赋值为图片的像素宽度和像素高度即可；</li>
-<li>bitsPerComponent ：像素的每个颜色分量使用的 bit 数，在 RGB 颜色空间下指定 8 即可；</li>
-<li>bytesPerRow ：位图的每一行使用的字节数，大小至少为 width * bytes per pixel 字节。有意思的是，当我们指定 0 时，系统不仅会为我们自动计算，而且还会进行 cache line alignment 的优化，更多信息可以查看 what is byte alignment (cache line alignment) for Core Animation? Why it matters? 和 Why is my image’s Bytes per Row more than its Bytes per Pixel times its Width? ，亲测可用；</li>
-<li>space ：就是我们前面提到的颜色空间，一般使用 RGB 即可；</li>
-<li>bitmapInfo ：就是我们前面提到的位图的布局信息。</li>
-</ul>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>图片动图的切换绘制，使用递归锁，信号量,线程和缓冲区提高效率<br>支持的图片类型非常丰富<br>编码解码看着很复杂，绘图</p>
-<p>代码封装性好，接口很简单，实现很逻辑</p>
-<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="http://www.jianshu.com/p/9601a4b8d01c" target="_blank" rel="noopener">http://www.jianshu.com/p/9601a4b8d01c</a></p>
-<p><a href="http://www.leichunfeng.com/" target="_blank" rel="noopener">http://www.leichunfeng.com/</a></p>
-<p>YYImagecoder源码解析:<a href="http://www.jianshu.com/p/b1750084c7a5" target="_blank" rel="noopener">http://www.jianshu.com/p/b1750084c7a5</a>  </p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1801,7 +1766,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">12</span>
+                <span class="site-state-item-count">13</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1814,7 +1779,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -1889,7 +1854,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共13.1k字</span>
+<span class="post-count"> 博客全站共13.8k字</span>
 </div>
 
 
