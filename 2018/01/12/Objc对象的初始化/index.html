@@ -96,19 +96,19 @@
 
 
 
-<meta name="description" content="本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试  alloc先看下大致的流程 断点首先进入 NSObject.mm中1234567891011121314151617181920212223+ (id)alloc &amp;">
+<meta name="description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试  alloc先看下大致的流程 断点首先进入 NSObject.m">
 <meta name="keywords" content="源码分析">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Objc对象的初始化">
 <meta property="og:url" content="https://pattyxp.github.io/2018/01/12/Objc对象的初始化/index.html">
 <meta property="og:site_name" content="温暖的弦">
-<meta property="og:description" content="本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试  alloc先看下大致的流程 断点首先进入 NSObject.mm中1234567891011121314151617181920212223+ (id)alloc &amp;">
+<meta property="og:description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试  alloc先看下大致的流程 断点首先进入 NSObject.m">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/alloc流程图.png">
-<meta property="og:updated_time" content="2018-01-13T05:39:49.000Z">
+<meta property="og:updated_time" content="2018-01-15T10:01:41.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc对象的初始化">
-<meta name="twitter:description" content="本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试  alloc先看下大致的流程 断点首先进入 NSObject.mm中1234567891011121314151617181920212223+ (id)alloc &amp;">
+<meta name="twitter:description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试  alloc先看下大致的流程 断点首先进入 NSObject.m">
 <meta name="twitter:image" content="https://pattyxp.github.io/images/alloc流程图.png">
 
 
@@ -344,7 +344,8 @@
       
 
       
-        <blockquote>
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
+<blockquote>
 <p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试</p>
 </blockquote>
 <h2 id="alloc"><a href="#alloc" class="headerlink" title="alloc"></a>alloc</h2><p>先看下大致的流程<br><img src="/images/alloc流程图.png" alt="alloc流程"></p>
@@ -361,7 +362,7 @@
 __builtin_expect的作用
   这个指令是gcc引入的，作用是&quot;允许程序员将最有可能执行的分支告诉编译器&quot;。这个指令的写法为：__builtin_expect(EXP, N)。意思是：EXP==N的概率很大。一般的使用方法是将__builtin_expect指令封装为宏
 </code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文内容还是比较简单的，对象的初始化，只是分配内存空间，初始化isa结构体，isa的初始化，可以查看另一篇文章isa的存在</p>
-<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2>
+
       
     </div>
     
@@ -412,6 +413,10 @@ __builtin_expect的作用
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/13/initialize的分析/" rel="prev" title="initialize的分析">
+                initialize的分析 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -488,7 +493,7 @@ __builtin_expect的作用
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-count">16</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -543,7 +548,7 @@ __builtin_expect的作用
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#alloc"><span class="nav-number">1.</span> <span class="nav-text">alloc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#init"><span class="nav-number">2.</span> <span class="nav-text">init</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补充"><span class="nav-number">3.</span> <span class="nav-text">补充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#链接"><span class="nav-number">5.</span> <span class="nav-text">链接</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#alloc"><span class="nav-number">2.</span> <span class="nav-text">alloc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#init"><span class="nav-number">3.</span> <span class="nav-text">init</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补充"><span class="nav-number">4.</span> <span class="nav-text">补充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
             
 
           </div>
@@ -592,7 +597,7 @@ __builtin_expect的作用
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共13.8k字</span>
+<span class="post-count"> 博客全站共16.6k字</span>
 </div>
 
 

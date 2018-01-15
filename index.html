@@ -275,6 +275,450 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/15/Objc消息的发送和查找/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/15/Objc消息的发送和查找/" itemprop="url">Objc消息的发送和查找</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-15T14:17:14+08:00">
+                2018-01-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
+<blockquote>
+<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行</p>
+</blockquote>
+<h2 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h2><p>在main.m中实现如下代码，添加断点查看XXObject调用hello方法的执行流程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#import &quot;objc-runtime.h&quot;</span><br><span class="line">@interface XXObject: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation XXObject</span><br><span class="line">- (void)hello</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;hello&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        XXObject *obj = [[XXObject alloc] init];</span><br><span class="line">        [obj hello];//lldb  p (void *)@selector(hello) 方法也是在编译期间地址就确定了</span><br><span class="line">                    //lldb  (void *) $1 = 0x0000000100000f9c</span><br><span class="line">        [obj hello];//已经缓存过，直接从缓存取，走的是汇编代码，断点直接到方法实现了</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><img src="/images/Objc消息缓存查找.png" alt="Objc消息缓存查找流程"></p>
+<p>方法先是通过 objc_msgSend_uncached去查找是否有方法的缓存，这个时候断点都没有走到，可见在编译阶段就可以去查找方法的缓存了，也就是说方法的地址在编译期间就已经确定了，和类在内存中的地址是一样的，下面去验证这一说法的正确性</p>
+<p>点进去可以看到，是使用的汇编语言执行的，以此来提高查找速度<br>在主函数中，任意断点处，打印lldb<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p (void *)@selector(hello)</span><br><span class="line">(void *) $1 = 0x0000000100000f8c</span><br><span class="line">(lldb) p (void *)@selector(undefined_hello)</span><br><span class="line">(void *) $2 = 0x000000010290ced0</span><br></pre></td></tr></table></figure></p>
+<p>可见在代码中，没有显示的申明方法undefined_hello，导致内存地址和已经申明的方法hello还是有些差距的，undefined_hello选择子是在运行时确定的，因此再次显示申明一次方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">main.m</span><br><span class="line">  __unused SEL sel = @selector(undefined_hello);</span><br><span class="line">  XXObject *obj = [[XXObject alloc] init];</span><br><span class="line">  [obj hello];</span><br><span class="line"></span><br><span class="line">lldb打印</span><br><span class="line">(lldb) p (void *)@selector(hello)</span><br><span class="line">(void *) $0 = 0x0000000100000f8c</span><br><span class="line">(lldb) p (void *)@selector(undefined_hello)</span><br><span class="line">(void *) $1 = 0x0000000100000f92</span><br></pre></td></tr></table></figure></p>
+<p>两个选择子内存地址已经想差不大了<br>由此可以得出猜测:<br>1.通过@selector打印选择子的地址，而不是通过hello方法的内存地址，可见在OC中有一份巨大的选择子表<br>2.只需要传入sel的name,就可以去查找对应的选择自内存地址，如果没有找到，就会自动生成一个SEL并插入到表中<br>3.在编译期间就可以把所有的头文件和实现文件中的方法和@selector()方式调用的sel都插入到表中</p>
+<p>在init方法执行前，打断点<br><img src="/images/Objc选择子地址.png" alt="Objc选择子地址"><br>打印选择子hello的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p SEL(0x0000000100000f8c)</span><br><span class="line">(SEL) $2 = &quot;hello&quot;</span><br></pre></td></tr></table></figure></p>
+<h2 id="msgSend"><a href="#msgSend" class="headerlink" title="msgSend"></a>msgSend</h2><p>具体方法 OBJC_EXPORT id objc_msgSend(id self, SEL op, …)没有实现方法，是汇编语言实现的具体实现</p>
+<p>当编译器遇到一个方法调用时，它会将方法的调用翻译成以下函数中的一个 objc_msgSend、objc_msgSend_stret、objc_msgSendSuper 和 objc_msgSendSuper_stret。<br>发送给对象的父类的消息会使用 objc_msgSendSuper 有数据结构作为返回值的方法会使用 objc_msgSendSuper_stret 或 objc_msgSend_stret 其它的消息都是使用 objc_msgSend 发送的</p>
+<p>现在看下整个的主流程，在调用hello方法的地方，打上断点之后，<br>整个流程中，没有找到方法缓存时，会通过调用lookUpImpOrForward查找方法的实现，打开这个函数的断点，<br>这个函数主要做的事情如下:</p>
+<ul>
+<li>查找缓存中是否存在方法的实现</li>
+<li>如果类没有初始化完成，就会去分配正确的可读写结构体</li>
+<li>当前类和父类中查找方法实现</li>
+<li>方法决议</li>
+</ul>
+<ol>
+<li><p>查找缓存<br>由于参数传入cache为NO,这里其实是不执行的，在汇编objc_msgSend_uncached已经做了缓存处理了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (cache) &#123; //缓存中查找</span><br><span class="line">      imp = cache_getImp(cls, sel);</span><br><span class="line">      if (imp) return imp;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>类初始化和实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> if (!cls-&gt;isRealized()) &#123;</span><br><span class="line">     rwlock_writer_t lock(runtimeLock);</span><br><span class="line">     realizeClass(cls);//为类分配可读写结构体 class_rw_t 的空间，并返回正确的类结构体。</span><br><span class="line"> &#125;</span><br><span class="line"> if (initialize  &amp;&amp;  !cls-&gt;isInitialized()) &#123;</span><br><span class="line">    _class_initialize (_class_getNonMetaClass(cls, inst));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在当前类中查找，如果查找到了跳转done，否则去当前类查找search_method_list，查找到了调用log_and_fill_cache缓存该方法并跳转done</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">imp = cache_getImp(cls, sel);</span><br><span class="line">if (imp) goto done;</span><br><span class="line"></span><br><span class="line">// Try this class&apos;s method lists.</span><br><span class="line"></span><br><span class="line">meth = getMethodNoSuper_nolock(cls, sel);</span><br><span class="line">if (meth) &#123;</span><br><span class="line">    log_and_fill_cache(cls, meth-&gt;imp, sel, inst, cls);</span><br><span class="line">    imp = meth-&gt;imp;</span><br><span class="line">    goto done;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>去父类中查找方法，流程和3原理一致</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">curClass = cls;</span><br><span class="line">  while ((curClass = curClass-&gt;superclass)) &#123;</span><br><span class="line">      // Superclass cache.</span><br><span class="line">      imp = cache_getImp(curClass, sel);</span><br><span class="line">      if (imp) &#123;</span><br><span class="line">          if (imp != (IMP)_objc_msgForward_impcache) &#123;</span><br><span class="line">              log_and_fill_cache(cls, imp, sel, inst, curClass);</span><br><span class="line">              goto done;</span><br><span class="line">          &#125;</span><br><span class="line">          else &#123;</span><br><span class="line">              break;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      // Superclass method list.</span><br><span class="line">      meth = getMethodNoSuper_nolock(curClass, sel);</span><br><span class="line">      if (meth) &#123;</span><br><span class="line">          log_and_fill_cache(cls, meth-&gt;imp, sel, inst, curClass);</span><br><span class="line">          imp = meth-&gt;imp;</span><br><span class="line">          goto done;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">与当前类寻找实现的区别是：在父类中寻找到的 _objc_msgForward_impcache 实现会交给当前类来处理。</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>方法决议</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//在当前类和父类都没有找到对应的实现</span><br><span class="line">//判断当前类是否实现了 resolveInstanceMethod: 或者 resolveClassMethod: 方法，然后用objc_msgSend 执行sel，缓存方法</span><br><span class="line"></span><br><span class="line">if (resolver  &amp;&amp;  !triedResolver) &#123;</span><br><span class="line">    runtimeLock.unlockRead();</span><br><span class="line">    _class_resolveMethod(cls, sel, inst);</span><br><span class="line">    // Don&apos;t cache the result; we don&apos;t hold the lock so it may have</span><br><span class="line">    // changed already. Re-do the search from scratch instead.</span><br><span class="line">    triedResolver = YES;</span><br><span class="line">    goto retry;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>这部分调用_class_resolveMethod实现</p>
+<p>//如果当前类不是元类，调用_class_resolveInstanceMethod实现<br>否则，调用_class_resolveClassMethod<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">void _class_resolveMethod(Class cls, SEL sel, id inst)</span><br><span class="line">&#123;</span><br><span class="line">    if (! cls-&gt;isMetaClass()) &#123;</span><br><span class="line">        // try [cls resolveInstanceMethod:sel]</span><br><span class="line">        _class_resolveInstanceMethod(cls, sel, inst);</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // try [nonMetaClass resolveClassMethod:sel]</span><br><span class="line">        // and [cls resolveInstanceMethod:sel]</span><br><span class="line"></span><br><span class="line">        _class_resolveClassMethod(cls, sel, inst);</span><br><span class="line">        if (!lookUpImpOrNil(cls, sel, inst,</span><br><span class="line">                            NO/*initialize*/, YES/*cache*/, NO/*resolver*/))</span><br><span class="line">        &#123;</span><br><span class="line">            _class_resolveInstanceMethod(cls, sel, inst);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在执行了 resolveInstanceMethod: 之后，会跳转到 retry 标签，重新执行查找方法实现的流程，只不过不会再调用 resolveInstanceMethod: 方法了（将 triedResolver 标记为 YES）</p>
+<ol>
+<li>消息转发<br>当在缓存，当前类，父类，resolveInstanceMethod都没有实现，则还有最后一步，消息转发<br>执行完后进行方法的缓存<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">imp = (IMP)_objc_msgForward_impcache;</span><br><span class="line">   cache_fill(cls, sel, imp, inst);</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>为了提高消息传递的效率，ObjC 对 objc_msgSend 以及 cache_getImp 使用了汇编语言来编写。</p>
+<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%9C%8B%20ObjC%20%E4%B8%AD%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81.md" target="_blank" rel="noopener">https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%9C%8B%20ObjC%20%E4%B8%AD%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81.md</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/15/Objc消息的发送/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/15/Objc消息的发送/" itemprop="url">Objc消息的发送</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-15T13:59:47+08:00">
+                2018-01-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/13/initialize的分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/13/initialize的分析/" itemprop="url">initialize的分析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-13T14:04:50+08:00">
+                2018-01-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
+<blockquote>
+<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，</p>
+</blockquote>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>先来看下源码，在main.m中添加代码如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@interface XXObject: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation XXObject</span><br><span class="line"></span><br><span class="line">+ (void)initialize</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;XXObject initialize&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>运行程序，发现没有任何打印log<br><img src="/images/initialize的打印.png" alt="initialize的打印"></p>
+<p>和load方法不同，load方法运行还是有打印的，这是为什么呢？？</p>
+<p>如果运行以下code,将会看到断点执行和log<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        __unused XXObject *object = [[XXObject alloc] init];</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><img src="/images/initialize的打印2.png" alt="initialize的打印2"></p>
+<p>由此可见，虽然没有显式调用initialize方法，但是还是打印了log</p>
+<blockquote>
+<p>initialize方法是在该类第一次调用方法的时候才会执行</p>
+</blockquote>
+<p>在方法调用栈里，可以查看到方法调用的顺序，首先_objc_msgSend_uncached，先从方法的缓存里面查找该对应的方法，找不到了，然后从lookUpImpOrForward方法去查找.<br><img src="/images/initialize_lookupImg.png" alt="initialize_lookupImg"><br>在上图的调用栈里，打印 p sel 打印当前的选择子，发现log输出的是alloc,也就是当前调用的是alloc方法，可见initialize方法调用在alloc之前,alloc的调用导致了方法initialize的执行</p>
+<p>下面再看 class_initialize方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">void _class_initialize(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!cls-&gt;isMetaClass());</span><br><span class="line"></span><br><span class="line">    Class supercls;</span><br><span class="line">    bool reallyInitialize = NO;</span><br><span class="line">    supercls = cls-&gt;superclass;</span><br><span class="line">    if (supercls  &amp;&amp;  !supercls-&gt;isInitialized()) &#123;</span><br><span class="line">        _class_initialize(supercls); //初始化父类</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Try to atomically set CLS_INITIALIZING.</span><br><span class="line">    &#123;</span><br><span class="line">        monitor_locker_t lock(classInitLock);</span><br><span class="line">        if (!cls-&gt;isInitialized() &amp;&amp; !cls-&gt;isInitializing()) &#123;</span><br><span class="line">            cls-&gt;setInitializing(); //设置标志位</span><br><span class="line">            reallyInitialize = YES;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (reallyInitialize) &#123; //如果成功设置标志位,初始化 callInitialize(cls)</span><br><span class="line"></span><br><span class="line">        _setThisThreadIsInitializingClass(cls);</span><br><span class="line"></span><br><span class="line">        if (PrintInitializing) &#123;</span><br><span class="line">            _objc_inform(&quot;INITIALIZE: calling +[%s initialize]&quot;,</span><br><span class="line">                         cls-&gt;nameForLogging());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        @try &#123;</span><br><span class="line">            callInitialize(cls);</span><br><span class="line"></span><br><span class="line">            if (PrintInitializing) &#123;</span><br><span class="line">                _objc_inform(&quot;INITIALIZE: finished +[%s initialize]&quot;,</span><br><span class="line">                             cls-&gt;nameForLogging());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        @catch (...) &#123;</span><br><span class="line">            if (PrintInitializing) &#123;</span><br><span class="line">                _objc_inform(&quot;INITIALIZE: +[%s initialize] threw an exception&quot;,</span><br><span class="line">                             cls-&gt;nameForLogging());</span><br><span class="line">            &#125;</span><br><span class="line">            @throw;</span><br><span class="line">        &#125;</span><br><span class="line">        @finally &#123;</span><br><span class="line">            monitor_locker_t lock(classInitLock);</span><br><span class="line">            if (!supercls  ||  supercls-&gt;isInitialized()) &#123;</span><br><span class="line">                _finishInitializing(cls, supercls);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                _finishInitializingAfter(cls, supercls);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void callInitialize(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    ((void(*)(Class, SEL))objc_msgSend)(cls, SEL_initialize);</span><br><span class="line">    asm(&quot;&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>该方法的主要执行流程:</p>
+<ul>
+<li>如果存在父类，先初始化父类</li>
+<li>加锁，设置初始化RW_INITIALIZING标志，</li>
+<li>向当前类发送执行initialize方法</li>
+<li>设置标志位RW_INITIALIZED完成<br>如果父类已经初始化完成，调用_finishInitializing<br>否则调用_finishInitializingAfter在父类初始化结束之后设置完成标志</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">static void _finishInitializing(Class cls, Class supercls)</span><br><span class="line">&#123;</span><br><span class="line">    PendingInitialize *pending;</span><br><span class="line"></span><br><span class="line">    classInitLock.assertLocked();</span><br><span class="line">    assert(!supercls  ||  supercls-&gt;isInitialized());</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    cls-&gt;setInitialized();</span><br><span class="line">    classInitLock.notifyAll();</span><br><span class="line">    _setThisThreadIsNotInitializingClass(cls);</span><br><span class="line"></span><br><span class="line">    // mark any subclasses that were merely waiting for this class</span><br><span class="line">    if (!pendingInitializeMap) return;</span><br><span class="line">    pending = (PendingInitialize *)NXMapGet(pendingInitializeMap, cls);</span><br><span class="line">    if (!pending) return;</span><br><span class="line"></span><br><span class="line">    NXMapRemove(pendingInitializeMap, cls);</span><br><span class="line"></span><br><span class="line">    // Destroy the pending table if it&apos;s now empty, to save memory.</span><br><span class="line">    if (NXCountMapTable(pendingInitializeMap) == 0) &#123;</span><br><span class="line">        NXFreeMapTable(pendingInitializeMap);</span><br><span class="line">        pendingInitializeMap = nil;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    while (pending) &#123;</span><br><span class="line">        PendingInitialize *next = pending-&gt;next;</span><br><span class="line">        if (pending-&gt;subclass) _finishInitializing(pending-&gt;subclass, cls);</span><br><span class="line">        free(pending);</span><br><span class="line">        pending = next;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">由于父类已经完成了初始化，在这里直接将当前类标记成已经初始化，然后递归地将被当前类 block 的子类标记为已初始化，再把这些类移除 pendingInitializeMap。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">static void _finishInitializingAfter(Class cls, Class supercls)</span><br><span class="line">&#123;</span><br><span class="line">    PendingInitialize *pending;</span><br><span class="line"></span><br><span class="line">    classInitLock.assertLocked();</span><br><span class="line">    ...</span><br><span class="line">    if (!pendingInitializeMap) &#123;</span><br><span class="line">        pendingInitializeMap =</span><br><span class="line">            NXCreateMapTable(NXPtrValueMapPrototype, 10);</span><br><span class="line">        // fixme pre-size this table for CF/NSObject +initialize</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pending = (PendingInitialize *)malloc(sizeof(*pending));</span><br><span class="line">    pending-&gt;subclass = cls;</span><br><span class="line">    pending-&gt;next = (PendingInitialize *)</span><br><span class="line">        NXMapGet(pendingInitializeMap, supercls);</span><br><span class="line">    NXMapInsert(pendingInitializeMap, supercls, pending);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">首先创建一个pending,然后将当前类作为子类继承，插入到map表去</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总结一下关于initialize方法的特性：</p>
+<ul>
+<li>initialize 的调用是惰性的，它会在第一次调用当前类的方法时被调用</li>
+<li>与load 不同，initialize 方法调用时，所有的类都已经加载到了内存中</li>
+<li>initialize 的运行是线程安全的</li>
+<li>子类会继承父类的 initialize 方法</li>
+<li>而其作用也非常局限，一般我们只会在 initialize 方法中进行一些常量的初始化。</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/12/Objc对象的初始化/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -346,7 +790,8 @@
       
         
           
-            <blockquote>
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
+<blockquote>
 <p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试</p>
 </blockquote>
 <h2 id="alloc"><a href="#alloc" class="headerlink" title="alloc"></a>alloc</h2><p>先看下大致的流程<br><img src="/images/alloc流程图.png" alt="alloc流程"></p>
@@ -363,7 +808,7 @@
 __builtin_expect的作用
   这个指令是gcc引入的，作用是&quot;允许程序员将最有可能执行的分支告诉编译器&quot;。这个指令的写法为：__builtin_expect(EXP, N)。意思是：EXP==N的概率很大。一般的使用方法是将__builtin_expect指令封装为宏
 </code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文内容还是比较简单的，对象的初始化，只是分配内存空间，初始化isa结构体，isa的初始化，可以查看另一篇文章isa的存在</p>
-<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2>
+
           
         
       
@@ -613,7 +1058,11 @@ __builtin_expect的作用
       
         
           
-            <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">struct objc_object &#123;</span><br><span class="line">private:</span><br><span class="line">    isa_t isa;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">struct objc_class : objc_object &#123;</span><br><span class="line">    // Class ISA;</span><br><span class="line">    Class superclass;</span><br><span class="line">    cache_t cache;             // formerly cache pointer and vtable</span><br><span class="line">    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
+<blockquote>
+<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">struct objc_object &#123;</span><br><span class="line">private:</span><br><span class="line">    isa_t isa;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">struct objc_class : objc_object &#123;</span><br><span class="line">    // Class ISA;</span><br><span class="line">    Class superclass;</span><br><span class="line">    cache_t cache;             // formerly cache pointer and vtable</span><br><span class="line">    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
 <p><img src="/images/isa.png" alt="结构图"></p>
 <p>在 Objective-C 中，对象的方法并没有存储于对象的结构体中（如果每一个对象都保存了自己能执行的方法，那么对内存的占用有极大的影响）。</p>
 <p>当实例方法被调用时，它要通过自己持有的 isa 来查找对应的类，然后在这里的 class_data_bits_t 结构体中查找对应方法的实现。同时，每一个 objc_class 也有一个指向自己的父类的指针 super_class 用来查找继承的方法。</p>
@@ -672,7 +1121,7 @@ __builtin_expect的作用
 <li>Object_Class</li>
 <li>objc_class<br>3.类在内存中的位置，在编译期间就已经确定了</li>
 </ul>
-<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%20NSObject%20%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BA%86%E8%A7%A3%20isa.md" target="_blank" rel="noopener">isa解读</a>  以上图片链接均来自于下面的文章中</p>
+<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%20NSObject%20%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BA%86%E8%A7%A3%20isa.md" target="_blank" rel="noopener">isa解读</a>  以上图片链接均来自于此链接</p>
 <p><a href="http://www.cocoawithlove.com/2010/01/what-is-meta-class-in-objective-c.html" target="_blank" rel="noopener">关于元类</a></p>
 
           
@@ -1198,7 +1647,11 @@ __builtin_expect的作用
       
         
           
-            <p>##程序启动加载的流程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//dyld(The Dynamic Link Editor)是 Apple 的动态链接库，系统内核做好启动程序的初始准备后，将其他事务交给 dyld 负责</span><br><span class="line">_dyld-start</span><br><span class="line">|</span><br><span class="line">_objc_init</span><br><span class="line">|</span><br><span class="line">_dyld_objc_notify_register</span><br><span class="line">|</span><br><span class="line">load_images</span><br></pre></td></tr></table></figure></p>
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
+<blockquote>
+<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，</p>
+</blockquote>
+<p>##程序启动加载的流程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//dyld(The Dynamic Link Editor)是 Apple 的动态链接库，系统内核做好启动程序的初始准备后，将其他事务交给 dyld 负责</span><br><span class="line">_dyld-start</span><br><span class="line">|</span><br><span class="line">_objc_init</span><br><span class="line">|</span><br><span class="line">_dyld_objc_notify_register</span><br><span class="line">|</span><br><span class="line">load_images</span><br></pre></td></tr></table></figure></p>
 <p><img src="/images/load_images.png" alt="线程图"></p>
 <p>类方法加载的流程</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">void</span><br><span class="line">load_images(const char *path __unused, const struct mach_header *mh)</span><br><span class="line">&#123;</span><br><span class="line">    // Return without taking locks if there are no +load methods here.</span><br><span class="line">    if (!hasLoadMethods((const headerType *)mh)) return;</span><br><span class="line"></span><br><span class="line">    recursive_mutex_locker_t lock(loadMethodLock);</span><br><span class="line"></span><br><span class="line">    // Discover load methods</span><br><span class="line">    &#123;</span><br><span class="line">        rwlock_writer_t lock2(runtimeLock);</span><br><span class="line">        prepare_load_methods((const headerType *)mh);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Call +load methods (without runtimeLock - re-entrant)</span><br><span class="line">    call_load_methods();</span><br><span class="line">&#125;</span><br><span class="line">通过load_images进行类的存储prepare_load_methods，包括类的load方法和category方法，存在数组中loadable_classes和loadable_categories</span><br><span class="line">然后调用call_load_methods去调用call_class_loads和call_category_loads</span><br></pre></td></tr></table></figure>
@@ -1223,461 +1676,6 @@ __builtin_expect的作用
 </ul>
 <h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BD%A0%E7%9C%9F%E7%9A%84%E4%BA%86%E8%A7%A3%20load%20%E6%96%B9%E6%B3%95%E4%B9%88%EF%BC%9F.md" target="_blank" rel="noopener">https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BD%A0%E7%9C%9F%E7%9A%84%E4%BA%86%E8%A7%A3%20load%20%E6%96%B9%E6%B3%95%E4%B9%88%EF%BC%9F.md</a></p>
 <p><a href="https://xiaozhuanlan.com/topic/3175268940" target="_blank" rel="noopener">https://xiaozhuanlan.com/topic/3175268940</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/05/Log/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/05/Log/" itemprop="url">Log</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-05T11:45:17+08:00">
-                2018-01-05
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># define DLog(fmt, ...) NSLog((@&quot;[文件名:%s]\n&quot; &quot;[函数名:%s]\n&quot; &quot;[行号:%d] \n&quot; fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__);</span><br></pre></td></tr></table></figure>
-<p>参数解释：<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">__VA_ARGS__</span><br><span class="line"></span><br><span class="line">是一个可变参数的宏，很少人知道这个宏，这个可变参数的宏是新的C99规范中新增的，目前似乎只有gcc支（VC6.0的编译器不支持）。宏前面加上##的作用在于，当可变参数的个数为0时，这里的##起到把前面多余的&quot;,&quot;去掉的作用,否则会编译出错, 你可以试试。</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__FILE__   宏在预编译时会替换成当前的源文件名</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__LINE__  宏在预编译时会替换成当前的行号</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__FUNCTION__  宏在预编译时会替换成当前的函数名称</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__PRETTY_FUNCTION__  底层库函数名</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fmt  实际上就是自己输入的参数 format</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/04/WebViewJavascriptBdidge/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/04/WebViewJavascriptBdidge/" itemprop="url">WebViewJavascriptBridge</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-04T13:42:00+08:00">
-                2018-01-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>这个库主要是作为iOS(mac)和JS之间的桥梁，对于双方来说使用都非常的便利</p>
-<p>文件结构非常简单，主要有三部分内容组成</p>
-<p>WebViewJavascriptBridge (UIWebView:ios &amp;&amp; WebView:mac)<br>WKWebViewJavascriptBridge（WKWebView:ios）</p>
-<p>WebViewJavascriptBridgeBase (实现类)</p>
-<p>WebViewJavascriptBridge_js （JS代码注入类）</p>
-<p>下面来简单描述下吧<br>WebViewJavascriptBridge 和 WKWebViewJavascriptBridge 两个类主要是针对iOS和mac上使用的，毕竟有所差别，iOS8之后使用WKWebView，所以才有了类WKWebViewJavascriptBridge，但是两个类在接口和声明上，属性，基本都是一致的，这样方便对外公开的接口，内部实现自动判断设备和版本号</p>
-<p>下面说明主要针对WebViewJavascriptBridge</p>
-<h2 id="WebViewJavascriptBridge-h"><a href="#WebViewJavascriptBridge-h" class="headerlink" title="WebViewJavascriptBridge.h"></a>WebViewJavascriptBridge.h</h2><ul>
-<li><p>宏定义</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#if (__MAC_OS_X_VERSION_MAX_ALLOWED &gt; __MAC_10_9 || __IPHONE_OS_VERSION_MAX_ALLOWED &gt;= __IPHONE_7_1)</span><br><span class="line">#define supportsWKWebView</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>引入库</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#if defined supportsWKWebView</span><br><span class="line">#import &lt;WebKit/WebKit.h&gt;</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>宏定义 根据设备类型，引入对应的库，<br>定义 WVJB_WEBVIEW_TYPE、WVJB_WEBVIEW_DELEGATE_TYPE、WVJB_WEBVIEW_DELEGATE_INTERFACE</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#if defined __MAC_OS_X_VERSION_MAX_ALLOWED</span><br><span class="line">    #define WVJB_PLATFORM_OSX</span><br><span class="line">    #define WVJB_WEBVIEW_TYPE WebView</span><br><span class="line">    #define WVJB_WEBVIEW_DELEGATE_TYPE NSObject&lt;WebViewJavascriptBridgeBaseDelegate&gt;</span><br><span class="line">    #define WVJB_WEBVIEW_DELEGATE_INTERFACE NSObject&lt;WebViewJavascriptBridgeBaseDelegate, WebPolicyDelegate&gt;</span><br><span class="line">#elif defined __IPHONE_OS_VERSION_MAX_ALLOWED</span><br><span class="line">    #import &lt;UIKit/UIWebView.h&gt;</span><br><span class="line">    #define WVJB_PLATFORM_IOS</span><br><span class="line">    #define WVJB_WEBVIEW_TYPE UIWebView</span><br><span class="line">    #define WVJB_WEBVIEW_DELEGATE_TYPE NSObject&lt;UIWebViewDelegate&gt;</span><br><span class="line">    #define WVJB_WEBVIEW_DELEGATE_INTERFACE NSObject&lt;UIWebViewDelegate, WebViewJavascriptBridgeBaseDelegate&gt;</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>对外公开实现方法</p>
-</li>
-</ul>
-<h2 id="WebViewJavascriptBridge-m"><a href="#WebViewJavascriptBridge-m" class="headerlink" title="WebViewJavascriptBridge.m"></a>WebViewJavascriptBridge.m</h2><ul>
-<li><p>如果支持WKWebView，引入对应的类，这样直接外部引入这个类就可以实现相应功能了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#if defined(supportsWKWebView)</span><br><span class="line">#import &quot;WKWebViewJavascriptBridge.h&quot;</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>宏定义</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#if __has_feature(objc_arc_weak)</span><br><span class="line">    #define WVJB_WEAK __weak</span><br><span class="line">#else</span><br><span class="line">    #define WVJB_WEAK __unsafe_unretained</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>内部属性</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@implementation WebViewJavascriptBridge &#123;</span><br><span class="line">    WVJB_WEAK WVJB_WEBVIEW_TYPE* _webView; //webview</span><br><span class="line">    WVJB_WEAK id _webViewDelegate;  //delegate</span><br><span class="line">    long _uniqueId;  //实测是在发送消息的时候，将消息体和responseBlock等数据一起存在字典里，字典里对应存放的key是uniqueId,value是responseBlock，对应一个webView类来说，此数不断加1 ，用以区分不同的message</span><br><span class="line">    WebViewJavascriptBridgeBase *_base; //具体实现的功能类</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>两个类方法用于打印日志Log,最大长度500</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">+ (void)enableLogging &#123;</span><br><span class="line">    [WebViewJavascriptBridgeBase enableLogging];</span><br><span class="line">&#125;</span><br><span class="line">+ (void)setLogMaxLength:(int)length &#123;</span><br><span class="line">    [WebViewJavascriptBridgeBase setLogMaxLength:length];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>初始化<br>可以看出，针对判断不同的类型生成对应的webViewBridge，如果不是已申明的对应webView类型，就报异常</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">+ (instancetype)bridgeForWebView:(id)webView &#123;</span><br><span class="line">    return [self bridge:webView];</span><br><span class="line">&#125;</span><br><span class="line">+ (instancetype)bridge:(id)webView &#123;</span><br><span class="line">#if defined supportsWKWebView</span><br><span class="line">    if ([webView isKindOfClass:[WKWebView class]]) &#123;</span><br><span class="line">        return (WebViewJavascriptBridge*) [WKWebViewJavascriptBridge bridgeForWebView:webView];</span><br><span class="line">    &#125;</span><br><span class="line">#endif</span><br><span class="line">    if ([webView isKindOfClass:[WVJB_WEBVIEW_TYPE class]]) &#123;</span><br><span class="line">        WebViewJavascriptBridge* bridge = [[self alloc] init];</span><br><span class="line">        [bridge _platformSpecificSetup:webView];</span><br><span class="line">        return bridge;</span><br><span class="line">    &#125;</span><br><span class="line">    [NSException raise:@&quot;BadWebViewType&quot; format:@&quot;Unknown web view type.&quot;];</span><br><span class="line">    return nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>可以看出，由该类封装的方法内部还是让base去做相对应的事情</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">- (void)send:(id)data &#123;</span><br><span class="line">    [self send:data responseCallback:nil];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)send:(id)data responseCallback:(WVJBResponseCallback)responseCallback &#123;</span><br><span class="line">    [_base sendData:data responseCallback:responseCallback handlerName:nil];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)callHandler:(NSString *)handlerName &#123;</span><br><span class="line">    [self callHandler:handlerName data:nil responseCallback:nil];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)callHandler:(NSString *)handlerName data:(id)data &#123;</span><br><span class="line">    [self callHandler:handlerName data:data responseCallback:nil];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)callHandler:(NSString *)handlerName data:(id)data responseCallback:(WVJBResponseCallback)responseCallback &#123;</span><br><span class="line">    [_base sendData:data responseCallback:responseCallback handlerName:handlerName];</span><br><span class="line">&#125;</span><br><span class="line">- (void)registerHandler:(NSString *)handlerName handler:(WVJBHandler)handler &#123;</span><br><span class="line">    _base.messageHandlers[handlerName] = [handler copy];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)removeHandler:(NSString *)handlerName &#123;</span><br><span class="line">    [_base.messageHandlers removeObjectForKey:handlerName];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)disableJavscriptAlertBoxSafetyTimeout &#123;</span><br><span class="line">    [_base disableJavscriptAlertBoxSafetyTimeout];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>剩下的就是针对 OSX 以及 iOS 分别做的初始化操作和实现对应的方法了，目的是一样的，实现上稍有差异</p>
-</li>
-</ul>
-<p>这里有一个属性_webViewDelegate，是由外部调用接口实现赋值的，如果有需要在请求开始，结束，失败的时候做特殊处理，可以调用该方法实现对应的代理方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (void)setWebViewDelegate:(WVJB_WEBVIEW_DELEGATE_TYPE*)webViewDelegate &#123;</span><br><span class="line">    _webViewDelegate = webViewDelegate;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="WebViewJavascriptBridgeBase"><a href="#WebViewJavascriptBridgeBase" class="headerlink" title="WebViewJavascriptBridgeBase"></a>WebViewJavascriptBridgeBase</h2><ul>
-<li><p>sendData方法，上面已经提到了，具体实现看下 核心差不多就是这些了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">- (void)sendData:(id)data responseCallback:(WVJBResponseCallback)responseCallback handlerName:(NSString*)handlerName &#123;</span><br><span class="line">    NSMutableDictionary* message = [NSMutableDictionary dictionary];</span><br><span class="line"></span><br><span class="line">    if (data) &#123;</span><br><span class="line">        message[@&quot;data&quot;] = data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (responseCallback) &#123;</span><br><span class="line">        NSString* callbackId = [NSString stringWithFormat:@&quot;objc_cb_%ld&quot;, ++_uniqueId];</span><br><span class="line">        self.responseCallbacks[callbackId] = [responseCallback copy];</span><br><span class="line">        message[@&quot;callbackId&quot;] = callbackId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (handlerName) &#123;</span><br><span class="line">        message[@&quot;handlerName&quot;] = handlerName;</span><br><span class="line">    &#125;</span><br><span class="line">    [self _queueMessage:message];//这里将数据组装在字典里，然后发送</span><br><span class="line">&#125;</span><br><span class="line">- (void)_queueMessage:(WVJBMessage*)message &#123;</span><br><span class="line">    if (self.startupMessageQueue) &#123;</span><br><span class="line">        [self.startupMessageQueue addObject:message];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        [self _dispatchMessage:message]; //消息执行</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)_dispatchMessage:(WVJBMessage*)message &#123;</span><br><span class="line">    NSString *messageJSON = [self _serializeMessage:message pretty:NO];</span><br><span class="line">    [self _log:@&quot;SEND&quot; json:messageJSON];</span><br><span class="line">    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@&quot;\\&quot; withString:@&quot;\\\\&quot;];</span><br><span class="line">    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@&quot;\&quot;&quot; withString:@&quot;\\\&quot;&quot;];</span><br><span class="line">    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@&quot;\&apos;&quot; withString:@&quot;\\\&apos;&quot;];</span><br><span class="line">    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@&quot;\n&quot; withString:@&quot;\\n&quot;];</span><br><span class="line">    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@&quot;\r&quot; withString:@&quot;\\r&quot;];</span><br><span class="line">    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@&quot;\f&quot; withString:@&quot;\\f&quot;];</span><br><span class="line">    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@&quot;\u2028&quot; withString:@&quot;\\u2028&quot;];</span><br><span class="line">    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@&quot;\u2029&quot; withString:@&quot;\\u2029&quot;];</span><br><span class="line"></span><br><span class="line">    //以上是将消息字典转为JSON对象，然后字符转义</span><br><span class="line">    NSString* javascriptCommand = [NSString stringWithFormat:@&quot;WebViewJavascriptBridge._handleMessageFromObjC(&apos;%@&apos;);&quot;, messageJSON];//执行JS方法</span><br><span class="line">    if ([[NSThread currentThread] isMainThread]) &#123;</span><br><span class="line">        [self _evaluateJavascript:javascriptCommand];//主线程执行</span><br><span class="line"></span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        dispatch_sync(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            [self _evaluateJavascript:javascriptCommand];</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>剩下的方法，主要就是在发送消息时候的数据类型校验之类的，由WebViewJavascriptBridge和WKWebViewJavascriptBridge调用<br>如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType &#123;</span><br><span class="line">    if (webView != _webView) &#123; return YES; &#125; //校验</span><br><span class="line"></span><br><span class="line">    NSURL *url = [request URL];</span><br><span class="line">    __strong WVJB_WEBVIEW_DELEGATE_TYPE* strongDelegate = _webViewDelegate;</span><br><span class="line">    if ([_base isWebViewJavascriptBridgeURL:url]) &#123; //校验URL</span><br><span class="line">        if ([_base isBridgeLoadedURL:url]) &#123; //校验URL</span><br><span class="line">            [_base injectJavascriptFile]; //注入JS</span><br><span class="line">        &#125; else if ([_base isQueueMessageURL:url]) &#123; //校验URL</span><br><span class="line">            NSString *messageQueueString = [self _evaluateJavascript:[_base webViewJavascriptFetchQueyCommand]];</span><br><span class="line">            [_base flushMessageQueue:messageQueueString]; //执行消息队列</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            [_base logUnkownMessage:url];</span><br><span class="line">        &#125;</span><br><span class="line">        return NO;</span><br><span class="line">    &#125; else if (strongDelegate &amp;&amp; [strongDelegate respondsToSelector:@selector(webView:shouldStartLoadWithRequest:navigationType:)]) &#123; //如果有代理，拦截并执行代理方法</span><br><span class="line">        return [strongDelegate webView:webView shouldStartLoadWithRequest:request navigationType:navigationType];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        return YES;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="native-和-JS-如何交互"><a href="#native-和-JS-如何交互" class="headerlink" title="native 和 JS 如何交互"></a>native 和 JS 如何交互</h2><p>具体其实看下官方demo走一遍流程就明了了</p>
-<p>JS调用native,如何响应</p>
-<p>首先，JS实现如下方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">function setupWebViewJavascriptBridge(callback) &#123;</span><br><span class="line">    ...</span><br><span class="line">    var WVJBIframe = document.createElement(&apos;iframe&apos;);</span><br><span class="line">    WVJBIframe.style.display = &apos;none&apos;; //设置不显示</span><br><span class="line">    WVJBIframe.src = &apos;https://__bridge_loaded__&apos;;</span><br><span class="line">    document.documentElement.appendChild(WVJBIframe);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line">JS 端调用 setupWebViewJavascriptBridge，注入了一个页面，不显示的，scr和base里面的定义kBridgeLoaded一致，所以判断时候满足isBridgeLoadedURL，就会调用注入JS的方法了</span><br></pre></td></tr></table></figure></p>
-<p>JS 端调用 bridge.callHandler 时，调用 iOS handler，参数校验之后调用_doSend 函数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">function callHandler(handlerName, data, responseCallback) &#123;</span><br><span class="line">  if (arguments.length == 2 &amp;&amp; typeof data == &apos;function&apos;) &#123; //校验</span><br><span class="line">    responseCallback = data;</span><br><span class="line">    data = null;</span><br><span class="line">  &#125;</span><br><span class="line">  _doSend(&#123; handlerName:handlerName, data:data &#125;, responseCallback);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function _doSend(message, responseCallback) &#123;</span><br><span class="line">  if (responseCallback) &#123;</span><br><span class="line">    var callbackId = &apos;cb_&apos;+(uniqueId++)+&apos;_&apos;+new Date().getTime();</span><br><span class="line">    responseCallbacks[callbackId] = responseCallback;</span><br><span class="line">    message[&apos;callbackId&apos;] = callbackId;</span><br><span class="line">  &#125;</span><br><span class="line">  sendMessageQueue.push(message);</span><br><span class="line">  messagingIframe.src = CUSTOM_PROTOCOL_SCHEME + &apos;://&apos; + QUEUE_HAS_MESSAGE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<blockquote>
-<p>可以看到 JS 端的代码中有 callHandler 函数的实现，其内部将入参 handlerName,data,responseCallback 以字典形式作为参数调用_doSend 方法，我们看一下_doSend 方法的实现:</p>
-</blockquote>
-<ul>
-<li>doSend 方法内部会先判断入参中是否有回调</li>
-<li>如果有回调则根据规则生成 callbackId 并且将回调 block 保存到 responseCallbacks字典，之后给消息也加入一个键值对保存刚才生成的 callbackId</li>
-<li>给 sendMessageQueue 队列加入 message</li>
-<li>messagingIframe.src 设置为 <a href="https://__wvjb_queue_message__" target="_blank" rel="noopener">https://__wvjb_queue_message__</a><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">messagingIframe = document.createElement(&apos;iframe&apos;);</span><br><span class="line">messagingIframe.style.display = &apos;none&apos;;</span><br><span class="line">messagingIframe.src = CUSTOM_PROTOCOL_SCHEME + &apos;://&apos; + QUEUE_HAS_MESSAGE;</span><br><span class="line">document.documentElement.appendChild(messagingIframe);</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<blockquote>
-<p>这里加入了一个 src 为 <a href="https://__wvjb_queue_message__" target="_blank" rel="noopener">https://__wvjb_queue_message__</a> 的 messagingIframe，它也是一个不可见的 iframe。这样 Native 端会收到一个 url 为 <a href="https://__wvjb_queue_message__" target="_blank" rel="noopener">https://__wvjb_queue_message__</a> 的 request，之后会进行各项判定，这次会满足[isQueueMessageURL：url]调用 Native 的MessageQueue 方法</p>
-</blockquote>
-<p>然后调用native端的核心方法</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">if ([_base isQueueMessageURL:url]) &#123;</span><br><span class="line">     NSString *messageQueueString = [self _evaluateJavascript:[_base webViewJavascriptFetchQueyCommand]];</span><br><span class="line">     //执行JS的fetchQueue方法，将JS的所有消息数组转为json然后清空数组</span><br><span class="line"></span><br><span class="line">     [_base flushMessageQueue:messageQueueString];//核心</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)flushMessageQueue:(NSString *)messageQueueString&#123;</span><br><span class="line">    ...</span><br><span class="line">    //将拿到的消息，解析</span><br><span class="line">    id messages = [self _deserializeMessageJSON:messageQueueString];</span><br><span class="line">    for (WVJBMessage* message in messages) &#123;</span><br><span class="line">        if (![message isKindOfClass:[WVJBMessage class]]) &#123;</span><br><span class="line">            NSLog(@&quot;WebViewJavascriptBridge: WARNING: Invalid %@ received: %@&quot;, [message class], message);</span><br><span class="line">            continue;</span><br><span class="line">        &#125;</span><br><span class="line">        [self _log:@&quot;RCVD&quot; json:message];</span><br><span class="line"></span><br><span class="line">        NSString* responseId = message[@&quot;responseId&quot;];</span><br><span class="line">        if (responseId) &#123;</span><br><span class="line">            WVJBResponseCallback responseCallback = _responseCallbacks[responseId];</span><br><span class="line">            responseCallback(message[@&quot;responseData&quot;]); //执行对应的responseBlock</span><br><span class="line">            [self.responseCallbacks removeObjectForKey:responseId];</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            WVJBResponseCallback responseCallback = NULL;</span><br><span class="line">            NSString* callbackId = message[@&quot;callbackId&quot;];</span><br><span class="line">            if (callbackId) &#123;</span><br><span class="line">                responseCallback = ^(id responseData) &#123;</span><br><span class="line">                    if (responseData == nil) &#123;</span><br><span class="line">                        responseData = [NSNull null];</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    WVJBMessage* msg = @&#123; @&quot;responseId&quot;:callbackId, @&quot;responseData&quot;:responseData &#125;;</span><br><span class="line">                    [self _queueMessage:msg];</span><br><span class="line">                &#125;;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                responseCallback = ^(id ignoreResponseData) &#123;</span><br><span class="line">                    // Do nothing</span><br><span class="line">                &#125;;</span><br><span class="line">            &#125;</span><br><span class="line">            //生成responseBlock</span><br><span class="line">            WVJBHandler handler = self.messageHandlers[message[@&quot;handlerName&quot;]];</span><br><span class="line"></span><br><span class="line">            if (!handler) &#123;</span><br><span class="line">                NSLog(@&quot;WVJBNoHandlerException, No handler for message from JS: %@&quot;, message);</span><br><span class="line">                continue;</span><br><span class="line">            &#125;</span><br><span class="line">            //处理方法</span><br><span class="line">            handler(message[@&quot;data&quot;], responseCallback);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>WebViewJavascriptBridge 的工作流：</p>
-<ul>
-<li>JS 端加入 src 为 <a href="https://__bridge_loaded__" target="_blank" rel="noopener">https://__bridge_loaded__</a> 的 iframe</li>
-<li>Native 端检测到 Request，检测如果是 <strong>bridge_loaded</strong> 则通过当前的 WebView 组件注入 WebViewJavascriptBridge_JS 代码</li>
-<li>注入代码成功之后会加入一个 messagingIframe，其 src 为 <a href="https://__wvjb_queue_message__" target="_blank" rel="noopener">https://__wvjb_queue_message__</a></li>
-<li>之后不论是 Native 端还是 JS 端都可以通过 registerHandler 方法注册一个两端约定好的 HandlerName 的处理，也都可以通过 callHandler 方法通过约定好的 HandlerName 调用另一端的处理（两端处理消息的实现逻辑对称）</li>
-</ul>
-<h2 id="阅读文献"><a href="#阅读文献" class="headerlink" title="阅读文献"></a>阅读文献</h2><p>WebViewJavascriptBridge 源码中 Get 到的“桥梁美学”  <a href="http://www.10tiao.com/html/216/201712/2652556802/1.html" target="_blank" rel="noopener">http://www.10tiao.com/html/216/201712/2652556802/1.html</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/04/2018Flag/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/04/2018Flag/" itemprop="url">2018Flag</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-04T11:37:32+08:00">
-                2018-01-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>今年初，创建下此博客，希望能够记录下自己的成长，工作之后感觉越来越懒了，需要监督自己了。<br>去年的时候记得也没有做什么特别的大事，只是出了趟国旅游，拿到了驾照，本来打算买车了，后面也没想法了。。。</p>
-<p>生活Flag:<br>提高英语听说能力，坚持背单词，看美剧提高吧 ~ ~ ~<br>今年想要去趟成都旅游 ~ ~ ~</p>
-<p>工作Flag:<br>多看点源码，学点新技术</p>
-<p>今年就此在学习和生活上，都有个新的期待和变化吧</p>
 
           
         
@@ -1766,7 +1764,7 @@ __builtin_expect的作用
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-count">16</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1854,7 +1852,7 @@ __builtin_expect的作用
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共13.8k字</span>
+<span class="post-count"> 博客全站共16.6k字</span>
 </div>
 
 

@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, Patty" />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="温暖的弦" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行  开始在main.m中实现如下代码，添加断点查看XXObject调用hello方法的执行流程1234567891011121314151617181920#import &amp;quot;objc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Objc消息的发送和查找">
+<meta property="og:url" content="https://pattyxp.github.io/2018/01/15/Objc消息的发送和查找/index.html">
+<meta property="og:site_name" content="温暖的弦">
+<meta property="og:description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行  开始在main.m中实现如下代码，添加断点查看XXObject调用hello方法的执行流程1234567891011121314151617181920#import &amp;quot;objc">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://pattyxp.github.io/images/Objc消息缓存查找.png">
+<meta property="og:image" content="https://pattyxp.github.io/images/Objc选择子地址.png">
+<meta property="og:updated_time" content="2018-01-15T10:01:33.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Objc消息的发送和查找">
+<meta name="twitter:description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行  开始在main.m中实现如下代码，添加断点查看XXObject调用hello方法的执行流程1234567891011121314151617181920#import &amp;quot;objc">
+<meta name="twitter:image" content="https://pattyxp.github.io/images/Objc消息缓存查找.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://pattyxp.github.io/2018/01/15/Objc消息的发送和查找/"/>
+
+
+
+
+
+  <title>Objc消息的发送和查找 | 温暖的弦</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">温暖的弦</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/15/Objc消息的发送和查找/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Objc消息的发送和查找</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-15T14:17:14+08:00">
+                2018-01-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
+<blockquote>
+<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行</p>
+</blockquote>
+<h2 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h2><p>在main.m中实现如下代码，添加断点查看XXObject调用hello方法的执行流程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#import &quot;objc-runtime.h&quot;</span><br><span class="line">@interface XXObject: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation XXObject</span><br><span class="line">- (void)hello</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;hello&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        XXObject *obj = [[XXObject alloc] init];</span><br><span class="line">        [obj hello];//lldb  p (void *)@selector(hello) 方法也是在编译期间地址就确定了</span><br><span class="line">                    //lldb  (void *) $1 = 0x0000000100000f9c</span><br><span class="line">        [obj hello];//已经缓存过，直接从缓存取，走的是汇编代码，断点直接到方法实现了</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><img src="/images/Objc消息缓存查找.png" alt="Objc消息缓存查找流程"></p>
+<p>方法先是通过 objc_msgSend_uncached去查找是否有方法的缓存，这个时候断点都没有走到，可见在编译阶段就可以去查找方法的缓存了，也就是说方法的地址在编译期间就已经确定了，和类在内存中的地址是一样的，下面去验证这一说法的正确性</p>
+<p>点进去可以看到，是使用的汇编语言执行的，以此来提高查找速度<br>在主函数中，任意断点处，打印lldb<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p (void *)@selector(hello)</span><br><span class="line">(void *) $1 = 0x0000000100000f8c</span><br><span class="line">(lldb) p (void *)@selector(undefined_hello)</span><br><span class="line">(void *) $2 = 0x000000010290ced0</span><br></pre></td></tr></table></figure></p>
+<p>可见在代码中，没有显示的申明方法undefined_hello，导致内存地址和已经申明的方法hello还是有些差距的，undefined_hello选择子是在运行时确定的，因此再次显示申明一次方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">main.m</span><br><span class="line">  __unused SEL sel = @selector(undefined_hello);</span><br><span class="line">  XXObject *obj = [[XXObject alloc] init];</span><br><span class="line">  [obj hello];</span><br><span class="line"></span><br><span class="line">lldb打印</span><br><span class="line">(lldb) p (void *)@selector(hello)</span><br><span class="line">(void *) $0 = 0x0000000100000f8c</span><br><span class="line">(lldb) p (void *)@selector(undefined_hello)</span><br><span class="line">(void *) $1 = 0x0000000100000f92</span><br></pre></td></tr></table></figure></p>
+<p>两个选择子内存地址已经想差不大了<br>由此可以得出猜测:<br>1.通过@selector打印选择子的地址，而不是通过hello方法的内存地址，可见在OC中有一份巨大的选择子表<br>2.只需要传入sel的name,就可以去查找对应的选择自内存地址，如果没有找到，就会自动生成一个SEL并插入到表中<br>3.在编译期间就可以把所有的头文件和实现文件中的方法和@selector()方式调用的sel都插入到表中</p>
+<p>在init方法执行前，打断点<br><img src="/images/Objc选择子地址.png" alt="Objc选择子地址"><br>打印选择子hello的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p SEL(0x0000000100000f8c)</span><br><span class="line">(SEL) $2 = &quot;hello&quot;</span><br></pre></td></tr></table></figure></p>
+<h2 id="msgSend"><a href="#msgSend" class="headerlink" title="msgSend"></a>msgSend</h2><p>具体方法 OBJC_EXPORT id objc_msgSend(id self, SEL op, …)没有实现方法，是汇编语言实现的具体实现</p>
+<p>当编译器遇到一个方法调用时，它会将方法的调用翻译成以下函数中的一个 objc_msgSend、objc_msgSend_stret、objc_msgSendSuper 和 objc_msgSendSuper_stret。<br>发送给对象的父类的消息会使用 objc_msgSendSuper 有数据结构作为返回值的方法会使用 objc_msgSendSuper_stret 或 objc_msgSend_stret 其它的消息都是使用 objc_msgSend 发送的</p>
+<p>现在看下整个的主流程，在调用hello方法的地方，打上断点之后，<br>整个流程中，没有找到方法缓存时，会通过调用lookUpImpOrForward查找方法的实现，打开这个函数的断点，<br>这个函数主要做的事情如下:</p>
+<ul>
+<li>查找缓存中是否存在方法的实现</li>
+<li>如果类没有初始化完成，就会去分配正确的可读写结构体</li>
+<li>当前类和父类中查找方法实现</li>
+<li>方法决议</li>
+</ul>
+<ol>
+<li><p>查找缓存<br>由于参数传入cache为NO,这里其实是不执行的，在汇编objc_msgSend_uncached已经做了缓存处理了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (cache) &#123; //缓存中查找</span><br><span class="line">      imp = cache_getImp(cls, sel);</span><br><span class="line">      if (imp) return imp;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>类初始化和实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> if (!cls-&gt;isRealized()) &#123;</span><br><span class="line">     rwlock_writer_t lock(runtimeLock);</span><br><span class="line">     realizeClass(cls);//为类分配可读写结构体 class_rw_t 的空间，并返回正确的类结构体。</span><br><span class="line"> &#125;</span><br><span class="line"> if (initialize  &amp;&amp;  !cls-&gt;isInitialized()) &#123;</span><br><span class="line">    _class_initialize (_class_getNonMetaClass(cls, inst));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在当前类中查找，如果查找到了跳转done，否则去当前类查找search_method_list，查找到了调用log_and_fill_cache缓存该方法并跳转done</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">imp = cache_getImp(cls, sel);</span><br><span class="line">if (imp) goto done;</span><br><span class="line"></span><br><span class="line">// Try this class&apos;s method lists.</span><br><span class="line"></span><br><span class="line">meth = getMethodNoSuper_nolock(cls, sel);</span><br><span class="line">if (meth) &#123;</span><br><span class="line">    log_and_fill_cache(cls, meth-&gt;imp, sel, inst, cls);</span><br><span class="line">    imp = meth-&gt;imp;</span><br><span class="line">    goto done;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>去父类中查找方法，流程和3原理一致</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">curClass = cls;</span><br><span class="line">  while ((curClass = curClass-&gt;superclass)) &#123;</span><br><span class="line">      // Superclass cache.</span><br><span class="line">      imp = cache_getImp(curClass, sel);</span><br><span class="line">      if (imp) &#123;</span><br><span class="line">          if (imp != (IMP)_objc_msgForward_impcache) &#123;</span><br><span class="line">              log_and_fill_cache(cls, imp, sel, inst, curClass);</span><br><span class="line">              goto done;</span><br><span class="line">          &#125;</span><br><span class="line">          else &#123;</span><br><span class="line">              break;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      // Superclass method list.</span><br><span class="line">      meth = getMethodNoSuper_nolock(curClass, sel);</span><br><span class="line">      if (meth) &#123;</span><br><span class="line">          log_and_fill_cache(cls, meth-&gt;imp, sel, inst, curClass);</span><br><span class="line">          imp = meth-&gt;imp;</span><br><span class="line">          goto done;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">与当前类寻找实现的区别是：在父类中寻找到的 _objc_msgForward_impcache 实现会交给当前类来处理。</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>方法决议</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//在当前类和父类都没有找到对应的实现</span><br><span class="line">//判断当前类是否实现了 resolveInstanceMethod: 或者 resolveClassMethod: 方法，然后用objc_msgSend 执行sel，缓存方法</span><br><span class="line"></span><br><span class="line">if (resolver  &amp;&amp;  !triedResolver) &#123;</span><br><span class="line">    runtimeLock.unlockRead();</span><br><span class="line">    _class_resolveMethod(cls, sel, inst);</span><br><span class="line">    // Don&apos;t cache the result; we don&apos;t hold the lock so it may have</span><br><span class="line">    // changed already. Re-do the search from scratch instead.</span><br><span class="line">    triedResolver = YES;</span><br><span class="line">    goto retry;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>这部分调用_class_resolveMethod实现</p>
+<p>//如果当前类不是元类，调用_class_resolveInstanceMethod实现<br>否则，调用_class_resolveClassMethod<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">void _class_resolveMethod(Class cls, SEL sel, id inst)</span><br><span class="line">&#123;</span><br><span class="line">    if (! cls-&gt;isMetaClass()) &#123;</span><br><span class="line">        // try [cls resolveInstanceMethod:sel]</span><br><span class="line">        _class_resolveInstanceMethod(cls, sel, inst);</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // try [nonMetaClass resolveClassMethod:sel]</span><br><span class="line">        // and [cls resolveInstanceMethod:sel]</span><br><span class="line"></span><br><span class="line">        _class_resolveClassMethod(cls, sel, inst);</span><br><span class="line">        if (!lookUpImpOrNil(cls, sel, inst,</span><br><span class="line">                            NO/*initialize*/, YES/*cache*/, NO/*resolver*/))</span><br><span class="line">        &#123;</span><br><span class="line">            _class_resolveInstanceMethod(cls, sel, inst);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在执行了 resolveInstanceMethod: 之后，会跳转到 retry 标签，重新执行查找方法实现的流程，只不过不会再调用 resolveInstanceMethod: 方法了（将 triedResolver 标记为 YES）</p>
+<ol>
+<li>消息转发<br>当在缓存，当前类，父类，resolveInstanceMethod都没有实现，则还有最后一步，消息转发<br>执行完后进行方法的缓存<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">imp = (IMP)_objc_msgForward_impcache;</span><br><span class="line">   cache_fill(cls, sel, imp, inst);</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>为了提高消息传递的效率，ObjC 对 objc_msgSend 以及 cache_getImp 使用了汇编语言来编写。</p>
+<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%9C%8B%20ObjC%20%E4%B8%AD%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81.md" target="_blank" rel="noopener">https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%9C%8B%20ObjC%20%E4%B8%AD%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81.md</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+      <div>
+      <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+      </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/15/Objc消息的发送/" rel="next" title="Objc消息的发送">
+                <i class="fa fa-chevron-left"></i> Objc消息的发送
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/flower.jpg"
+               alt="Patty" />
+          <p class="site-author-name" itemprop="name">Patty</p>
+           
+              <p class="site-description motion-element" itemprop="description">Life's like a movie, write your own ending, keep believing, keep pretending.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开始"><span class="nav-number">2.</span> <span class="nav-text">开始</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#msgSend"><span class="nav-number">3.</span> <span class="nav-text">msgSend</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#链接"><span class="nav-number">5.</span> <span class="nav-text">链接</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Patty</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i>
+<span id="busuanzi_container_site_uv">
+  本站总访问量<span id="busuanzi_value_site_uv"></span>次
+</span>
+<span class="post-count"> 博客全站共16.6k字</span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  <!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>
