@@ -347,7 +347,8 @@
         
           
             <p>先来看下class对象的结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line"></span><br><span class="line">#if !__OBJC2__</span><br><span class="line">    Class super_class                                        OBJC2_UNAVAILABLE;</span><br><span class="line">    const char *name                                         OBJC2_UNAVAILABLE;</span><br><span class="line">    long version                                             OBJC2_UNAVAILABLE;</span><br><span class="line">    long info                                                OBJC2_UNAVAILABLE;</span><br><span class="line">    long instance_size                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_ivar_list *ivars                             OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_method_list **methodLists                    OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_cache *cache                                 OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_protocol_list *protocols                     OBJC2_UNAVAILABLE;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">&#125; OBJC2_UNAVAILABLE;</span><br></pre></td></tr></table></figure></p>
-<p>存在了 <figure class="highlight plain"><figcaption><span>objc_cache *cache  ```类型的方法缓存结构，objc_cache是一个结构体</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line">struct objc_cache &#123;</span><br><span class="line">    unsigned int mask /* total = mask + 1 */                 OBJC2_UNAVAILABLE;</span><br><span class="line">    unsigned int occupied                                    OBJC2_UNAVAILABLE;</span><br><span class="line">    Method buckets[1]                                        OBJC2_UNAVAILABLE;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>存在了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct objc_cache *cache</span><br></pre></td></tr></table></figure></p>
+<p>类型的方法缓存结构，objc_cache是一个结构体<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct objc_cache &#123;</span><br><span class="line">    unsigned int mask /* total = mask + 1 */                 OBJC2_UNAVAILABLE;</span><br><span class="line">    unsigned int occupied                                    OBJC2_UNAVAILABLE;</span><br><span class="line">    Method buckets[1]                                        OBJC2_UNAVAILABLE;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
 <ul>
 <li>mask表示当前能达到的最大index,从0开始，所以总是是mask+1</li>
 <li>occupied 当前被占用的位置数量</li>
@@ -356,41 +357,17 @@
 </ul>
 <p>每个类都存在objc_cache的结构体缓存方法列表</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PattyCat *pcat = [PattyCat alloc];</span><br><span class="line">[pcat init];</span><br><span class="line"></span><br><span class="line">[pcat class];</span><br></pre></td></tr></table></figure>
-<p>所以在<figure class="highlight plain"><figcaption><span>class]```处打上断点,在lookUpImpOrForward也打上断点，看看如何查找到父类的class方法流程</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">* 去当前类的缓存cache_getImp查找，找不到去当前类的方法列表里methods.beginLists去查找，</span><br><span class="line">* 如果当前类不存在方法，就会通过while循环查找， 先在父类缓存查找方法cache_getImp，找不到就在当前父类的方法列表查找getMethodNoSuper_nolock，如果找不到就往上找，</span><br><span class="line">* 直到找到之后，都会缓存该方法实现 log_and_fill_cache(cls, meth-&gt;imp, sel, inst, curClass);缓存在类本身的方法缓存里。</span><br><span class="line"></span><br><span class="line">以上查找流程，当while循环两次之后，当curClass=NSObject,通过getMethodNoSuper_nolock查找到了class这个方法的method,</span><br><span class="line">![method缓存图](/images/method_cache.png)</span><br><span class="line">可以看到class方法的type是 &quot;#16@0:8&quot;</span><br><span class="line"></span><br><span class="line">从下图可以看到如何执行的方法cache，此处将NSObject的-class方法进行缓存</span><br><span class="line">![method缓存fill](/images/method_cache_fill.png)</span><br><span class="line"></span><br><span class="line">cache_fill_nolock方法主要就是将cls的缓存方法结构体进行修改 bucket-&gt;set(key, imp);</span><br><span class="line">如果cache的容量不够，则进行扩展cache-&gt;expand();</span><br><span class="line">如果当前占用的数量还在总容量的3/4，则不扩展</span><br></pre></td></tr></table></figure></p>
-<p>static void cache_fill_nolock(Class cls, SEL sel, IMP imp, id receiver)<br>{<br>    cacheUpdateLock.assertLocked();</p>
-<pre><code>// Never cache before +initialize is done
-if (!cls-&gt;isInitialized()) return;
-
-// Make sure the entry wasn&apos;t added to the cache by some other thread
-// before we grabbed the cacheUpdateLock.
-if (cache_getImp(cls, sel)) return;
-
-cache_t *cache = getCache(cls);
-cache_key_t key = getKey(sel);
-
-// Use the cache as-is if it is less than 3/4 full
-mask_t newOccupied = cache-&gt;occupied() + 1;
-mask_t capacity = cache-&gt;capacity();
-if (cache-&gt;isConstantEmptyCache()) {
-    // Cache is read-only. Replace it.
-    cache-&gt;reallocate(capacity, capacity ?: INIT_CACHE_SIZE);
-}
-else if (newOccupied &lt;= capacity / 4 * 3) {
-    // Cache is less than 3/4 full. Use it as-is.
-}
-else {
-    // Cache is too full. Expand it.
-    cache-&gt;expand();
-}
-
-// Scan for the first unused slot and insert there.
-// There is guaranteed to be an empty slot because the
-// minimum size is 4 and we resized at 3/4 full.
-bucket_t *bucket = cache-&gt;find(key, receiver);
-if (bucket-&gt;key() == 0) cache-&gt;incrementOccupied();
-bucket-&gt;set(key, imp);
-</code></pre><p>}</p>
-<p>```<br>bucket设置之后，方法的cache存储结构如下<br><img src="/images/cache_bucket.png" alt="method缓存bucket"></p>
+<p>所以在<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[pcat class]</span><br></pre></td></tr></table></figure></p>
+<p>处打上断点,在lookUpImpOrForward也打上断点，看看如何查找到父类的class方法流程</p>
+<ul>
+<li>去当前类的缓存cache_getImp查找，找不到去当前类的方法列表里methods.beginLists去查找，</li>
+<li>如果当前类不存在方法，就会通过while循环查找， 先在父类缓存查找方法cache_getImp，找不到就在当前父类的方法列表查找getMethodNoSuper_nolock，如果找不到就往上找，</li>
+<li>直到找到之后，都会缓存该方法实现 log_and_fill_cache(cls, meth-&gt;imp, sel, inst, curClass);缓存在类本身的方法缓存里。</li>
+</ul>
+<p>以上查找流程，当while循环两次之后，当curClass=NSObject,通过getMethodNoSuper_nolock查找到了class这个方法的method,<br><img src="/images/method_cache.png" alt="method缓存图"><br>可以看到class方法的type是 “#16@0:8”</p>
+<p>从下图可以看到如何执行的方法cache，此处将NSObject的-class方法进行缓存<br><img src="/images/method_cache_fill.png" alt="method缓存fill"></p>
+<p>cache_fill_nolock方法主要就是将cls的缓存方法结构体进行修改 bucket-&gt;set(key, imp);<br>如果cache的容量不够，则进行扩展cache-&gt;expand();<br>如果当前占用的数量还在总容量的3/4，则不扩展<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">static void cache_fill_nolock(Class cls, SEL sel, IMP imp, id receiver)</span><br><span class="line">&#123;</span><br><span class="line">    cacheUpdateLock.assertLocked();</span><br><span class="line"></span><br><span class="line">    // Never cache before +initialize is done</span><br><span class="line">    if (!cls-&gt;isInitialized()) return;</span><br><span class="line"></span><br><span class="line">    // Make sure the entry wasn&apos;t added to the cache by some other thread</span><br><span class="line">    // before we grabbed the cacheUpdateLock.</span><br><span class="line">    if (cache_getImp(cls, sel)) return;</span><br><span class="line"></span><br><span class="line">    cache_t *cache = getCache(cls);</span><br><span class="line">    cache_key_t key = getKey(sel);</span><br><span class="line"></span><br><span class="line">    // Use the cache as-is if it is less than 3/4 full</span><br><span class="line">    mask_t newOccupied = cache-&gt;occupied() + 1;</span><br><span class="line">    mask_t capacity = cache-&gt;capacity();</span><br><span class="line">    if (cache-&gt;isConstantEmptyCache()) &#123;</span><br><span class="line">        // Cache is read-only. Replace it.</span><br><span class="line">        cache-&gt;reallocate(capacity, capacity ?: INIT_CACHE_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    else if (newOccupied &lt;= capacity / 4 * 3) &#123;</span><br><span class="line">        // Cache is less than 3/4 full. Use it as-is.</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // Cache is too full. Expand it.</span><br><span class="line">        cache-&gt;expand();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Scan for the first unused slot and insert there.</span><br><span class="line">    // There is guaranteed to be an empty slot because the</span><br><span class="line">    // minimum size is 4 and we resized at 3/4 full.</span><br><span class="line">    bucket_t *bucket = cache-&gt;find(key, receiver);</span><br><span class="line">    if (bucket-&gt;key() == 0) cache-&gt;incrementOccupied();</span><br><span class="line">    bucket-&gt;set(key, imp);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>bucket设置之后，方法的cache存储结构如下<br><img src="/images/cache_bucket.png" alt="method缓存bucket"></p>
 
           
         
