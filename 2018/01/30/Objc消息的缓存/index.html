@@ -96,17 +96,19 @@
 
 
 
-<meta name="description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
+<meta name="description" content="先来看下class对象的结构12345678910111213141516struct objc_class &amp;#123;    Class isa  OBJC_ISA_AVAILABILITY;#if !__OBJC2__    Class super_class                                        OBJC2_UNAVAILABLE;    const">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Objc消息的发送">
-<meta property="og:url" content="https://pattyxp.github.io/2018/01/15/Objc消息的发送/index.html">
+<meta property="og:title" content="Objc消息的缓存">
+<meta property="og:url" content="https://pattyxp.github.io/2018/01/30/Objc消息的缓存/index.html">
 <meta property="og:site_name" content="温暖的弦">
-<meta property="og:description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
+<meta property="og:description" content="先来看下class对象的结构12345678910111213141516struct objc_class &amp;#123;    Class isa  OBJC_ISA_AVAILABILITY;#if !__OBJC2__    Class super_class                                        OBJC2_UNAVAILABLE;    const">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-15T10:03:04.000Z">
+<meta property="og:image" content="https://pattyxp.github.io/images/cache_bucket.png">
+<meta property="og:updated_time" content="2018-01-30T07:20:15.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Objc消息的发送">
-<meta name="twitter:description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
+<meta name="twitter:title" content="Objc消息的缓存">
+<meta name="twitter:description" content="先来看下class对象的结构12345678910111213141516struct objc_class &amp;#123;    Class isa  OBJC_ISA_AVAILABILITY;#if !__OBJC2__    Class super_class                                        OBJC2_UNAVAILABLE;    const">
+<meta name="twitter:image" content="https://pattyxp.github.io/images/cache_bucket.png">
 
 
 
@@ -135,13 +137,13 @@
 
 
 
-  <link rel="canonical" href="https://pattyxp.github.io/2018/01/15/Objc消息的发送/"/>
+  <link rel="canonical" href="https://pattyxp.github.io/2018/01/30/Objc消息的缓存/"/>
 
 
 
 
 
-  <title>Objc消息的发送 | 温暖的弦</title>
+  <title>Objc消息的缓存 | 温暖的弦</title>
   
 
 
@@ -274,7 +276,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/15/Objc消息的发送/">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/30/Objc消息的缓存/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Patty">
@@ -291,7 +293,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Objc消息的发送</h1>
+          <h1 class="post-title" itemprop="name headline">Objc消息的缓存</h1>
         
 
         <div class="post-meta">
@@ -303,8 +305,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-15T13:59:47+08:00">
-                2018-01-15
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-30T14:30:00+08:00">
+                2018-01-30
               </time>
             
 
@@ -341,7 +343,52 @@
       
 
       
-        
+        <p>先来看下class对象的结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line"></span><br><span class="line">#if !__OBJC2__</span><br><span class="line">    Class super_class                                        OBJC2_UNAVAILABLE;</span><br><span class="line">    const char *name                                         OBJC2_UNAVAILABLE;</span><br><span class="line">    long version                                             OBJC2_UNAVAILABLE;</span><br><span class="line">    long info                                                OBJC2_UNAVAILABLE;</span><br><span class="line">    long instance_size                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_ivar_list *ivars                             OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_method_list **methodLists                    OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_cache *cache                                 OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_protocol_list *protocols                     OBJC2_UNAVAILABLE;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">&#125; OBJC2_UNAVAILABLE;</span><br></pre></td></tr></table></figure></p>
+<p>存在了 <figure class="highlight plain"><figcaption><span>objc_cache *cache  ```类型的方法缓存结构，objc_cache是一个结构体</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line">struct objc_cache &#123;</span><br><span class="line">    unsigned int mask /* total = mask + 1 */                 OBJC2_UNAVAILABLE;</span><br><span class="line">    unsigned int occupied                                    OBJC2_UNAVAILABLE;</span><br><span class="line">    Method buckets[1]                                        OBJC2_UNAVAILABLE;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>mask表示当前能达到的最大index,从0开始，所以总是是mask+1</li>
+<li>occupied 当前被占用的位置数量</li>
+<li>buckets 数组表示的hash表，数组的每一项都代表的是方法，<br>类型是Method，Method的结构是objc_method,<br>里面存储了方法的method_name,method_types,method_imp<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_method *Method;</span><br><span class="line">struct objc_method &#123;</span><br><span class="line">    SEL method_name                                          OBJC2_UNAVAILABLE;</span><br><span class="line">    char *method_types                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    IMP method_imp                                           OBJC2_UNAVAILABLE;</span><br><span class="line">&#125;                                                            OBJC2_UNAVAILABLE;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>每个类都存在objc_cache的结构体缓存方法列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PattyCat *pcat = [PattyCat alloc];</span><br><span class="line">[pcat init];</span><br><span class="line"></span><br><span class="line">[pcat class];</span><br></pre></td></tr></table></figure>
+<p>所以在<figure class="highlight plain"><figcaption><span>class]```处打上断点,在lookUpImpOrForward也打上断点，看看如何查找到父类的class方法流程</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">* 去当前类的缓存cache_getImp查找，找不到去当前类的方法列表里methods.beginLists去查找，</span><br><span class="line">* 如果当前类不存在方法，就会通过while循环查找， 先在父类缓存查找方法cache_getImp，找不到就在当前父类的方法列表查找getMethodNoSuper_nolock，如果找不到就往上找，</span><br><span class="line">* 直到找到之后，都会缓存该方法实现 log_and_fill_cache(cls, meth-&gt;imp, sel, inst, curClass);缓存在类本身的方法缓存里。</span><br><span class="line"></span><br><span class="line">以上查找流程，当while循环两次之后，当curClass=NSObject,通过getMethodNoSuper_nolock查找到了class这个方法的method,</span><br><span class="line">![method缓存图](/images/method_cache.png)</span><br><span class="line">可以看到class方法的type是 &quot;#16@0:8&quot;</span><br><span class="line"></span><br><span class="line">从下图可以看到如何执行的方法cache，此处将NSObject的-class方法进行缓存</span><br><span class="line">![method缓存fill](/images/method_cache_fill.png)</span><br><span class="line"></span><br><span class="line">cache_fill_nolock方法主要就是将cls的缓存方法结构体进行修改 bucket-&gt;set(key, imp);</span><br><span class="line">如果cache的容量不够，则进行扩展cache-&gt;expand();</span><br><span class="line">如果当前占用的数量还在总容量的3/4，则不扩展</span><br></pre></td></tr></table></figure></p>
+<p>static void cache_fill_nolock(Class cls, SEL sel, IMP imp, id receiver)<br>{<br>    cacheUpdateLock.assertLocked();</p>
+<pre><code>// Never cache before +initialize is done
+if (!cls-&gt;isInitialized()) return;
+
+// Make sure the entry wasn&apos;t added to the cache by some other thread
+// before we grabbed the cacheUpdateLock.
+if (cache_getImp(cls, sel)) return;
+
+cache_t *cache = getCache(cls);
+cache_key_t key = getKey(sel);
+
+// Use the cache as-is if it is less than 3/4 full
+mask_t newOccupied = cache-&gt;occupied() + 1;
+mask_t capacity = cache-&gt;capacity();
+if (cache-&gt;isConstantEmptyCache()) {
+    // Cache is read-only. Replace it.
+    cache-&gt;reallocate(capacity, capacity ?: INIT_CACHE_SIZE);
+}
+else if (newOccupied &lt;= capacity / 4 * 3) {
+    // Cache is less than 3/4 full. Use it as-is.
+}
+else {
+    // Cache is too full. Expand it.
+    cache-&gt;expand();
+}
+
+// Scan for the first unused slot and insert there.
+// There is guaranteed to be an empty slot because the
+// minimum size is 4 and we resized at 3/4 full.
+bucket_t *bucket = cache-&gt;find(key, receiver);
+if (bucket-&gt;key() == 0) cache-&gt;incrementOccupied();
+bucket-&gt;set(key, imp);
+</code></pre><p>}</p>
+<p>```<br>bucket设置之后，方法的cache存储结构如下<br><img src="/images/cache_bucket.png" alt="method缓存bucket"></p>
+
       
     </div>
     
@@ -377,8 +424,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/01/13/initialize的分析/" rel="next" title="initialize的分析">
-                <i class="fa fa-chevron-left"></i> initialize的分析
+              <a href="/2018/01/26/由RACSwizzleClass引发的class思考/" rel="next" title="由RACSwizzleClass引发的class思考">
+                <i class="fa fa-chevron-left"></i> 由RACSwizzleClass引发的class思考
               </a>
             
           </div>
@@ -386,10 +433,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/01/15/Objc消息的发送和查找/" rel="prev" title="Objc消息的发送和查找">
-                Objc消息的发送和查找 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -545,7 +588,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共19.7k字</span>
+<span class="post-count"> 博客全站共20.6k字</span>
 </div>
 
 

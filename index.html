@@ -275,6 +275,173 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/30/Objc消息的缓存/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/30/Objc消息的缓存/" itemprop="url">Objc消息的缓存</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-30T14:30:00+08:00">
+                2018-01-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>先来看下class对象的结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line"></span><br><span class="line">#if !__OBJC2__</span><br><span class="line">    Class super_class                                        OBJC2_UNAVAILABLE;</span><br><span class="line">    const char *name                                         OBJC2_UNAVAILABLE;</span><br><span class="line">    long version                                             OBJC2_UNAVAILABLE;</span><br><span class="line">    long info                                                OBJC2_UNAVAILABLE;</span><br><span class="line">    long instance_size                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_ivar_list *ivars                             OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_method_list **methodLists                    OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_cache *cache                                 OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_protocol_list *protocols                     OBJC2_UNAVAILABLE;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">&#125; OBJC2_UNAVAILABLE;</span><br></pre></td></tr></table></figure></p>
+<p>存在了 <figure class="highlight plain"><figcaption><span>objc_cache *cache  ```类型的方法缓存结构，objc_cache是一个结构体</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line">struct objc_cache &#123;</span><br><span class="line">    unsigned int mask /* total = mask + 1 */                 OBJC2_UNAVAILABLE;</span><br><span class="line">    unsigned int occupied                                    OBJC2_UNAVAILABLE;</span><br><span class="line">    Method buckets[1]                                        OBJC2_UNAVAILABLE;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>mask表示当前能达到的最大index,从0开始，所以总是是mask+1</li>
+<li>occupied 当前被占用的位置数量</li>
+<li>buckets 数组表示的hash表，数组的每一项都代表的是方法，<br>类型是Method，Method的结构是objc_method,<br>里面存储了方法的method_name,method_types,method_imp<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_method *Method;</span><br><span class="line">struct objc_method &#123;</span><br><span class="line">    SEL method_name                                          OBJC2_UNAVAILABLE;</span><br><span class="line">    char *method_types                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    IMP method_imp                                           OBJC2_UNAVAILABLE;</span><br><span class="line">&#125;                                                            OBJC2_UNAVAILABLE;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>每个类都存在objc_cache的结构体缓存方法列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PattyCat *pcat = [PattyCat alloc];</span><br><span class="line">[pcat init];</span><br><span class="line"></span><br><span class="line">[pcat class];</span><br></pre></td></tr></table></figure>
+<p>所以在<figure class="highlight plain"><figcaption><span>class]```处打上断点,在lookUpImpOrForward也打上断点，看看如何查找到父类的class方法流程</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">* 去当前类的缓存cache_getImp查找，找不到去当前类的方法列表里methods.beginLists去查找，</span><br><span class="line">* 如果当前类不存在方法，就会通过while循环查找， 先在父类缓存查找方法cache_getImp，找不到就在当前父类的方法列表查找getMethodNoSuper_nolock，如果找不到就往上找，</span><br><span class="line">* 直到找到之后，都会缓存该方法实现 log_and_fill_cache(cls, meth-&gt;imp, sel, inst, curClass);缓存在类本身的方法缓存里。</span><br><span class="line"></span><br><span class="line">以上查找流程，当while循环两次之后，当curClass=NSObject,通过getMethodNoSuper_nolock查找到了class这个方法的method,</span><br><span class="line">![method缓存图](/images/method_cache.png)</span><br><span class="line">可以看到class方法的type是 &quot;#16@0:8&quot;</span><br><span class="line"></span><br><span class="line">从下图可以看到如何执行的方法cache，此处将NSObject的-class方法进行缓存</span><br><span class="line">![method缓存fill](/images/method_cache_fill.png)</span><br><span class="line"></span><br><span class="line">cache_fill_nolock方法主要就是将cls的缓存方法结构体进行修改 bucket-&gt;set(key, imp);</span><br><span class="line">如果cache的容量不够，则进行扩展cache-&gt;expand();</span><br><span class="line">如果当前占用的数量还在总容量的3/4，则不扩展</span><br></pre></td></tr></table></figure></p>
+<p>static void cache_fill_nolock(Class cls, SEL sel, IMP imp, id receiver)<br>{<br>    cacheUpdateLock.assertLocked();</p>
+<pre><code>// Never cache before +initialize is done
+if (!cls-&gt;isInitialized()) return;
+
+// Make sure the entry wasn&apos;t added to the cache by some other thread
+// before we grabbed the cacheUpdateLock.
+if (cache_getImp(cls, sel)) return;
+
+cache_t *cache = getCache(cls);
+cache_key_t key = getKey(sel);
+
+// Use the cache as-is if it is less than 3/4 full
+mask_t newOccupied = cache-&gt;occupied() + 1;
+mask_t capacity = cache-&gt;capacity();
+if (cache-&gt;isConstantEmptyCache()) {
+    // Cache is read-only. Replace it.
+    cache-&gt;reallocate(capacity, capacity ?: INIT_CACHE_SIZE);
+}
+else if (newOccupied &lt;= capacity / 4 * 3) {
+    // Cache is less than 3/4 full. Use it as-is.
+}
+else {
+    // Cache is too full. Expand it.
+    cache-&gt;expand();
+}
+
+// Scan for the first unused slot and insert there.
+// There is guaranteed to be an empty slot because the
+// minimum size is 4 and we resized at 3/4 full.
+bucket_t *bucket = cache-&gt;find(key, receiver);
+if (bucket-&gt;key() == 0) cache-&gt;incrementOccupied();
+bucket-&gt;set(key, imp);
+</code></pre><p>}</p>
+<p>```<br>bucket设置之后，方法的cache存储结构如下<br><img src="/images/cache_bucket.png" alt="method缓存bucket"></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/26/由RACSwizzleClass引发的class思考/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -653,11 +820,11 @@
 <p>方法先是通过 objc_msgSend_uncached去查找是否有方法的缓存，这个时候断点都没有走到，可见在编译阶段就可以去查找方法的缓存了，也就是说方法的地址在编译期间就已经确定了，和类在内存中的地址是一样的，下面去验证这一说法的正确性</p>
 <p>点进去可以看到，是使用的汇编语言执行的，以此来提高查找速度<br>在主函数中，任意断点处，打印lldb<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p (void *)@selector(hello)</span><br><span class="line">(void *) $1 = 0x0000000100000f8c</span><br><span class="line">(lldb) p (void *)@selector(undefined_hello)</span><br><span class="line">(void *) $2 = 0x000000010290ced0</span><br></pre></td></tr></table></figure></p>
 <p>可见在代码中，没有显示的申明方法undefined_hello，导致内存地址和已经申明的方法hello还是有些差距的，undefined_hello选择子是在运行时确定的，因此再次显示申明一次方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">main.m</span><br><span class="line">  __unused SEL sel = @selector(undefined_hello);</span><br><span class="line">  XXObject *obj = [[XXObject alloc] init];</span><br><span class="line">  [obj hello];</span><br><span class="line"></span><br><span class="line">lldb打印</span><br><span class="line">(lldb) p (void *)@selector(hello)</span><br><span class="line">(void *) $0 = 0x0000000100000f8c</span><br><span class="line">(lldb) p (void *)@selector(undefined_hello)</span><br><span class="line">(void *) $1 = 0x0000000100000f92</span><br></pre></td></tr></table></figure></p>
-<p>两个选择子内存地址已经想差不大了<br>由此可以得出猜测:<br>1.通过@selector打印选择子的地址，而不是通过hello方法的内存地址，可见在OC中有一份巨大的选择子表<br>2.只需要传入sel的name,就可以去查找对应的选择自内存地址，如果没有找到，就会自动生成一个SEL并插入到表中<br>3.在编译期间就可以把所有的头文件和实现文件中的方法和@selector()方式调用的sel都插入到表中</p>
+<p>两个选择子内存地址已经想差不大了<br>由此可以得出猜测:<br>1.通过@selector打印选择子的地址，而不是通过hello方法的内存地址，可见在OC中有一份巨大的选择子表<br>2.只需要传入sel的name,就可以去查找对应的选择子内存地址，如果没有找到，就会自动生成一个SEL并插入到表中<br>3.在编译期间就可以把所有的头文件和实现文件中的方法和@selector()方式调用的sel都插入到表中</p>
 <p>在init方法执行前，打断点<br><img src="/images/Objc选择子地址.png" alt="Objc选择子地址"><br>打印选择子hello的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p SEL(0x0000000100000f8c)</span><br><span class="line">(SEL) $2 = &quot;hello&quot;</span><br></pre></td></tr></table></figure></p>
 <h2 id="msgSend"><a href="#msgSend" class="headerlink" title="msgSend"></a>msgSend</h2><p>具体方法 OBJC_EXPORT id objc_msgSend(id self, SEL op, …)没有实现方法，是汇编语言实现的具体实现</p>
 <p>当编译器遇到一个方法调用时，它会将方法的调用翻译成以下函数中的一个 objc_msgSend、objc_msgSend_stret、objc_msgSendSuper 和 objc_msgSendSuper_stret。<br>发送给对象的父类的消息会使用 objc_msgSendSuper 有数据结构作为返回值的方法会使用 objc_msgSendSuper_stret 或 objc_msgSend_stret 其它的消息都是使用 objc_msgSend 发送的</p>
-<p>现在看下整个的主流程，在调用hello方法的地方，打上断点之后，<br>整个流程中，没有找到方法缓存时，会通过调用lookUpImpOrForward查找方法的实现，打开这个函数的断点，<br>这个函数主要做的事情如下:</p>
+<p>现在看下整个的主流程，在调用hello方法的地方，打上断点之后，<br>整个流程中，没有找到方法缓存时，会通过调用lookUpImpOrForward查找方法的实现，打开这个函数的断点，<br>lookUpImpOrForward这个函数主要做的事情如下:</p>
 <ul>
 <li>查找缓存中是否存在方法的实现</li>
 <li>如果类没有初始化完成，就会去分配正确的可读写结构体</li>
@@ -689,130 +856,9 @@
 </li>
 </ol>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>为了提高消息传递的效率，ObjC 对 objc_msgSend 以及 cache_getImp 使用了汇编语言来编写。</p>
+<p>objc_msgSend的汇编文件在objc-msg-arm.s中</p>
 <h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%9C%8B%20ObjC%20%E4%B8%AD%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81.md" target="_blank" rel="noopener">https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%9C%8B%20ObjC%20%E4%B8%AD%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81.md</a></p>
 
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/15/Objc消息的发送/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/15/Objc消息的发送/" itemprop="url">Objc消息的发送</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-15T13:59:47+08:00">
-                2018-01-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            
           
         
       
@@ -1092,14 +1138,16 @@
 <blockquote>
 <p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试</p>
 </blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        PattyCat *pcat = [PattyCat alloc];</span><br><span class="line">        [pcat init];</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在main方法里，打上断点，进入调试看如何初始化对象</p>
 <h2 id="alloc"><a href="#alloc" class="headerlink" title="alloc"></a>alloc</h2><p>先看下大致的流程<br><img src="/images/alloc流程图.png" alt="alloc流程"></p>
-<p>断点首先进入 NSObject.mm中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">+ (id)alloc &#123;</span><br><span class="line">    return _objc_rootAlloc(self);</span><br><span class="line">&#125;</span><br><span class="line">id</span><br><span class="line">_objc_rootAlloc(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    return callAlloc(cls, false/*checkNil*/, true/*allocWithZone*/);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static ALWAYS_INLINE id</span><br><span class="line">callAlloc(Class cls, bool checkNil, bool allocWithZone=false)</span><br><span class="line">&#123;</span><br><span class="line">    if (slowpath(checkNil &amp;&amp; !cls)) return nil; //根据传参，此行不执行</span><br><span class="line"></span><br><span class="line">#if __OBJC2__</span><br><span class="line">    if (fastpath(!cls-&gt;ISA()-&gt;hasCustomAWZ())) &#123;</span><br><span class="line">            bool dtor = cls-&gt;hasCxxDtor();</span><br><span class="line">            id obj = (id)calloc(1, cls-&gt;bits.fastInstanceSize());</span><br><span class="line">            if (slowpath(!obj)) return callBadAllocHandler(cls);</span><br><span class="line">            obj-&gt;initInstanceIsa(cls, dtor);</span><br><span class="line">            return obj;</span><br><span class="line">      ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>断点首先进入 NSObject.mm中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">+ (id)alloc &#123;</span><br><span class="line">    return _objc_rootAlloc(self);</span><br><span class="line">&#125;</span><br><span class="line">id</span><br><span class="line">_objc_rootAlloc(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    return callAlloc(cls, false/*checkNil*/, true/*allocWithZone*/);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static ALWAYS_INLINE id</span><br><span class="line">callAlloc(Class cls, bool checkNil, bool allocWithZone=false)</span><br><span class="line">&#123;</span><br><span class="line">    if (slowpath(checkNil &amp;&amp; !cls)) return nil; //根据传参，此行不执行</span><br><span class="line"></span><br><span class="line">      ...</span><br><span class="line">      id obj = class_createInstance(cls, 0);</span><br><span class="line">          if (slowpath(!obj)) return callBadAllocHandler(cls);</span><br><span class="line">          return obj;</span><br><span class="line">      ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>执行断点调试，发现最终调用class_createInstance<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line">class_createInstance(Class cls, size_t extraBytes)</span><br><span class="line">&#123;</span><br><span class="line">    return _class_createInstanceFromZone(cls, extraBytes, nil);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>对象初始化中最重要的操作都在_class_createInstanceFromZone 方法中执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static __attribute__((always_inline))</span><br><span class="line">id</span><br><span class="line">_class_createInstanceFromZone(Class cls, size_t extraBytes, void *zone,</span><br><span class="line">                              bool cxxConstruct = true,</span><br><span class="line">                              size_t *outAllocatedSize = nil)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    size_t size = cls-&gt;instanceSize(extraBytes);</span><br><span class="line"></span><br><span class="line">    id obj;</span><br><span class="line">    if (!zone  &amp;&amp;  fast) &#123;</span><br><span class="line">        obj = (id)calloc(1, size);</span><br><span class="line">        if (!obj) return nil;</span><br><span class="line">        obj-&gt;initInstanceIsa(cls, hasCxxDtor);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>到此，alloc方法执行完毕，所以重点就是分配了一块内存空间，初始化isa<br>在分配空间之前，需要先获取cls实例内存空间的大小，方法cls-&gt;instanceSize可以分析下</p>
-<p>可见这是按照16字节对齐的方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">size_t instanceSize(size_t extraBytes) &#123;</span><br><span class="line">       size_t size = alignedInstanceSize() + extraBytes;</span><br><span class="line">       // CF requires all objects be at least 16 bytes.</span><br><span class="line">       if (size &lt; 16) size = 16;</span><br><span class="line">       return size;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// Class&apos;s ivar size rounded up to a pointer-size boundary.</span><br><span class="line">uint32_t alignedInstanceSize() &#123;</span><br><span class="line">    return word_align(unalignedInstanceSize());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static inline uint32_t word_align(uint32_t x) &#123;</span><br><span class="line">    return (x + WORD_MASK) &amp; ~WORD_MASK;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// May be unaligned depending on class&apos;s ivars.</span><br><span class="line">uint32_t unalignedInstanceSize() &#123;</span><br><span class="line">    assert(isRealized());</span><br><span class="line">    return data()-&gt;ro-&gt;instanceSize;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>到此，alloc方法执行完毕，所以重点就是分配了一块内存空间，初始化isa</p>
+<p>在分配空间之前，需要先获取cls实例内存空间的大小，方法cls-&gt;instanceSize可以分析下<br>可见这是按照16字节对齐的方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">size_t instanceSize(size_t extraBytes) &#123;</span><br><span class="line">       size_t size = alignedInstanceSize() + extraBytes;</span><br><span class="line">       // CF requires all objects be at least 16 bytes.</span><br><span class="line">       if (size &lt; 16) size = 16;</span><br><span class="line">       return size;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// Class&apos;s ivar size rounded up to a pointer-size boundary.</span><br><span class="line">uint32_t alignedInstanceSize() &#123;</span><br><span class="line">    return word_align(unalignedInstanceSize());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static inline uint32_t word_align(uint32_t x) &#123;</span><br><span class="line">    return (x + WORD_MASK) &amp; ~WORD_MASK;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// May be unaligned depending on class&apos;s ivars.</span><br><span class="line">uint32_t unalignedInstanceSize() &#123;</span><br><span class="line">    assert(isRealized());</span><br><span class="line">    return data()-&gt;ro-&gt;instanceSize;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>拿到对象的大小之后，calloc分配空间，然后初始化对象的initIsa<br>obj-&gt;initInstanceIsa(cls, hasCxxDtor);进行对象的isa结构体初始化<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">inline void</span><br><span class="line">objc_object::initInstanceIsa(Class cls, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!cls-&gt;instancesRequireRawIsa());</span><br><span class="line">    assert(hasCxxDtor == cls-&gt;hasCxxDtor());</span><br><span class="line"></span><br><span class="line">    initIsa(cls, true, hasCxxDtor);</span><br><span class="line">&#125;</span><br><span class="line">inline void</span><br><span class="line">objc_object::initIsa(Class cls, bool nonpointer, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">        ...</span><br><span class="line">        isa_t newisa(0);</span><br><span class="line">        ...</span><br><span class="line">        newisa.bits = ISA_MAGIC_VALUE;</span><br><span class="line">        newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">        newisa.shiftcls = (uintptr_t)cls &gt;&gt; 3;</span><br><span class="line">        isa = newisa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="init"><a href="#init" class="headerlink" title="init"></a>init</h2><p>可见init只是返回了当前的对象obj<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- (id)init &#123;</span><br><span class="line">    return _objc_rootInit(self);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">id</span><br><span class="line">_objc_rootInit(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    // In practice, it will be hard to rely on this function.</span><br><span class="line">    // Many classes do not properly chain -init calls.</span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="init"><a href="#init" class="headerlink" title="init"></a>init</h2><p>可见init只是返回了当前的对象obj<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">- (id)init &#123;</span><br><span class="line">    return _objc_rootInit(self);</span><br><span class="line">&#125;</span><br><span class="line">id</span><br><span class="line">objc_retain(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    if (!obj) return obj;</span><br><span class="line">    if (obj-&gt;isTaggedPointer()) return obj;</span><br><span class="line">    return obj-&gt;retain();</span><br><span class="line">&#125;</span><br><span class="line">inline id</span><br><span class="line">objc_object::retain()</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    if (fastpath(!ISA()-&gt;hasCustomRR())) &#123;</span><br><span class="line">        return rootRetain();</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line">objc_object::rootRetain()</span><br><span class="line">&#123;</span><br><span class="line">    return rootRetain(false, false);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">objc_object::rootRetain(bool tryRetain, bool handleOverflow)</span><br><span class="line">&#123;</span><br><span class="line">    if (isTaggedPointer()) return (id)this;</span><br><span class="line"></span><br><span class="line">    bool sideTableLocked = false;</span><br><span class="line">    bool transcribeToSideTable = false;</span><br><span class="line"></span><br><span class="line">    isa_t oldisa;</span><br><span class="line">    isa_t newisa;</span><br><span class="line"></span><br><span class="line">    do &#123;</span><br><span class="line">        transcribeToSideTable = false;</span><br><span class="line">        oldisa = LoadExclusive(&amp;isa.bits);</span><br><span class="line">        newisa = oldisa;</span><br><span class="line">        ...</span><br><span class="line">        uintptr_t carry;</span><br><span class="line">        newisa.bits = addc(newisa.bits, RC_ONE, 0, &amp;carry);  // extra_rc++</span><br><span class="line"></span><br><span class="line">       ...</span><br><span class="line">    &#125; while (slowpath(!StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits)));</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">    return (id)this;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">最终返回自身</span><br><span class="line">return this</span><br></pre></td></tr></table></figure></p>
 <h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><pre><code>#define fastpath(x) (__builtin_expect(bool(x), 1))
 #define slowpath(x) (__builtin_expect(bool(x), 0))
 
@@ -1873,7 +1921,7 @@ __builtin_expect的作用
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共19.7k字</span>
+<span class="post-count"> 博客全站共20.6k字</span>
 </div>
 
 

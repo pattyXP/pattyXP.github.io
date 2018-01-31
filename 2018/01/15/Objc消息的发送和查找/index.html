@@ -106,7 +106,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/Objc消息缓存查找.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/Objc选择子地址.png">
-<meta property="og:updated_time" content="2018-01-18T05:50:10.000Z">
+<meta property="og:updated_time" content="2018-01-30T06:30:18.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc消息的发送和查找">
 <meta name="twitter:description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行  开始在main.m中实现如下代码，添加断点查看XXObject调用hello方法的执行流程1234567891011121314151617181920#import &amp;quot;objc">
@@ -354,11 +354,11 @@
 <p>方法先是通过 objc_msgSend_uncached去查找是否有方法的缓存，这个时候断点都没有走到，可见在编译阶段就可以去查找方法的缓存了，也就是说方法的地址在编译期间就已经确定了，和类在内存中的地址是一样的，下面去验证这一说法的正确性</p>
 <p>点进去可以看到，是使用的汇编语言执行的，以此来提高查找速度<br>在主函数中，任意断点处，打印lldb<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p (void *)@selector(hello)</span><br><span class="line">(void *) $1 = 0x0000000100000f8c</span><br><span class="line">(lldb) p (void *)@selector(undefined_hello)</span><br><span class="line">(void *) $2 = 0x000000010290ced0</span><br></pre></td></tr></table></figure></p>
 <p>可见在代码中，没有显示的申明方法undefined_hello，导致内存地址和已经申明的方法hello还是有些差距的，undefined_hello选择子是在运行时确定的，因此再次显示申明一次方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">main.m</span><br><span class="line">  __unused SEL sel = @selector(undefined_hello);</span><br><span class="line">  XXObject *obj = [[XXObject alloc] init];</span><br><span class="line">  [obj hello];</span><br><span class="line"></span><br><span class="line">lldb打印</span><br><span class="line">(lldb) p (void *)@selector(hello)</span><br><span class="line">(void *) $0 = 0x0000000100000f8c</span><br><span class="line">(lldb) p (void *)@selector(undefined_hello)</span><br><span class="line">(void *) $1 = 0x0000000100000f92</span><br></pre></td></tr></table></figure></p>
-<p>两个选择子内存地址已经想差不大了<br>由此可以得出猜测:<br>1.通过@selector打印选择子的地址，而不是通过hello方法的内存地址，可见在OC中有一份巨大的选择子表<br>2.只需要传入sel的name,就可以去查找对应的选择自内存地址，如果没有找到，就会自动生成一个SEL并插入到表中<br>3.在编译期间就可以把所有的头文件和实现文件中的方法和@selector()方式调用的sel都插入到表中</p>
+<p>两个选择子内存地址已经想差不大了<br>由此可以得出猜测:<br>1.通过@selector打印选择子的地址，而不是通过hello方法的内存地址，可见在OC中有一份巨大的选择子表<br>2.只需要传入sel的name,就可以去查找对应的选择子内存地址，如果没有找到，就会自动生成一个SEL并插入到表中<br>3.在编译期间就可以把所有的头文件和实现文件中的方法和@selector()方式调用的sel都插入到表中</p>
 <p>在init方法执行前，打断点<br><img src="/images/Objc选择子地址.png" alt="Objc选择子地址"><br>打印选择子hello的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p SEL(0x0000000100000f8c)</span><br><span class="line">(SEL) $2 = &quot;hello&quot;</span><br></pre></td></tr></table></figure></p>
 <h2 id="msgSend"><a href="#msgSend" class="headerlink" title="msgSend"></a>msgSend</h2><p>具体方法 OBJC_EXPORT id objc_msgSend(id self, SEL op, …)没有实现方法，是汇编语言实现的具体实现</p>
 <p>当编译器遇到一个方法调用时，它会将方法的调用翻译成以下函数中的一个 objc_msgSend、objc_msgSend_stret、objc_msgSendSuper 和 objc_msgSendSuper_stret。<br>发送给对象的父类的消息会使用 objc_msgSendSuper 有数据结构作为返回值的方法会使用 objc_msgSendSuper_stret 或 objc_msgSend_stret 其它的消息都是使用 objc_msgSend 发送的</p>
-<p>现在看下整个的主流程，在调用hello方法的地方，打上断点之后，<br>整个流程中，没有找到方法缓存时，会通过调用lookUpImpOrForward查找方法的实现，打开这个函数的断点，<br>这个函数主要做的事情如下:</p>
+<p>现在看下整个的主流程，在调用hello方法的地方，打上断点之后，<br>整个流程中，没有找到方法缓存时，会通过调用lookUpImpOrForward查找方法的实现，打开这个函数的断点，<br>lookUpImpOrForward这个函数主要做的事情如下:</p>
 <ul>
 <li>查找缓存中是否存在方法的实现</li>
 <li>如果类没有初始化完成，就会去分配正确的可读写结构体</li>
@@ -390,6 +390,7 @@
 </li>
 </ol>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>为了提高消息传递的效率，ObjC 对 objc_msgSend 以及 cache_getImp 使用了汇编语言来编写。</p>
+<p>objc_msgSend的汇编文件在objc-msg-arm.s中</p>
 <h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%9C%8B%20ObjC%20%E4%B8%AD%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81.md" target="_blank" rel="noopener">https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%9C%8B%20ObjC%20%E4%B8%AD%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81.md</a></p>
 
       
@@ -433,8 +434,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/01/15/Objc消息的发送/" rel="next" title="Objc消息的发送">
-                <i class="fa fa-chevron-left"></i> Objc消息的发送
+              <a href="/2018/01/13/initialize的分析/" rel="next" title="initialize的分析">
+                <i class="fa fa-chevron-left"></i> initialize的分析
               </a>
             
           </div>
@@ -626,7 +627,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共19.7k字</span>
+<span class="post-count"> 博客全站共20.6k字</span>
 </div>
 
 
