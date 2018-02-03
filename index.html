@@ -275,7 +275,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/02/KVO-实现原来分析/">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/02/KVO-实现原理分析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Patty">
@@ -294,7 +294,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/02/02/KVO-实现原来分析/" itemprop="url">KVO 实现原理分析</a></h1>
+                <a class="post-title-link" href="/2018/02/02/KVO-实现原理分析/" itemprop="url">KVO 实现原理分析</a></h1>
         
 
         <div class="post-meta">
@@ -354,10 +354,10 @@
 <p>Automatic key-value observing is implemented using a technique called isa-swizzling… When an observer is registered for an attribute of an object the isa pointer of the observed object is modified, pointing to an intermediate class rather than at the true class ..</p>
 </blockquote>
 <p>简要的来说，在我们对某个对象完成监听的注册后，编译器会修改监听对象（上文中的pcat）的isa指针，让这个指针指向一个新生成的中间类，中间类的命名格式如 NSKVONotifying_XX (XX 是pcat对象的class)</p>
-<p>苹果还重写了这个子类的class方法跟description方法来掩人耳目。<br>另外，新类相对于父类添加了一个NSKVONotifying_前缀，添加这个前缀是为了避免多次创建监听子类，节省资源</p>
+<p>苹果还 <strong>重写了这个子类的class方法跟description方法</strong> 来掩人耳目。<br>另外，新类相对于父类添加了一个NSKVONotifying_前缀，添加这个前缀是为了避免多次创建监听子类，节省资源</p>
 <p>以上通过object_getClass(pcat)命令得到了KVO前为PattyCat   KVO后值为 NSKVONotifying_PattyCat</p>
 <p>注: 以下两个方式得到类的指针是一样的哦<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p object_getClass(pcat)</span><br><span class="line">(Class) $0 = PattyCat</span><br><span class="line">(lldb) p (void *)$0</span><br><span class="line">(void *) $1 = 0x0000000100001188</span><br><span class="line"></span><br><span class="line">(lldb) p (objc_class *)[PattyCat class]</span><br><span class="line">(objc_class *) $2 = 0x0000000100001188</span><br></pre></td></tr></table></figure></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>对实例对象进行KVO观察的时候，实际上对象的isa已经不是之前的类对象了<br>移除KVO之后，恢复之前的结果</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>对实例对象进行KVO观察的时候，实际上对象的isa已经不是之前的类对象了<br>移除KVO之后，恢复之前效果</p>
 
           
         

@@ -78,7 +78,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, Patty" />
+  <meta name="keywords" content="原理," />
 
 
 
@@ -96,17 +96,18 @@
 
 
 
-<meta name="description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
+<meta name="description" content="在之前，一直以为类的isa结构图就是那张很经典的图，但是才发现有个特例情况下，有点变化 code123456789101112131415161718192021222324  PattyCat *pcat = [[PattyCat alloc] init];   NSLog(@&amp;quot;%p--pcat的isa:%p--%@-%@-%@&amp;quot;,(object_getClass([Patt">
+<meta name="keywords" content="原理">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Objc中的属性">
-<meta property="og:url" content="https://pattyxp.github.io/2018/01/31/Objc中的属性/index.html">
+<meta property="og:title" content="KVO 实现原理分析">
+<meta property="og:url" content="https://pattyxp.github.io/2018/02/02/KVO-实现原理分析/index.html">
 <meta property="og:site_name" content="温暖的弦">
-<meta property="og:description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
+<meta property="og:description" content="在之前，一直以为类的isa结构图就是那张很经典的图，但是才发现有个特例情况下，有点变化 code123456789101112131415161718192021222324  PattyCat *pcat = [[PattyCat alloc] init];   NSLog(@&amp;quot;%p--pcat的isa:%p--%@-%@-%@&amp;quot;,(object_getClass([Patt">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-31T06:58:14.000Z">
+<meta property="og:updated_time" content="2018-02-02T05:11:55.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Objc中的属性">
-<meta name="twitter:description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
+<meta name="twitter:title" content="KVO 实现原理分析">
+<meta name="twitter:description" content="在之前，一直以为类的isa结构图就是那张很经典的图，但是才发现有个特例情况下，有点变化 code123456789101112131415161718192021222324  PattyCat *pcat = [[PattyCat alloc] init];   NSLog(@&amp;quot;%p--pcat的isa:%p--%@-%@-%@&amp;quot;,(object_getClass([Patt">
 
 
 
@@ -135,13 +136,13 @@
 
 
 
-  <link rel="canonical" href="https://pattyxp.github.io/2018/01/31/Objc中的属性/"/>
+  <link rel="canonical" href="https://pattyxp.github.io/2018/02/02/KVO-实现原理分析/"/>
 
 
 
 
 
-  <title>Objc中的属性 | 温暖的弦</title>
+  <title>KVO 实现原理分析 | 温暖的弦</title>
   
 
 
@@ -274,7 +275,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/31/Objc中的属性/">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/02/KVO-实现原理分析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Patty">
@@ -291,7 +292,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Objc中的属性</h1>
+          <h1 class="post-title" itemprop="name headline">KVO 实现原理分析</h1>
         
 
         <div class="post-meta">
@@ -303,8 +304,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-31T14:58:14+08:00">
-                2018-01-31
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-02T11:59:38+08:00">
+                2018-02-02
               </time>
             
 
@@ -341,7 +342,19 @@
       
 
       
-        
+        <p>在之前，一直以为类的isa结构图就是那张很经典的图，但是才发现有个特例情况下，有点变化</p>
+<h2 id="code"><a href="#code" class="headerlink" title="code"></a>code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">  PattyCat *pcat = [[PattyCat alloc] init];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   NSLog(@&quot;%p--pcat的isa:%p--%@-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910--pcat的isa:0x10408c870--PattyCat-Cat-Cat</span><br><span class="line">    */</span><br><span class="line">   [pcat addObserver:self</span><br><span class="line">         forKeyPath:@&quot;address&quot;</span><br><span class="line">         options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld</span><br><span class="line">         context:nil];</span><br><span class="line">   pcat.address = @&quot;有地址了&quot;;</span><br><span class="line">//    NSLog(@&quot;%@--%p&quot;,(object_getClass([PattyCat class])),object_getClass(pcat));</span><br><span class="line"></span><br><span class="line">   NSLog(@&quot;%p---pcat的isa:%p-新的子类是:%@-新的子类的isa:%p-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),object_getClass(object_getClass(pcat)),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910---pcat的isa:0x7b24000260a0-新的子类是:NSKVONotifying_PattyCat-新的子类的isa:0x7b2400026130-Cat-PattyCat</span><br><span class="line">    */</span><br><span class="line">   [pcat removeObserver:self forKeyPath:@&quot;address&quot;];</span><br><span class="line"></span><br><span class="line">  NSLog(@&quot;%p--pcat的isa:%p--%@-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910--pcat的isa:0x10408c870--PattyCat-Cat-Cat</span><br><span class="line">    */</span><br></pre></td></tr></table></figure>
+<p>在当前类中引入对象pcat,监听它的KVO变化之后，然后移除KVO，对象的isa以及superClass前后的变化如上</p>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>苹果文档介绍</p>
+<blockquote>
+<p>Automatic key-value observing is implemented using a technique called isa-swizzling… When an observer is registered for an attribute of an object the isa pointer of the observed object is modified, pointing to an intermediate class rather than at the true class ..</p>
+</blockquote>
+<p>简要的来说，在我们对某个对象完成监听的注册后，编译器会修改监听对象（上文中的pcat）的isa指针，让这个指针指向一个新生成的中间类，中间类的命名格式如 NSKVONotifying_XX (XX 是pcat对象的class)</p>
+<p>苹果还 <strong>重写了这个子类的class方法跟description方法</strong> 来掩人耳目。<br>另外，新类相对于父类添加了一个NSKVONotifying_前缀，添加这个前缀是为了避免多次创建监听子类，节省资源</p>
+<p>以上通过object_getClass(pcat)命令得到了KVO前为PattyCat   KVO后值为 NSKVONotifying_PattyCat</p>
+<p>注: 以下两个方式得到类的指针是一样的哦<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p object_getClass(pcat)</span><br><span class="line">(Class) $0 = PattyCat</span><br><span class="line">(lldb) p (void *)$0</span><br><span class="line">(void *) $1 = 0x0000000100001188</span><br><span class="line"></span><br><span class="line">(lldb) p (objc_class *)[PattyCat class]</span><br><span class="line">(objc_class *) $2 = 0x0000000100001188</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>对实例对象进行KVO观察的时候，实际上对象的isa已经不是之前的类对象了<br>移除KVO之后，恢复之前效果</p>
+
       
     </div>
     
@@ -368,6 +381,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/原理/" rel="tag"><i class="fa fa-tag"></i> 原理</a>
+          
+        </div>
+      
 
       
       
@@ -377,8 +396,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/01/30/Objc消息的缓存/" rel="next" title="Objc消息的缓存">
-                <i class="fa fa-chevron-left"></i> Objc消息的缓存
+              <a href="/2018/01/31/Objc中的属性/" rel="next" title="Objc中的属性">
+                <i class="fa fa-chevron-left"></i> Objc中的属性
               </a>
             
           </div>
@@ -386,10 +405,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/02/02/KVO-实现原理分析/" rel="prev" title="KVO 实现原理分析">
-                KVO 实现原理分析 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -441,8 +456,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/flower.jpg"
@@ -502,6 +526,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#code"><span class="nav-number">1.</span> <span class="nav-text">code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#原理"><span class="nav-number">2.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
