@@ -275,6 +275,201 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/10/isa的存在/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/10/isa的存在/" itemprop="url">isa的存在</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-10T14:20:40+08:00">
+                2018-01-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
+<blockquote>
+<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">struct objc_object &#123;</span><br><span class="line">private:</span><br><span class="line">    isa_t isa;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">struct objc_class : objc_object &#123;</span><br><span class="line">    // Class ISA;</span><br><span class="line">    Class superclass;</span><br><span class="line">    cache_t cache;             // formerly cache pointer and vtable</span><br><span class="line">    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p><img src="/images/isa.png" alt="结构图"></p>
+<p>在 Objective-C 中，对象的方法并没有存储于对象的结构体中（如果每一个对象都保存了自己能执行的方法，那么对内存的占用有极大的影响）。</p>
+<p>当实例方法被调用时，它要通过自己持有的 isa 来查找对应的类，然后在这里的 class_data_bits_t 结构体中查找对应方法的实现。同时，每一个 objc_class 也有一个指向自己的父类的指针 super_class 用来查找继承的方法。</p>
+<p>isa分析<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">union isa_t</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">  isa_t() &#123; &#125;</span><br><span class="line">  isa_t(uintptr_t value) : bits(value) &#123; &#125;</span><br><span class="line"></span><br><span class="line">  Class cls;</span><br><span class="line">  uintptr_t bits;</span><br><span class="line"></span><br><span class="line">  //如果是X86的结构，大致信息如下，还有arm_64这里就不贴了，大致字段差不多，多少有点差别</span><br><span class="line">  if __x86_64__  </span><br><span class="line">#   define ISA_MASK        0x00007ffffffffff8ULL</span><br><span class="line">#   define ISA_MAGIC_MASK  0x001f800000000001ULL</span><br><span class="line">#   define ISA_MAGIC_VALUE 0x001d800000000001ULL</span><br><span class="line"></span><br><span class="line">    struct &#123;</span><br><span class="line">    uintptr_t nonpointer        : 1;</span><br><span class="line">    uintptr_t has_assoc         : 1;</span><br><span class="line">    uintptr_t has_cxx_dtor      : 1;</span><br><span class="line">    uintptr_t shiftcls          : 44; // MACH_VM_MAX_ADDRESS 0x7fffffe00000</span><br><span class="line">    uintptr_t magic             : 6;</span><br><span class="line">    uintptr_t weakly_referenced : 1;</span><br><span class="line">    uintptr_t deallocating      : 1;</span><br><span class="line">    uintptr_t has_sidetable_rc  : 1;</span><br><span class="line">    uintptr_t extra_rc          : 8;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>首先，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">union isa_t &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>union结构体 结构比较灵活，如下所示，一次只能容纳一件事，但是这个东西可能是一个int，一个浮点数等，这取决于你如何声明它。<br>isa_t、cls、 bits 还有结构体共用同一块地址空间，isa 总共会占据 64 位的内存空间（决定于其中的结构体）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">typedef union MyUnion MYUNION;</span><br><span class="line">union MyUnion</span><br><span class="line">&#123;</span><br><span class="line">   int MyInt;</span><br><span class="line">   float MyFloat;</span><br><span class="line">&#125;;</span><br><span class="line">MyUnion将只包含一个int或一个浮点数，取决于你最近设置的。所以这样做：</span><br><span class="line"></span><br><span class="line">MYUNION u;</span><br><span class="line">u.MyInt = 10;</span><br><span class="line">你现在保持一个int等于10;</span><br><span class="line"></span><br><span class="line">u.MyFloat = 1.0;</span><br><span class="line">你现在拥有一个等于1.0的浮动。</span><br></pre></td></tr></table></figure></p>
+<p>isa的内存结构图<br><img src="images/isa内存结构图.png" alt="isa结构图"></p>
+<p>初始化<br>对于bits的设置可以在初始化中进行设置 objc-object.h<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">inline void</span><br><span class="line">objc_object::initInstanceIsa(Class cls, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!cls-&gt;instancesRequireRawIsa());</span><br><span class="line">    assert(hasCxxDtor == cls-&gt;hasCxxDtor());</span><br><span class="line"></span><br><span class="line">    initIsa(cls, true, hasCxxDtor);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">inline void</span><br><span class="line">objc_object::initIsa(Class cls, bool nonpointer, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!isTaggedPointer());</span><br><span class="line"></span><br><span class="line">    if (!nonpointer) &#123;</span><br><span class="line">        isa.cls = cls;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        assert(!DisableNonpointerIsa);</span><br><span class="line">        assert(!cls-&gt;instancesRequireRawIsa());</span><br><span class="line"></span><br><span class="line">        isa_t newisa(0);</span><br><span class="line"></span><br><span class="line">#if SUPPORT_INDEXED_ISA</span><br><span class="line">        assert(cls-&gt;classArrayIndex() &gt; 0);</span><br><span class="line">        newisa.bits = ISA_INDEX_MAGIC_VALUE; //赋值0x001d800000000001ULL</span><br><span class="line">        // isa.magic is part of ISA_MAGIC_VALUE</span><br><span class="line">        // isa.nonpointer is part of ISA_MAGIC_VALUE</span><br><span class="line">        newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">        newisa.indexcls = (uintptr_t)cls-&gt;classArrayIndex();</span><br><span class="line">#else</span><br><span class="line">        newisa.bits = ISA_MAGIC_VALUE;</span><br><span class="line">        // isa.magic is part of ISA_MAGIC_VALUE</span><br><span class="line">        // isa.nonpointer is part of ISA_MAGIC_VALUE</span><br><span class="line">        newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">        newisa.shiftcls = (uintptr_t)cls &gt;&gt; 3;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">        // This write must be performed in a single store in some cases</span><br><span class="line">        // (for example when realizing a class because other threads</span><br><span class="line">        // may simultaneously try to use the class).</span><br><span class="line">        // fixme use atomics here to guarantee single-store and to</span><br><span class="line">        // guarantee memory order w.r.t. the class index table</span><br><span class="line">        // ...but not too atomic because we don&apos;t want to hurt instantiation</span><br><span class="line">        isa = newisa;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>newisa.bits = ISA_INDEX_MAGIC_VALUE; //赋值0x001d800000000001ULL则对应的64位显示的值如下图<br><img src="/images/isa赋值.png" alt="isa赋值后"></p>
+<p>从图中了解到，在使用 ISA_MAGIC_VALUE 设置 isa_t 结构体之后，实际上只是设置了 indexed 以及 magic 这两部分的值。</p>
+<ul>
+<li>indexed 表示 isa_t 的类型<ul>
+<li>0 表示 raw isa，也就是没有结构体的部分，访问对象的 isa 会直接返回一个指向 cls 的指针，也就是在 iPhone 迁移到 64 位系统之前时 isa 的类型。</li>
+<li>1 表示当前 isa 不是指针，但是其中也有 cls 的信息，只是其中关于类的指针都是保存在 shiftcls 中。</li>
+</ul>
+</li>
+<li><p>magic 的值为 0x3b 用于调试器判断当前对象是真的对象还是没有初始化的空间</p>
+</li>
+<li><p>has_cxx_dtor:在设置 indexed 和 magic 值之后，会设置 isa 的 has_cxx_dtor，这一位表示当前对象有 C++ 或者 ObjC 的析构器(destructor)，如果没有析构器就会快速释放内存。</p>
+</li>
+<li><p>shiftcls: 将当前对象对应的类指针存入 isa 结构体中</p>
+<blockquote>
+<p>isa.shiftcls = (uintptr_t)cls &gt;&gt; 3;<br>所有类指针十六进制地址的最后一位都为 8 或者 0<br>将当前地址右移三位的主要原因是用于将 Class 指针中无用的后三位清除减小内存的消耗，因为类的指针要按照字节（8 bits）对齐内存，其指针后三位都是没有意义的 0。</p>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li><p>ISA() 方法<br>因为我们使用结构体取代了原有的 isa 指针，所以要提供一个方法 ISA() 来返回类指针。</p>
+<p>其中 ISA_MASK 是宏定义，这里通过掩码的方式获取类指针：</p>
+<p>#define ISA_MASK 0x00007ffffffffff8ULL<br>inline Class<br>objc_object::ISA()<br>{</p>
+<pre><code>return (Class)(isa.bits &amp; ISA_MASK);//返回64bit中shiftcls位对应的值
+</code></pre><p>}</p>
+</li>
+</ul>
+<h2 id="其它-bits"><a href="#其它-bits" class="headerlink" title="其它 bits"></a>其它 bits</h2><p>  在 isa_t 中，我们还有一些没有介绍的其它 bits，在这个小结就简单介绍下这些 bits 的作用</p>
+<ul>
+<li>has_assoc<br>对象含有或者曾经含有关联引用，没有关联引用的可以更快地释放内存</li>
+<li>weakly_referenced<br>对象被指向或者曾经指向一个 ARC 的弱变量，没有弱引用的对象可以更快释放</li>
+<li>deallocating<br>对象正在释放内存</li>
+<li>has_sidetable_rc<br>对象的引用计数太大了，存不下</li>
+<li>extra_rc<br>对象的引用计数超过 1，会存在这个这个里面，如果引用计数为 10，extra_rc 的值就为 9</li>
+</ul>
+<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>1、前缀：<br>0开头表示8进制，0x或0X开头表示16进制。</p>
+<p>2、后缀：用来表示类型。<br>—— l或L表示long常量<br>—— u或U表示unsigned int常量<br>—— ul、uL、Ul、UL、lU、lu、LU、Lu表示unsigned long常量。（lu可以采用任意顺序和大小写表示）<br>—— ll、LL表示long long 常量。<br>—— ull、Ull、uLL、ULL表示unsigned long long常量。</p>
+<blockquote>
+<p>当希望常量被当作unsigned long long表示就在后面加上后缀ULL</p>
+</blockquote>
+<p>3、对于浮点常量，<br>—— f或F表示float<br>—— l或L表示long double<br>—— 其他都表示double</p>
+<p>4、不带后缀时的规则——尽可能采用小的类型：<br>—— 对于10进制：int-&gt;long-&gt;long long<br>—— 对于8进制或16进制：int-&gt;unsigned int-&gt;long-&gt;unsigned long-&gt;long long -&gt;unsigned long long</p>
+<h2 id="元类"><a href="#元类" class="headerlink" title="元类"></a>元类</h2><p>元类是Class对象的类。<br>简单的说：<br>将消息发送给对象时，会在对象的类的方法列表中查找该消息。<br>当你发送消息给一个类时，这个消息在类的元类的方法列表中查找。<br>元类是必不可少的，因为它存储了类的方法Class。Class因为每个类Class都有一个潜在唯一的类方法列表，所以每个方法都必须有一个唯一的元类。意味着所有的Class对象本身都不是同一个类。</p>
+<p>元类具有NSObject元类作为它的类。<br>元类，也是一个对象，元类的class就是NSObject,NSObject的元类是自身。这意味着元类isa上的指针指向NSObject自己（这是它自己的一个实例）。</p>
+<p>code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">Class newClass =</span><br><span class="line">    objc_allocateClassPair([NSError class], &quot;RuntimeErrorSubclass&quot;, 0);</span><br><span class="line">class_addMethod(newClass, @selector(report), (IMP)ReportFunction, &quot;v@:&quot;);</span><br><span class="line">objc_registerClassPair(newClass);</span><br><span class="line"></span><br><span class="line">void ReportFunction(id self, SEL _cmd)</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;This object is %p.&quot;, self);</span><br><span class="line">    NSLog(@&quot;Class is %@, and super is %@.&quot;, [self class], [self superclass]);</span><br><span class="line"></span><br><span class="line">    Class currentClass = [self class];</span><br><span class="line">    for (int i = 1; i &lt; 5; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;Following the isa pointer %d times gives %p&quot;, i, currentClass);</span><br><span class="line">        currentClass = object_getClass(currentClass);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    NSLog(@&quot;NSObject&apos;s class is %p&quot;, [NSObject class]);</span><br><span class="line">    NSLog(@&quot;NSObject&apos;s meta class is %p&quot;, object_getClass([NSObject class]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">调用</span><br><span class="line">id instanceOfNewClass =</span><br><span class="line">    [[newClass alloc] initWithDomain:@&quot;someDomain&quot; code:0 userInfo:nil];</span><br><span class="line">[instanceOfNewClass performSelector:@selector(report)];</span><br><span class="line">[instanceOfNewClass release];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">在运行时创建一个类只需三个简单的步骤：</span><br><span class="line"></span><br><span class="line">为“类对”分配存储（使用objc_allocateClassPair）。</span><br><span class="line">根据需要将方法和ivars添加到类中（我已经添加了一个方法class_addMethod）。</span><br><span class="line">注册该类，以便可以使用（使用objc_registerClassPair）。</span><br><span class="line"></span><br><span class="line">该函数objc_allocateClassPair只返回一个值：类。另一半就是元类</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">打印如下:</span><br><span class="line">This object is 0x10010c810.</span><br><span class="line">Class is RuntimeErrorSubclass, and super is NSError.</span><br><span class="line">Following the isa pointer 1 times gives 0x10010c600</span><br><span class="line">Following the isa pointer 2 times gives 0x10010c630</span><br><span class="line">Following the isa pointer 3 times gives 0x7fff71038480</span><br><span class="line">Following the isa pointer 4 times gives 0x7fff71038480</span><br><span class="line">NSObject&apos;s class is 0x7fff710384a8</span><br><span class="line">NSObject&apos;s meta class is 0x7fff71038480</span><br><span class="line"></span><br><span class="line">通过isa重复的值来查看所到达的地址：</span><br><span class="line"></span><br><span class="line">该对象是地址0x10010c810。</span><br><span class="line">类是地址0x10010c600。</span><br><span class="line">元类是地址0x10010c630。</span><br><span class="line">元类的类（即NSObject元类）是地址0x7fff71038480。</span><br><span class="line">在NSObject元类的类本身。</span><br><span class="line">地址的价值并不重要，只是它展示了从类到元类到NSObject元类的进展。</span><br></pre></td></tr></table></figure></p>
+<p>object_getClass 与 objc_getClass<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Class cls = [XXObject class];</span><br><span class="line">NSLog(@&quot;%p&quot;,cls);                  //0x1000011a8</span><br><span class="line">NSLog(@&quot;%p&quot;,object_getClass(cls));//0x100001180  </span><br><span class="line">NSLog(@&quot;%p&quot;,objc_getClass([NSStringFromClass(cls)UTF8String]));//0x1000011a8  </span><br><span class="line"></span><br><span class="line">object_getClass 返回 isa指向的类</span><br><span class="line">objc_getClass方法只是单纯地返回了Class</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>1.isa结构<br>2.元类 元类的概念</p>
+<ul>
+<li>Object_Class</li>
+<li><p>objc_class<br>3.类在内存中的位置，在编译期间就已经确定了<br>4.object_getClass(obj)返回的是obj中的isa指针；</p>
+<p>[obj class]则分两种情况：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"> // class方法</span><br><span class="line"> + (Class)class &#123;</span><br><span class="line">    return self;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">- (Class)class &#123;</span><br><span class="line">    return object_getClass(self);</span><br><span class="line">&#125;</span><br><span class="line">Class object_getClass(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    if (obj) return obj-&gt;getIsa();</span><br><span class="line">    else return Nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<ul>
+<li>二是当obj为类对象（包括元类和根类以及根元类）时，调用的是类方法：+ (Class)class，返回的结果为其本身。</li>
+<li>一是当obj为实例对象时，[obj class]中class是实例方法：- (Class)class，返回的obj对象中的isa指针；<br><img src="/images/OC-经典类的结构图查找isa.png" alt="OC-经典类的结构图查找isa"></li>
+</ul>
+<p>为了便于理解，修改上图的继承关系 NyanCat-&gt;Cat-&gt;NSObject<br><img src="/images/Objc-经典类的结构图查找isa详解.png" alt="Objc-经典类的结构图查找isa详解"></p>
+<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%20NSObject%20%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BA%86%E8%A7%A3%20isa.md" target="_blank" rel="noopener">isa解读</a>  以上图片链接均来自于此链接</p>
+<p><a href="http://www.cocoawithlove.com/2010/01/what-is-meta-class-in-objective-c.html" target="_blank" rel="noopener">关于元类</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/09/为什么使用copy而不是Strong/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1598,152 +1793,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/02/博客搭建/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/02/博客搭建/" itemprop="url">博客搭建</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-02T17:43:15+08:00">
-                2018-01-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h3><p>之前一直有在收集一些大神的博客，自己也肖想了一把建立自己的博客地址，于是乎就有了个开端</p>
-<p>在此之前，我也是小白一枚啊，遇到了一些非常浅显的坑，但是一直没有发现导致纠结了一下，整个整下来大概花了2小时吧 ~ ~ ~</p>
-<h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><p>首先安装些必备的环境是分分钟的事情啦，网上有相关教程的，如有问题请自行google</p>
-<ul>
-<li>Node.js</li>
-<li><p>Git (Xcode自带，可以绕行)</p>
-</li>
-<li><p>当Node.js和Git都安装好后就可以正式安装Hexo了，终端执行如下命令：<br>$ sudo npm install -g hexo</p>
-</li>
-<li><p>初始化</p>
-</li>
-</ul>
-<p>本地自己建立存放的文件夹，cd到当前文件目录下，执行以下命令<br>$ hexo init xxx (xxx 是你建立的文件夹名称。cd到xxx文件夹下，执行如下命令，安装npm：)<br>$ npm install<br>执行如下命令，开启hexo服务器:<br>$ hexo s<br>此时，浏览器中打开网址<a href="http://localhost:4000，" target="_blank" rel="noopener">http://localhost:4000，</a><br>能看到helloWorld的页面，此时本地显示已经OK<br>效果如图:<br><img src="/images/初建博客.png" alt="效果如图"></p>
-<ul>
-<li>管理github<br>建立自己的github账号之后，将mac下的ssh内容上传到setting里相应的位置<br>选择新建一个responsity，注意，命名非常重要，我就是在这里被卡了一小时的感觉<br>比如我的Github名称是pattyXP,但是建立的仓库名称，需要符合规则: github名称.github.io ，我一开始写错了，写成了patty.github.io，为此哀伤一下下 ~ ~ ~<br>然后，进入到该仓库的主页下，选择setting，滑到GitHub Pages一级，将source选择为master，点击save，这是为什么呢？（因为之前在本地文件下有一个.yml，打开后往下滑到最后，修改成下边的样子：<br>deploy:<br>  type: git<br>  repository: <a href="https://github.com/pattyXP/pattyXP.github.io.git" target="_blank" rel="noopener">https://github.com/pattyXP/pattyXP.github.io.git</a><br> branch: master）<br>然后打开自己的<a href="https://pattyxp.github.io/">https://pattyxp.github.io/</a><br>效果就和本地的localhost:4000一模一样了(😅)</li>
-</ul>
-<h2 id="后面的维护"><a href="#后面的维护" class="headerlink" title="后面的维护"></a>后面的维护</h2><p>hexo支持markdown语法，所以本地的文章可以使用markdown语法来编写，之后保存为xx.md即可，放在博客的文件夹下的source/_posts/xx.md即可<br>最后，执行如下命令就可以上传成功了<br>hexo new xxx<br>hexo g （生成静态页面）<br>hexo d  (将文章部署到Github)</p>
-<h2 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h2><p>可能还需要用到的命令<br>hexo clean<br>hexo d -g</p>
-<h2 id="参考教程"><a href="#参考教程" class="headerlink" title="参考教程"></a>参考教程</h2><p>博客搭建教程: <a href="http://jeasonstudio.github.io" target="_blank" rel="noopener">http://jeasonstudio.github.io</a><br>博客主题搭建: <a href="http://theme-next.iissnan.com/getting-started.html" target="_blank" rel="noopener">http://theme-next.iissnan.com/getting-started.html</a><br>博客主题定制化: <a href="http://shenzekun.cn/" target="_blank" rel="noopener">http://shenzekun.cn/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1789,7 +1843,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">20</span>
+                <span class="site-state-item-count">21</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1877,7 +1931,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共21.9k字</span>
+<span class="post-count"> 博客全站共23.1k字</span>
 </div>
 
 
