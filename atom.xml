@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://pattyxp.github.io/"/>
-  <updated>2018-02-13T02:47:34.000Z</updated>
+  <updated>2018-02-13T06:19:51.000Z</updated>
   <id>https://pattyxp.github.io/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Objc-autoreleasePool</title>
+    <link href="https://pattyxp.github.io/2018/02/13/Objc-autoreleasePool/"/>
+    <id>https://pattyxp.github.io/2018/02/13/Objc-autoreleasePool/</id>
+    <published>2018-02-13T02:55:28.000Z</published>
+    <updated>2018-02-13T06:19:51.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        for (int i=0; i&lt;100; i++) &#123;</span><br><span class="line">            @autoreleasepool&#123;</span><br><span class="line">                SampleClass *sample = [[SampleClass alloc] init];</span><br><span class="line">                [sample startAction];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>在上面的for循环内，断点执行，可以看到方法执行函数调用栈<br><img src="/images/autoreleasepool1.png" alt="函数调用栈"></p><p>@autoreleasepool 内部调用函数<br>void *<br>objc_autoreleasePoolPush(void)<br>{<br>    return AutoreleasePoolPage::push();<br>}</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;源码解析&quot;&gt;&lt;a href=&quot;#源码解析&quot; class=&quot;headerlink&quot; title=&quot;源码解析&quot;&gt;&lt;/a&gt;源码解析&lt;/h2&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pr
+      
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>Objc-protocol篇</title>
@@ -459,30 +480,6 @@
     
     
       <category term="源码解析" scheme="https://pattyxp.github.io/tags/%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>2018Flag</title>
-    <link href="https://pattyxp.github.io/2018/01/04/2018Flag/"/>
-    <id>https://pattyxp.github.io/2018/01/04/2018Flag/</id>
-    <published>2018-01-04T03:37:32.000Z</published>
-    <updated>2018-01-11T02:48:05.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>今年初，创建下此博客，希望能够记录下自己的成长，工作之后感觉越来越懒了，需要监督自己了。<br>去年的时候记得也没有做什么特别的大事，只是出了趟国旅游，拿到了驾照，本来打算买车了，后面也没想法了。。。</p><p>生活Flag:<br>提高英语听说能力，坚持背单词，看美剧提高吧 ~ ~ ~<br>今年想要去趟成都旅游 ~ ~ ~</p><p>工作Flag:<br>多看点源码，学点新技术</p><p>今年就此在学习和生活上，都有个新的期待和变化吧</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;今年初，创建下此博客，希望能够记录下自己的成长，工作之后感觉越来越懒了，需要监督自己了。&lt;br&gt;去年的时候记得也没有做什么特别的大事，只是出了趟国旅游，拿到了驾照，本来打算买车了，后面也没想法了。。。&lt;/p&gt;
-&lt;p&gt;生活Flag:&lt;br&gt;提高英语听说能力，坚持背单词，看美剧
-      
-    
-    </summary>
-    
-    
-      <category term="生活" scheme="https://pattyxp.github.io/tags/%E7%94%9F%E6%B4%BB/"/>
     
   </entry>
   

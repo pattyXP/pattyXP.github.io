@@ -275,6 +275,160 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/13/Objc initialize的分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/13/Objc initialize的分析/" itemprop="url">Objc initialize的分析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-13T14:04:50+08:00">
+                2018-01-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
+<blockquote>
+<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，</p>
+</blockquote>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>先来看下源码，在main.m中添加代码如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@interface XXObject: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation XXObject</span><br><span class="line"></span><br><span class="line">+ (void)initialize</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;XXObject initialize&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>运行程序，发现没有任何打印log<br><img src="/images/initialize的打印.png" alt="initialize的打印"></p>
+<p>和load方法不同，load方法运行还是有打印的，这是为什么呢？？</p>
+<p>如果运行以下code,将会看到断点执行和log<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        __unused XXObject *object = [[XXObject alloc] init];</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><img src="/images/initialize的打印2.png" alt="initialize的打印2"></p>
+<p>由此可见，虽然没有显式调用initialize方法，但是还是打印了log</p>
+<blockquote>
+<p>initialize方法是在该类第一次调用方法的时候才会执行</p>
+</blockquote>
+<p>在方法调用栈里，可以查看到方法调用的顺序，首先_objc_msgSend_uncached，先从方法的缓存里面查找该对应的方法，找不到了，然后从lookUpImpOrForward方法去查找.<br><img src="/images/initialize_lookupImg.png" alt="initialize_lookupImg"><br>在上图的调用栈里，打印 p sel 打印当前的选择子，发现log输出的是alloc,也就是当前调用的是alloc方法，可见initialize方法调用在alloc之前,alloc的调用导致了方法initialize的执行</p>
+<p>下面再看 class_initialize方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">void _class_initialize(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!cls-&gt;isMetaClass());</span><br><span class="line"></span><br><span class="line">    Class supercls;</span><br><span class="line">    bool reallyInitialize = NO;</span><br><span class="line">    supercls = cls-&gt;superclass;</span><br><span class="line">    if (supercls  &amp;&amp;  !supercls-&gt;isInitialized()) &#123;</span><br><span class="line">        _class_initialize(supercls); //初始化父类</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Try to atomically set CLS_INITIALIZING.</span><br><span class="line">    &#123;</span><br><span class="line">        monitor_locker_t lock(classInitLock);</span><br><span class="line">        if (!cls-&gt;isInitialized() &amp;&amp; !cls-&gt;isInitializing()) &#123;</span><br><span class="line">            cls-&gt;setInitializing(); //设置标志位</span><br><span class="line">            reallyInitialize = YES;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (reallyInitialize) &#123; //如果成功设置标志位,初始化 callInitialize(cls)</span><br><span class="line"></span><br><span class="line">        _setThisThreadIsInitializingClass(cls);</span><br><span class="line"></span><br><span class="line">        if (PrintInitializing) &#123;</span><br><span class="line">            _objc_inform(&quot;INITIALIZE: calling +[%s initialize]&quot;,</span><br><span class="line">                         cls-&gt;nameForLogging());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        @try &#123;</span><br><span class="line">            callInitialize(cls);</span><br><span class="line"></span><br><span class="line">            if (PrintInitializing) &#123;</span><br><span class="line">                _objc_inform(&quot;INITIALIZE: finished +[%s initialize]&quot;,</span><br><span class="line">                             cls-&gt;nameForLogging());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        @catch (...) &#123;</span><br><span class="line">            if (PrintInitializing) &#123;</span><br><span class="line">                _objc_inform(&quot;INITIALIZE: +[%s initialize] threw an exception&quot;,</span><br><span class="line">                             cls-&gt;nameForLogging());</span><br><span class="line">            &#125;</span><br><span class="line">            @throw;</span><br><span class="line">        &#125;</span><br><span class="line">        @finally &#123;</span><br><span class="line">            monitor_locker_t lock(classInitLock);</span><br><span class="line">            if (!supercls  ||  supercls-&gt;isInitialized()) &#123;</span><br><span class="line">                _finishInitializing(cls, supercls);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                _finishInitializingAfter(cls, supercls);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void callInitialize(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    ((void(*)(Class, SEL))objc_msgSend)(cls, SEL_initialize);</span><br><span class="line">    asm(&quot;&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>该方法的主要执行流程:</p>
+<ul>
+<li>如果存在父类，先初始化父类</li>
+<li>加锁，设置初始化RW_INITIALIZING标志，</li>
+<li>向当前类发送执行initialize方法</li>
+<li>设置标志位RW_INITIALIZED完成<br>如果父类已经初始化完成，调用_finishInitializing<br>否则调用_finishInitializingAfter在父类初始化结束之后设置完成标志</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">static void _finishInitializing(Class cls, Class supercls)</span><br><span class="line">&#123;</span><br><span class="line">    PendingInitialize *pending;</span><br><span class="line"></span><br><span class="line">    classInitLock.assertLocked();</span><br><span class="line">    assert(!supercls  ||  supercls-&gt;isInitialized());</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    cls-&gt;setInitialized();</span><br><span class="line">    classInitLock.notifyAll();</span><br><span class="line">    _setThisThreadIsNotInitializingClass(cls);</span><br><span class="line"></span><br><span class="line">    // mark any subclasses that were merely waiting for this class</span><br><span class="line">    if (!pendingInitializeMap) return;</span><br><span class="line">    pending = (PendingInitialize *)NXMapGet(pendingInitializeMap, cls);</span><br><span class="line">    if (!pending) return;</span><br><span class="line"></span><br><span class="line">    NXMapRemove(pendingInitializeMap, cls);</span><br><span class="line"></span><br><span class="line">    // Destroy the pending table if it&apos;s now empty, to save memory.</span><br><span class="line">    if (NXCountMapTable(pendingInitializeMap) == 0) &#123;</span><br><span class="line">        NXFreeMapTable(pendingInitializeMap);</span><br><span class="line">        pendingInitializeMap = nil;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    while (pending) &#123;</span><br><span class="line">        PendingInitialize *next = pending-&gt;next;</span><br><span class="line">        if (pending-&gt;subclass) _finishInitializing(pending-&gt;subclass, cls);</span><br><span class="line">        free(pending);</span><br><span class="line">        pending = next;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">由于父类已经完成了初始化，在这里直接将当前类标记成已经初始化，然后递归地将被当前类 block 的子类标记为已初始化，再把这些类移除 pendingInitializeMap。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">static void _finishInitializingAfter(Class cls, Class supercls)</span><br><span class="line">&#123;</span><br><span class="line">    PendingInitialize *pending;</span><br><span class="line"></span><br><span class="line">    classInitLock.assertLocked();</span><br><span class="line">    ...</span><br><span class="line">    if (!pendingInitializeMap) &#123;</span><br><span class="line">        pendingInitializeMap =</span><br><span class="line">            NXCreateMapTable(NXPtrValueMapPrototype, 10);</span><br><span class="line">        // fixme pre-size this table for CF/NSObject +initialize</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pending = (PendingInitialize *)malloc(sizeof(*pending));</span><br><span class="line">    pending-&gt;subclass = cls;</span><br><span class="line">    pending-&gt;next = (PendingInitialize *)</span><br><span class="line">        NXMapGet(pendingInitializeMap, supercls);</span><br><span class="line">    NXMapInsert(pendingInitializeMap, supercls, pending);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">首先创建一个pending,然后将当前类作为子类继承，插入到map表</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总结一下关于initialize方法的特性：</p>
+<ul>
+<li>initialize 的调用是惰性的，它会在第一次调用当前类的方法时被调用</li>
+<li>与load 不同，initialize 方法调用时，所有的类都已经加载到了内存中</li>
+<li>initialize 的运行是线程安全的</li>
+<li>子类会继承父类的 initialize 方法</li>
+<li>而其作用也非常局限，一般我们只会在 initialize 方法中进行一些常量的初始化。</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/12/Objc对象的初始化/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1609,132 +1763,6 @@ __builtin_expect的作用
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/04/2018Flag/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/04/2018Flag/" itemprop="url">2018Flag</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-04T11:37:32+08:00">
-                2018-01-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>今年初，创建下此博客，希望能够记录下自己的成长，工作之后感觉越来越懒了，需要监督自己了。<br>去年的时候记得也没有做什么特别的大事，只是出了趟国旅游，拿到了驾照，本来打算买车了，后面也没想法了。。。</p>
-<p>生活Flag:<br>提高英语听说能力，坚持背单词，看美剧提高吧 ~ ~ ~<br>今年想要去趟成都旅游 ~ ~ ~</p>
-<p>工作Flag:<br>多看点源码，学点新技术</p>
-<p>今年就此在学习和生活上，都有个新的期待和变化吧</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1785,7 +1813,7 @@ __builtin_expect的作用
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-count">24</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1873,7 +1901,7 @@ __builtin_expect的作用
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共27.6k字</span>
+<span class="post-count"> 博客全站共27.7k字</span>
 </div>
 
 
