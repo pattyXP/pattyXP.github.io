@@ -103,7 +103,7 @@
 <meta property="og:site_name" content="温暖的弦">
 <meta property="og:description" content="在之前的文章中，分析load有提到对category中的load方法进行存储调用现在我们来窥探一下category的作用 简介category主要用于动态的为类添加一些方法和属性在OC中，catefory是在运行期决议的。当编译完成,对象的内存布局已经确定，我们无法为类添加实例变量，通过category,可以设置关联对象，为类动态添加属性,也可以添加方法 注:extension它是在编译期，和类的">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-02-12T03:07:00.000Z">
+<meta property="og:updated_time" content="2018-02-12T03:15:01.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc category篇">
 <meta name="twitter:description" content="在之前的文章中，分析load有提到对category中的load方法进行存储调用现在我们来窥探一下category的作用 简介category主要用于动态的为类添加一些方法和属性在OC中，catefory是在运行期决议的。当编译完成,对象的内存布局已经确定，我们无法为类添加实例变量，通过category,可以设置关联对象，为类动态添加属性,也可以添加方法 注:extension它是在编译期，和类的">
@@ -382,6 +382,7 @@
 <ul>
 <li>category的方法没有“完全替换掉”原来类已经有的方法，也就是说如果category和原来类都有methodA，那么category附加方法后，类的方法列表里会有两个methodA</li>
 <li>category的方法被放到了新方法列表的前面，而原来类的方法被放到了新方法列表的后面，也就是我们常说category的方法会“覆盖”掉原来类的同名方法，这是因为运行时在查找方法的时候是顺着方法列表的顺序查找的，它只要一找到对应名字的方法，就会停止查找，殊不知后面可能还有一样名字的方法。</li>
+<li>category关联对象特性在之前文章中，请自行翻阅</li>
 </ul>
 <h2 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h2><p>memmove(p2, p1, len) 内存拷贝<br>将p1的前面len长度的字符，拷贝到p2</p>
 <h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><ul>
@@ -432,6 +433,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/12/Objc-protocol篇/" rel="prev" title="Objc-protocol篇">
+                Objc-protocol篇 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -508,7 +513,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-count">23</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -612,7 +617,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共26.3k字</span>
+<span class="post-count"> 博客全站共27.6k字</span>
 </div>
 
 
