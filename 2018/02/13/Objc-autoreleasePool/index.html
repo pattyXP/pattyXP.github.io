@@ -104,7 +104,7 @@
 <meta property="og:description" content="源码解析123456789101112int main(int argc, const char * argv[]) &amp;#123;    @autoreleasepool &amp;#123;        for (int i=0; i&amp;lt;100; i++) &amp;#123;            @autoreleasepool&amp;#123;                SampleClass *sa">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/autoreleasepool1.png">
-<meta property="og:updated_time" content="2018-02-13T06:19:51.000Z">
+<meta property="og:updated_time" content="2018-02-13T06:25:33.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc-autoreleasePool">
 <meta name="twitter:description" content="源码解析123456789101112int main(int argc, const char * argv[]) &amp;#123;    @autoreleasepool &amp;#123;        for (int i=0; i&amp;lt;100; i++) &amp;#123;            @autoreleasepool&amp;#123;                SampleClass *sa">
@@ -345,7 +345,16 @@
       
         <h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        for (int i=0; i&lt;100; i++) &#123;</span><br><span class="line">            @autoreleasepool&#123;</span><br><span class="line">                SampleClass *sample = [[SampleClass alloc] init];</span><br><span class="line">                [sample startAction];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>在上面的for循环内，断点执行，可以看到方法执行函数调用栈<br><img src="/images/autoreleasepool1.png" alt="函数调用栈"></p>
-<p>@autoreleasepool 内部调用函数<br>void *<br>objc_autoreleasePoolPush(void)<br>{<br>    return AutoreleasePoolPage::push();<br>}</p>
+<p>@autoreleasepool 内部调用函数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">void *</span><br><span class="line">objc_autoreleasePoolPush(void)</span><br><span class="line">&#123;</span><br><span class="line">    return AutoreleasePoolPage::push();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static inline void *push()</span><br><span class="line">   &#123;</span><br><span class="line">       id *dest;</span><br><span class="line">       if (DebugPoolAllocation) &#123;</span><br><span class="line">           // Each autorelease pool starts on a new pool page.</span><br><span class="line">           dest = autoreleaseNewPage(POOL_BOUNDARY);</span><br><span class="line">       &#125; else &#123;</span><br><span class="line">           dest = autoreleaseFast(POOL_BOUNDARY); //执行</span><br><span class="line">       &#125;</span><br><span class="line">       assert(dest == EMPTY_POOL_PLACEHOLDER || *dest == POOL_BOUNDARY);</span><br><span class="line">       return dest;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   static inline id *autoreleaseFast(id obj)</span><br><span class="line">   &#123;</span><br><span class="line">       AutoreleasePoolPage *page = hotPage();</span><br><span class="line">       if (page &amp;&amp; !page-&gt;full()) &#123;</span><br><span class="line">           return page-&gt;add(obj);</span><br><span class="line">       &#125; else if (page) &#123;</span><br><span class="line">           return autoreleaseFullPage(obj, page);</span><br><span class="line">       &#125; else &#123;</span><br><span class="line">           return autoreleaseNoPage(obj);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p>autoreleaseFast 函数的作用</p>
+<ul>
+<li>判断当前是否存在page，存在<ul>
+<li>page存储满,autoreleaseFullPage</li>
+<li>page有空间，page-&gt;add(obj)</li>
+</ul>
+</li>
+<li>不存在page，创建新的page,autoreleaseNoPage</li>
+</ul>
 
       
     </div>
@@ -571,7 +580,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共27.7k字</span>
+<span class="post-count"> 博客全站共27.8k字</span>
 </div>
 
 
