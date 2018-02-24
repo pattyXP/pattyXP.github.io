@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, Patty" />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="温暖的弦" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="本文源码解析来自官方1.4.2版本 AspectInfo12345@interface AspectInfo : NSObject &amp;lt;AspectInfo&amp;gt;@property (nonatomic, unsafe_unretained, readonly) id instance;@property (nonatomic, strong, readonly) NSArray *argu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Aspects源码解析">
+<meta property="og:url" content="https://pattyxp.github.io/2018/02/23/Aspects源码解析/index.html">
+<meta property="og:site_name" content="温暖的弦">
+<meta property="og:description" content="本文源码解析来自官方1.4.2版本 AspectInfo12345@interface AspectInfo : NSObject &amp;lt;AspectInfo&amp;gt;@property (nonatomic, unsafe_unretained, readonly) id instance;@property (nonatomic, strong, readonly) NSArray *argu">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://pattyxp.github.io/images/Aspects_hook原selector.png">
+<meta property="og:image" content="https://pattyxp.github.io/images/Aspects_SEL%20invoke流程图.png">
+<meta property="og:image" content="https://pattyxp.github.io/images/Aspects_block_signature.png">
+<meta property="og:updated_time" content="2018-02-24T09:22:51.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Aspects源码解析">
+<meta name="twitter:description" content="本文源码解析来自官方1.4.2版本 AspectInfo12345@interface AspectInfo : NSObject &amp;lt;AspectInfo&amp;gt;@property (nonatomic, unsafe_unretained, readonly) id instance;@property (nonatomic, strong, readonly) NSArray *argu">
+<meta name="twitter:image" content="https://pattyxp.github.io/images/Aspects_hook原selector.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://pattyxp.github.io/2018/02/23/Aspects源码解析/"/>
+
+
+
+
+
+  <title>Aspects源码解析 | 温暖的弦</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">温暖的弦</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/23/Aspects源码解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Aspects源码解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-23T15:37:15+08:00">
+                2018-02-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文源码解析来自官方1.4.2版本</p>
+<h2 id="AspectInfo"><a href="#AspectInfo" class="headerlink" title="AspectInfo"></a>AspectInfo</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@interface AspectInfo : NSObject &lt;AspectInfo&gt;</span><br><span class="line">@property (nonatomic, unsafe_unretained, readonly) id instance;</span><br><span class="line">@property (nonatomic, strong, readonly) NSArray *arguments;</span><br><span class="line">@property (nonatomic, strong, readonly) NSInvocation *originalInvocation;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h2 id="AspectIdentifier"><a href="#AspectIdentifier" class="headerlink" title="AspectIdentifier"></a>AspectIdentifier</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@interface AspectIdentifier : NSObject</span><br><span class="line">@property (nonatomic, assign) SEL selector;</span><br><span class="line">@property (nonatomic, strong) id block;</span><br><span class="line">@property (nonatomic, strong) NSMethodSignature *blockSignature;</span><br><span class="line">@property (nonatomic, weak) id object;</span><br><span class="line">@property (nonatomic, assign) AspectOptions options;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h2 id="AspectsContainer"><a href="#AspectsContainer" class="headerlink" title="AspectsContainer"></a>AspectsContainer</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@interface AspectsContainer : NSObject</span><br><span class="line"></span><br><span class="line">- (void)addAspect:(AspectIdentifier *)aspect withOptions:(AspectOptions)injectPosition;</span><br><span class="line">- (BOOL)removeAspect:(id)aspect;</span><br><span class="line">- (BOOL)hasAspects;</span><br><span class="line"></span><br><span class="line">@property (atomic, copy) NSArray *beforeAspects;</span><br><span class="line">@property (atomic, copy) NSArray *insteadAspects;</span><br><span class="line">@property (atomic, copy) NSArray *afterAspects;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h2 id="AspectTracker"><a href="#AspectTracker" class="headerlink" title="AspectTracker"></a>AspectTracker</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@interface AspectTracker : NSObject</span><br><span class="line"></span><br><span class="line">@property (nonatomic, strong) Class trackedClass;</span><br><span class="line">@property (nonatomic, readonly) NSString *trackedClassName;</span><br><span class="line">@property (nonatomic, strong) NSMutableSet *selectorNames;</span><br><span class="line">@property (nonatomic, strong) NSMutableDictionary *selectorNamesToSubclassTrackers;</span><br><span class="line"></span><br><span class="line">- (id)initWithTrackedClass:(Class)trackedClass;</span><br><span class="line">- (void)addSubclassTracker:(AspectTracker *)subclassTracker hookingSelectorName:(NSString *)selectorName;</span><br><span class="line">- (void)removeSubclassTracker:(AspectTracker *)subclassTracker hookingSelectorName:(NSString *)selectorName;</span><br><span class="line">- (BOOL)subclassHasHookedSelectorName:(NSString *)selectorName;</span><br><span class="line">- (NSSet *)subclassTrackersHookingSelectorName:(NSString *)selectorName;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>调试，首先调用aspect_add方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">static id aspect_add(id self, SEL selector, AspectOptions options, id block, NSError **error) &#123;</span><br><span class="line">    NSCParameterAssert(self);</span><br><span class="line">    NSCParameterAssert(selector);</span><br><span class="line">    NSCParameterAssert(block);</span><br><span class="line"></span><br><span class="line">    __block AspectIdentifier *identifier = nil;</span><br><span class="line">    aspect_performLocked(^&#123;</span><br><span class="line">        if (aspect_isSelectorAllowedAndTrack(self, selector, options, error)) &#123;</span><br><span class="line">            AspectsContainer *aspectContainer = aspect_getContainerForObject(self, selector);</span><br><span class="line">            identifier = [AspectIdentifier identifierWithSelector:selector object:self options:options block:block error:error];  //生成AspectIdentifier</span><br><span class="line">            if (identifier) &#123;</span><br><span class="line">                [aspectContainer addAspect:identifier withOptions:options];</span><br><span class="line">                //区分options向aspectContainer的数组添加aspect</span><br><span class="line"></span><br><span class="line">                // Modify the class to allow message interception.</span><br><span class="line">                aspect_prepareClassAndHookSelector(self, selector, error);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    return identifier;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static AspectsContainer *aspect_getContainerForObject(NSObject *self, SEL selector) &#123;</span><br><span class="line">    NSCParameterAssert(self);</span><br><span class="line">    SEL aliasSelector = aspect_aliasForSelector(selector);//拼接生成新selector</span><br><span class="line">    AspectsContainer *aspectContainer = objc_getAssociatedObject(self, aliasSelector);</span><br><span class="line">    if (!aspectContainer) &#123;</span><br><span class="line">        aspectContainer = [AspectsContainer new];</span><br><span class="line">        objc_setAssociatedObject(self, aliasSelector, aspectContainer, OBJC_ASSOCIATION_RETAIN);</span><br><span class="line">    &#125;</span><br><span class="line">    //当前对象如果不存在aliasSelector,给当前对象绑定属性aliasSelector</span><br><span class="line">    return aspectContainer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>aspect_performLocked 使用OSSpinLock</li>
+<li>aspect_isSelectorAllowedAndTrack 过滤当前aspect的selector是否为合法的selector</li>
+<li>生成AspectIdentifier,根据block生成block签名,根据options加入AspectContainer的相应数组</li>
+<li>aspect_prepareClassAndHookSelector hook方法<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static void aspect_prepareClassAndHookSelector(NSObject *self, SEL selector, NSError **error) &#123;</span><br><span class="line">    NSCParameterAssert(selector);</span><br><span class="line">    Class klass = aspect_hookClass(self, error);</span><br><span class="line">    Method targetMethod = class_getInstanceMethod(klass, selector);</span><br><span class="line">    IMP targetMethodIMP = method_getImplementation(targetMethod);</span><br><span class="line">    if (!aspect_isMsgForwardIMP(targetMethodIMP)) &#123;</span><br><span class="line">        const char *typeEncoding = method_getTypeEncoding(targetMethod);</span><br><span class="line">        SEL aliasSelector = aspect_aliasForSelector(selector);</span><br><span class="line">        if (![klass instancesRespondToSelector:aliasSelector]) &#123;</span><br><span class="line">            __unused BOOL addedAlias = class_addMethod(klass, aliasSelector, method_getImplementation(targetMethod), typeEncoding);</span><br><span class="line">            NSCAssert(addedAlias, @&quot;Original implementation for %@ is already copied to %@ on %@&quot;, NSStringFromSelector(selector), NSStringFromSelector(aliasSelector), klass);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // We use forwardInvocation to hook in.</span><br><span class="line">        class_replaceMethod(klass, selector, aspect_getMsgForwardIMP(self, selector), typeEncoding);</span><br><span class="line">        AspectLog(@&quot;Aspects: Installed hook for -[%@ %@].&quot;, klass, NSStringFromSelector(selector));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>aspect_prepareClassAndHookSelector 方法主要操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">#pragma mark - Hook Class</span><br><span class="line"></span><br><span class="line">static Class aspect_hookClass(NSObject *self, NSError **error) &#123;</span><br><span class="line">    NSCParameterAssert(self);</span><br><span class="line">	Class statedClass = self.class;</span><br><span class="line">	Class baseClass = object_getClass(self);</span><br><span class="line">	NSString *className = NSStringFromClass(baseClass);</span><br><span class="line"></span><br><span class="line">	if ([className hasSuffix:AspectsSubclassSuffix]) &#123;</span><br><span class="line">		return baseClass;</span><br><span class="line">	&#125;else if (class_isMetaClass(baseClass)) &#123;</span><br><span class="line">        return aspect_swizzleClassInPlace((Class)self);</span><br><span class="line">        // Probably a KVO&apos;ed class. Swizzle in place. Also swizzle meta classes in place.</span><br><span class="line">    &#125;else if (statedClass != baseClass) &#123;</span><br><span class="line">        return aspect_swizzleClassInPlace(baseClass);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  //生成子类subclass</span><br><span class="line">	const char *subclassName = [className stringByAppendingString:AspectsSubclassSuffix].UTF8String;</span><br><span class="line">	Class subclass = objc_getClass(subclassName);</span><br><span class="line"></span><br><span class="line">	if (subclass == nil) &#123;</span><br><span class="line">		subclass = objc_allocateClassPair(baseClass, subclassName, 0);//Allocate subclass</span><br><span class="line">		if (subclass == nil) &#123;</span><br><span class="line">            NSString *errrorDesc = [NSString stringWithFormat:@&quot;objc_allocateClassPair failed to allocate class %s.&quot;, subclassName];</span><br><span class="line">            AspectError(AspectErrorFailedToAllocateClassPair, errrorDesc);</span><br><span class="line">            return nil;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">		aspect_swizzleForwardInvocation(subclass);//替换子类forwardInvocation方法</span><br><span class="line">		aspect_hookedGetClass(subclass, statedClass);//替换子类class方法为原类statedClass</span><br><span class="line">		aspect_hookedGetClass(object_getClass(subclass), statedClass);//替换子类的元类的class方法为原类statedClass</span><br><span class="line">		objc_registerClassPair(subclass);//注册子类</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	object_setClass(self, subclass);//替换当前对象的isa为subclass obj-&gt;changeIsa(cls)</span><br><span class="line">	return subclass;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>首先 对当前self进行hook class<br>此处self为AspectsViewController类型的对象，hook后为AspectsViewController<em>Aspects</em></li>
+<li>给子类也就是hook后的类AspectsViewController<em>Aspects</em>添加方法，name为aspect_aliasForSelector(selector),方法实现method_getImplementation(原selector的method实现)</li>
+<li><p>替换子类的原selector实现为aspect_getMsgForwardIMP(self, selector)</p>
+</li>
+<li><p>aspect_getMsgForwardIMP 作用<br>返回IMP,用于当消息转发的时候use forwardInvocation to hook</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">static IMP aspect_getMsgForwardIMP(NSObject *self, SEL selector) &#123;</span><br><span class="line">    IMP msgForwardIMP = _objc_msgForward;</span><br><span class="line">#if !defined(__arm64__)</span><br><span class="line"></span><br><span class="line">    Method method = class_getInstanceMethod(self.class, selector);</span><br><span class="line">    const char *encoding = method_getTypeEncoding(method);</span><br><span class="line">    BOOL methodReturnsStructValue = encoding[0] == _C_STRUCT_B;</span><br><span class="line">    if (methodReturnsStructValue) &#123;</span><br><span class="line">        @try &#123;</span><br><span class="line">            NSUInteger valueSize = 0;</span><br><span class="line">            NSGetSizeAndAlignment(encoding, &amp;valueSize, NULL);</span><br><span class="line"></span><br><span class="line">            if (valueSize == 1 || valueSize == 2 || valueSize == 4 || valueSize == 8) &#123;</span><br><span class="line">                methodReturnsStructValue = NO;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; @catch (__unused NSException *e) &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    if (methodReturnsStructValue) &#123;</span><br><span class="line">        msgForwardIMP = (IMP)_objc_msgForward_stret;</span><br><span class="line">    &#125;</span><br><span class="line">#endif</span><br><span class="line">    return msgForwardIMP;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>至此，准备工作已经结束，下面进行调试工作<br>当点击按钮的时候，查看到左边的函数调用栈，消息转发进入<strong>ASPECTS_ARE_BEING_CALLED</strong>这里是关键<br>之前说过，当前class已经被修改isa为子类，子类的selector方法被hook了IMP，消息进入转发流程<br><img src="/images/Aspects_hook原selector.png" alt="hook原selector"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">// This is the swizzled forwardInvocation: method.</span><br><span class="line">static void __ASPECTS_ARE_BEING_CALLED__(__unsafe_unretained NSObject *self, SEL selector, NSInvocation *invocation) &#123;</span><br><span class="line">    ...</span><br><span class="line">    SEL originalSelector = invocation.selector;</span><br><span class="line">	  SEL aliasSelector = aspect_aliasForSelector(invocation.selector);</span><br><span class="line">    invocation.selector = aliasSelector;</span><br><span class="line">    AspectsContainer *objectContainer = objc_getAssociatedObject(self, aliasSelector);</span><br><span class="line">    AspectsContainer *classContainer = aspect_getContainerForClass(object_getClass(self), aliasSelector);</span><br><span class="line">    AspectInfo *info = [[AspectInfo alloc] initWithInstance:self invocation:invocation];</span><br><span class="line">    NSArray *aspectsToRemove = nil;</span><br><span class="line"></span><br><span class="line">    // Before hooks.</span><br><span class="line">    aspect_invoke(classContainer.beforeAspects, info);</span><br><span class="line">    aspect_invoke(objectContainer.beforeAspects, info);</span><br><span class="line"></span><br><span class="line">    //子类执行 aliasSelector ，也就是原selector对应的method</span><br><span class="line">    // Instead hooks.</span><br><span class="line">    BOOL respondsToAlias = YES;</span><br><span class="line">    if (objectContainer.insteadAspects.count || classContainer.insteadAspects.count) &#123;</span><br><span class="line">        aspect_invoke(classContainer.insteadAspects, info);</span><br><span class="line">        aspect_invoke(objectContainer.insteadAspects, info);</span><br><span class="line">    &#125;else &#123;</span><br><span class="line">        Class klass = object_getClass(invocation.target);</span><br><span class="line">        do &#123;</span><br><span class="line">            if ((respondsToAlias = [klass instancesRespondToSelector:aliasSelector])) &#123;</span><br><span class="line">                [invocation invoke];</span><br><span class="line">                break;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;while (!respondsToAlias &amp;&amp; (klass = class_getSuperclass(klass)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //执行block的方法</span><br><span class="line">    // After hooks.</span><br><span class="line">    aspect_invoke(classContainer.afterAspects, info);</span><br><span class="line">    aspect_invoke(objectContainer.afterAspects, info);</span><br><span class="line"></span><br><span class="line">    //如果没有实现alias方法，执行原来的selector</span><br><span class="line">    if (!respondsToAlias) &#123;</span><br><span class="line">        invocation.selector = originalSelector;</span><br><span class="line">        SEL originalForwardInvocationSEL = NSSelectorFromString(AspectsForwardInvocationSelectorName);</span><br><span class="line">        if ([self respondsToSelector:originalForwardInvocationSEL]) &#123;</span><br><span class="line">            ((void( *)(id, SEL, NSInvocation *))objc_msgSend)(self, originalForwardInvocationSEL, invocation);</span><br><span class="line">        &#125;else &#123;</span><br><span class="line">            [self doesNotRecognizeSelector:invocation.selector];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Remove any hooks that are queued for deregistration.</span><br><span class="line">    [aspectsToRemove makeObjectsPerformSelector:@selector(remove)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>宏aspect_invoke<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#define aspect_invoke(aspects, info) \</span><br><span class="line">for (AspectIdentifier *aspect in aspects) &#123;\</span><br><span class="line">    [aspect invokeWithInfo:info];\</span><br><span class="line">    if (aspect.options &amp; AspectOptionAutomaticRemoval) &#123; \</span><br><span class="line">        aspectsToRemove = [aspectsToRemove?:@[] arrayByAddingObject:aspect]; \</span><br><span class="line">    &#125; \</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//调用AspectIdentifier的实例方法</span><br><span class="line">- (BOOL)invokeWithInfo:(id&lt;AspectInfo&gt;)info &#123;</span><br><span class="line">    NSInvocation *blockInvocation = [NSInvocation invocationWithMethodSignature:self.blockSignature];</span><br><span class="line">    NSInvocation *originalInvocation = info.originalInvocation;</span><br><span class="line">    NSUInteger numberOfArguments = self.blockSignature.numberOfArguments;</span><br><span class="line"></span><br><span class="line">    // Be extra paranoid. We already check that on hook registration.</span><br><span class="line">    if (numberOfArguments &gt; originalInvocation.methodSignature.numberOfArguments) &#123;</span><br><span class="line">        AspectLogError(@&quot;Block has too many arguments. Not calling %@&quot;, info);</span><br><span class="line">        return NO;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // The `self` of the block will be the AspectInfo. Optional.</span><br><span class="line">    if (numberOfArguments &gt; 1) &#123;</span><br><span class="line">        [blockInvocation setArgument:&amp;info atIndex:1];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	void *argBuf = NULL;</span><br><span class="line">    for (NSUInteger idx = 2; idx &lt; numberOfArguments; idx++) &#123;</span><br><span class="line">        const char *type = [originalInvocation.methodSignature getArgumentTypeAtIndex:idx];</span><br><span class="line">		NSUInteger argSize;</span><br><span class="line">		NSGetSizeAndAlignment(type, &amp;argSize, NULL);</span><br><span class="line"></span><br><span class="line">		if (!(argBuf = reallocf(argBuf, argSize))) &#123;</span><br><span class="line">            AspectLogError(@&quot;Failed to allocate memory for block invocation.&quot;);</span><br><span class="line">			return NO;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		[originalInvocation getArgument:argBuf atIndex:idx];</span><br><span class="line">		[blockInvocation setArgument:argBuf atIndex:idx];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    [blockInvocation invokeWithTarget:self.block]; //执行blockInvocation</span><br><span class="line"></span><br><span class="line">    if (argBuf != NULL) &#123;</span><br><span class="line">        free(argBuf);</span><br><span class="line">    &#125;</span><br><span class="line">    return YES;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>至此流程调用分析结束</p>
+<h2 id="Aspects原理"><a href="#Aspects原理" class="headerlink" title="Aspects原理"></a>Aspects原理</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">id objc_msgSend(id self, SEL op, ...) &#123;</span><br><span class="line">    if (!self) return nil;</span><br><span class="line">    IMP imp = class_getMethodImplementation(self-&gt;isa, SEL op);</span><br><span class="line">    imp(self, op, ...); //调用这个函数，伪代码...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//查找IMP</span><br><span class="line">IMP class_getMethodImplementation(Class cls, SEL sel) &#123;</span><br><span class="line">    if (!cls || !sel) return nil;</span><br><span class="line">    IMP imp = lookUpImpOrNil(cls, sel);</span><br><span class="line">    if (!imp) return _objc_msgForward; //_objc_msgForward 用于消息转发</span><br><span class="line">    return imp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>消息的发送最终走到objc_msgSend<br>消息转发流程图:<br><img src="/images/Aspects_SEL invoke流程图.png" alt="Aspects_SEL invoke流程图"></p>
+<p>Aspects 正是利用其中最灵活的forwardInvocation进行封装的<br>对于待 hook 的 selector，将其指向 objc_msgForward /objc_msgForward_stret ,<br>同时生成一个新的 aliasSelector 指向原来的 IMP，<br>并且 hook 住 forwardInvocation 函数，使他指向自己的实现。按照上面的思路，当被 hook 的 selector 被执行的时候，首先根据 selector 找到了 objc_msgForward / _objc_msgForward_stret ,而这个会触发消息转发，从而进入 forwardInvocation。同时由于 forwardInvocation 的指向也被修改了，因此会转入新的 forwardInvocation 函数，在里面执行需要嵌入的附加代码，完成之后，再转回原来的 IMP。</p>
+<h2 id="Aspects-执行流程"><a href="#Aspects-执行流程" class="headerlink" title="Aspects 执行流程"></a>Aspects 执行流程</h2><p>这里以实例对象为例,运行官方demo,对象方法的hook，首先需要先添加待hook的方法，aspect_add<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">static id aspect_add(id self, SEL selector, AspectOptions options, id block, NSError **error) &#123;</span><br><span class="line">    ...</span><br><span class="line">    __block AspectIdentifier *identifier = nil;</span><br><span class="line">    aspect_performLocked(^&#123;</span><br><span class="line">        if (aspect_isSelectorAllowedAndTrack(self, selector, options, error)) &#123;//1判断能否hook</span><br><span class="line">            ... //2 记录数据结构</span><br><span class="line">            aspect_prepareClassAndHookSelector(self, selector, error);//3 swizzling</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    return identifier;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>aspect_isSelectorAllowedAndTrack判断方法能否被hook,对于forwardInvocation、dealloc等方法在黑名单之中</li>
+<li>对于元类，需要保证类的方法只在继承链中被hook一次,,先从当前类开始查找方法是否已经被hook,否则从父类中查找,找到了说明能被hook且被hook过一次</li>
+<li><p>以下源码 从当前类开始，添加所有继承链上的AspectTracker的selectorNames或者subclassTracker</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">AspectTracker *tracker = nil;</span><br><span class="line">AspectTracker *subclassTracker = nil;</span><br><span class="line"></span><br><span class="line">do &#123;</span><br><span class="line">       tracker = swizzledClassesDict[currentClass];</span><br><span class="line">       if (!tracker) &#123;</span><br><span class="line">           tracker = [[AspectTracker alloc] initWithTrackedClass:currentClass]; //初始化</span><br><span class="line">           swizzledClassesDict[(id&lt;NSCopying&gt;)currentClass] = tracker; //赋值操作</span><br><span class="line">      &#125;</span><br><span class="line">      if (subclassTracker) &#123;</span><br><span class="line">           [tracker addSubclassTracker:subclassTracker hookingSelectorName:selectorName];</span><br><span class="line">      &#125; else &#123;</span><br><span class="line">           [tracker.selectorNames addObject:selectorName];</span><br><span class="line">      &#125;</span><br><span class="line">      // All superclasses get marked as having a subclass that is modified.</span><br><span class="line">      subclassTracker = tracker;</span><br><span class="line">&#125;while ((currentClass = class_getSuperclass(currentClass)));</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>aspect_prepareClassAndHookSelector 最重要的就是hook ForwardInvocation方法<br>刚注册子类的时候，子类没有forwardInvocation方法，aspect_swizzleForwardInvocation内class_addMethod不会执行，所以不会生成  NSSelectorFromString(AspectsForwardInvocationSelectorName)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">static void aspect_swizzleForwardInvocation(Class klass) &#123;</span><br><span class="line">    NSCParameterAssert(klass);</span><br><span class="line">    // If there is no method, replace will act like class_addMethod.</span><br><span class="line">    IMP originalImplementation = class_replaceMethod(klass, @selector(forwardInvocation:), (IMP)__ASPECTS_ARE_BEING_CALLED__, &quot;v@:@&quot;);</span><br><span class="line">    if (originalImplementation) &#123;</span><br><span class="line">        class_addMethod(klass, NSSelectorFromString(AspectsForwardInvocationSelectorName), originalImplementation, &quot;v@:@&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    AspectLog(@&quot;Aspects: %@ is now aspect aware.&quot;, NSStringFromClass(klass));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>aspect_hookClass之后，添加aliasSelector，方法指向原selector的实现，原selector指向转发IMP</p>
+</li>
+<li>方法转发<strong>ASPECTS_ARE_BEING_CALLED</strong> 最终执行到这个方法,依次处理before/instead/after逻辑以及调用原来的逻辑，如果不存在hook方法，能响应原始函数则执行原始函数，否则报错</li>
+</ul>
+<h2 id="加深了解"><a href="#加深了解" class="headerlink" title="加深了解"></a>加深了解</h2><ul>
+<li>NSMethodSignature *blockSignature:执行 block 所需要用到的具体信息：包括方法签名、参数等等</li>
+<li>block转化为NSInvocation<br>消息转发的时候，需要调用NSInvocation,hook的时候缓存的是block,因此需要将block转化为NSInvocation，<br>AspectIdentifier 内含有NSMethodSignature *blockSignature<br>就是在初始化的时候将block转化为NSInvocation</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">static NSMethodSignature *aspect_blockMethodSignature(id block, NSError **error) &#123;</span><br><span class="line">    AspectBlockRef layout = (__bridge void *)block;</span><br><span class="line">	if (!(layout-&gt;flags &amp; AspectBlockFlagsHasSignature)) &#123;</span><br><span class="line">        NSString *description = [NSString stringWithFormat:@&quot;The block %@ doesn&apos;t contain a type signature.&quot;, block];</span><br><span class="line">        AspectError(AspectErrorMissingBlockSignature, description);</span><br><span class="line">        return nil;</span><br><span class="line">    &#125;</span><br><span class="line">	void *desc = layout-&gt;descriptor;</span><br><span class="line">	desc += 2 * sizeof(unsigned long int);</span><br><span class="line">	if (layout-&gt;flags &amp; AspectBlockFlagsHasCopyDisposeHelpers) &#123;</span><br><span class="line">		desc += 2 * sizeof(void *);</span><br><span class="line">    &#125;</span><br><span class="line">	if (!desc) &#123;</span><br><span class="line">        NSString *description = [NSString stringWithFormat:@&quot;The block %@ doesn&apos;t has a type signature.&quot;, block];</span><br><span class="line">        AspectError(AspectErrorMissingBlockSignature, description);</span><br><span class="line">        return nil;</span><br><span class="line">    &#125;</span><br><span class="line">	const char *signature = (*(const char **)desc);</span><br><span class="line">	return [NSMethodSignature signatureWithObjCTypes:signature];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>NSInvocation的创建, 需要signature, argument.<br>signature可以从block中转换过来, 而参数则可以从原来的AspectInfo对象中取出来做转换<br>从Block获得编码的Signature，可以转化为方法签名<br>在源码block签名方法中打上断点，可以查看block具体结构体<br><img src="/images/Aspects_block_signature.png" alt="Aspects_block_signature"></p>
+<p>void *desc = layout-&gt;descriptor 这个指针就是用于获取block的签名, 根据clang的源码, 签名位于descriptor结构体的第三个变量, 所以将指针移动两个单位.<br>flag用于判断block的具体类型BLOCK_HAS_COPY_DISPOSE, 代表这个block是否有捕获外部参数, 如果有捕获则descriptor中会多插入两个变量, 所以需要将desc指针再移动两个单位</p>
+</li>
+</ul>
+<h2 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h2><p>以下code实践下，将block转化为NSInvocation执行方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">struct Block_literal_1 &#123;</span><br><span class="line">    void *isa; // initialized to &amp;_NSConcreteStackBlock or &amp;_NSConcreteGlobalBlock</span><br><span class="line">    int flags;</span><br><span class="line">    int reserved;</span><br><span class="line">    void (*invoke)(void *, ...);</span><br><span class="line">    struct Block_descriptor_1 &#123;</span><br><span class="line">        unsigned long int reserved;         // NULL</span><br><span class="line">        unsigned long int size;         // sizeof(struct Block_literal_1)</span><br><span class="line">        // optional helper functions</span><br><span class="line">        void (*copy_helper)(void *dst, void *src);     // IFF (1&lt;&lt;25)</span><br><span class="line">        void (*dispose_helper)(void *src);             // IFF (1&lt;&lt;25)</span><br><span class="line">        // required ABI.2010.3.16</span><br><span class="line">        const char *signature;                         // IFF (1&lt;&lt;30)</span><br><span class="line">    &#125; *descriptor;</span><br><span class="line">    // imported variables</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">static NSMethodSignature *blockSignature(id blockObj)</span><br><span class="line">&#123;</span><br><span class="line">    struct Block_literal_1 *block = (__bridge void *)blockObj;</span><br><span class="line"></span><br><span class="line">    int signatureFlag = 1 &lt;&lt; 30;</span><br><span class="line">    assert(block-&gt;flags &amp; signatureFlag);</span><br><span class="line"></span><br><span class="line">    void *desc = block-&gt;descriptor;</span><br><span class="line">    desc += 2 * sizeof(unsigned long int); //signature</span><br><span class="line"></span><br><span class="line">    int copyDisposeFlag = 1 &lt;&lt; 25;</span><br><span class="line">    if (block-&gt;flags &amp; copyDisposeFlag) &#123;</span><br><span class="line">        desc += 2 * sizeof(void *);</span><br><span class="line">    &#125;</span><br><span class="line">    const char *signature = (*(const char **)desc);</span><br><span class="line">    return [NSMethodSignature signatureWithObjCTypes:signature];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)testBlockInvocation</span><br><span class="line">&#123;</span><br><span class="line">    NSString* (^myblock) (NSString* , NSString* ) = ^(NSString* a, NSString* b)&#123;</span><br><span class="line">        NSLog(@&quot;a:%@,b:%@&quot;,a,b);</span><br><span class="line">        return [NSString stringWithFormat:@&quot;a:%@,b:%@&quot;,a,b];</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    NSString *result = myblock(@&quot;Tom&quot;,@&quot;Jerry&quot;);</span><br><span class="line">    XCTAssertTrue([result isEqualToString:[NSString stringWithFormat:@&quot;a:Tom,b:Jerry&quot;]], @&quot;result Must be a:Tom,b:Jerry&quot;);</span><br><span class="line"></span><br><span class="line">    NSMethodSignature *sig = blockSignature(myblock);</span><br><span class="line"></span><br><span class="line">    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:sig];</span><br><span class="line">    invocation.target = myblock;</span><br><span class="line"></span><br><span class="line">    NSArray *args = @[@&quot;Patty&quot;,@&quot;Cat&quot;];</span><br><span class="line"></span><br><span class="line">    for(NSUInteger i = 0; i &lt; args.count ; ++i)&#123;</span><br><span class="line">        NSString *object = args[i];</span><br><span class="line">        [invocation setArgument:&amp;object atIndex:i + 1];</span><br><span class="line">    &#125;</span><br><span class="line">    [invocation setTarget:myblock];</span><br><span class="line">    [invocation invoke];</span><br><span class="line">    // 获取返回值</span><br><span class="line">    id returnValue = nil;</span><br><span class="line">    if (sig.methodReturnLength) &#123;</span><br><span class="line">        //获取返回值</span><br><span class="line">        [invocation getReturnValue:&amp;returnValue];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 获取返回值的类型</span><br><span class="line">    const char *returnType = [sig methodReturnType];</span><br><span class="line">    NSLog(@&quot;返回值的类型 %s&quot;,returnType);</span><br><span class="line">    XCTAssertTrue([returnValue isEqualToString:@&quot;a:Patty,b:Cat&quot;], @&quot;result Must be a:Patty,b:Cat&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>打印结果如下<br>a:Tom,b:Jerry<br>a:Patty,b:Cat<br>返回值的类型 @”NSString”</p>
+<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="https://wereadteam.github.io/2016/06/30/Aspects/" target="_blank" rel="noopener">https://wereadteam.github.io/2016/06/30/Aspects/</a><br><a href="http://clang.llvm.org/docs/Block-ABI-Apple.html" target="_blank" rel="noopener">http://clang.llvm.org/docs/Block-ABI-Apple.html</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+      <div>
+      <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+      </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/13/Objc-autoreleasePool/" rel="next" title="Objc-autoreleasePool">
+                <i class="fa fa-chevron-left"></i> Objc-autoreleasePool
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/flower.jpg"
+               alt="Patty" />
+          <p class="site-author-name" itemprop="name">Patty</p>
+           
+              <p class="site-description motion-element" itemprop="description">Life's like a movie, write your own ending, keep believing, keep pretending.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#AspectInfo"><span class="nav-number">1.</span> <span class="nav-text">AspectInfo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AspectIdentifier"><span class="nav-number">2.</span> <span class="nav-text">AspectIdentifier</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AspectsContainer"><span class="nav-number">3.</span> <span class="nav-text">AspectsContainer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AspectTracker"><span class="nav-number">4.</span> <span class="nav-text">AspectTracker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Aspects原理"><span class="nav-number">5.</span> <span class="nav-text">Aspects原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Aspects-执行流程"><span class="nav-number">6.</span> <span class="nav-text">Aspects 执行流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#加深了解"><span class="nav-number">7.</span> <span class="nav-text">加深了解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实践"><span class="nav-number">8.</span> <span class="nav-text">实践</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#阅读链接"><span class="nav-number">9.</span> <span class="nav-text">阅读链接</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Patty</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i>
+<span id="busuanzi_container_site_uv">
+  本站总访问量<span id="busuanzi_value_site_uv"></span>次
+</span>
+<span class="post-count"> 博客全站共31.5k字</span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  <!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>

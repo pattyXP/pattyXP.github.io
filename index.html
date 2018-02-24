@@ -275,6 +275,186 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/23/Aspects源码解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/02/23/Aspects源码解析/" itemprop="url">Aspects源码解析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-23T15:37:15+08:00">
+                2018-02-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>本文源码解析来自官方1.4.2版本</p>
+<h2 id="AspectInfo"><a href="#AspectInfo" class="headerlink" title="AspectInfo"></a>AspectInfo</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@interface AspectInfo : NSObject &lt;AspectInfo&gt;</span><br><span class="line">@property (nonatomic, unsafe_unretained, readonly) id instance;</span><br><span class="line">@property (nonatomic, strong, readonly) NSArray *arguments;</span><br><span class="line">@property (nonatomic, strong, readonly) NSInvocation *originalInvocation;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h2 id="AspectIdentifier"><a href="#AspectIdentifier" class="headerlink" title="AspectIdentifier"></a>AspectIdentifier</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@interface AspectIdentifier : NSObject</span><br><span class="line">@property (nonatomic, assign) SEL selector;</span><br><span class="line">@property (nonatomic, strong) id block;</span><br><span class="line">@property (nonatomic, strong) NSMethodSignature *blockSignature;</span><br><span class="line">@property (nonatomic, weak) id object;</span><br><span class="line">@property (nonatomic, assign) AspectOptions options;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h2 id="AspectsContainer"><a href="#AspectsContainer" class="headerlink" title="AspectsContainer"></a>AspectsContainer</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@interface AspectsContainer : NSObject</span><br><span class="line"></span><br><span class="line">- (void)addAspect:(AspectIdentifier *)aspect withOptions:(AspectOptions)injectPosition;</span><br><span class="line">- (BOOL)removeAspect:(id)aspect;</span><br><span class="line">- (BOOL)hasAspects;</span><br><span class="line"></span><br><span class="line">@property (atomic, copy) NSArray *beforeAspects;</span><br><span class="line">@property (atomic, copy) NSArray *insteadAspects;</span><br><span class="line">@property (atomic, copy) NSArray *afterAspects;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h2 id="AspectTracker"><a href="#AspectTracker" class="headerlink" title="AspectTracker"></a>AspectTracker</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@interface AspectTracker : NSObject</span><br><span class="line"></span><br><span class="line">@property (nonatomic, strong) Class trackedClass;</span><br><span class="line">@property (nonatomic, readonly) NSString *trackedClassName;</span><br><span class="line">@property (nonatomic, strong) NSMutableSet *selectorNames;</span><br><span class="line">@property (nonatomic, strong) NSMutableDictionary *selectorNamesToSubclassTrackers;</span><br><span class="line"></span><br><span class="line">- (id)initWithTrackedClass:(Class)trackedClass;</span><br><span class="line">- (void)addSubclassTracker:(AspectTracker *)subclassTracker hookingSelectorName:(NSString *)selectorName;</span><br><span class="line">- (void)removeSubclassTracker:(AspectTracker *)subclassTracker hookingSelectorName:(NSString *)selectorName;</span><br><span class="line">- (BOOL)subclassHasHookedSelectorName:(NSString *)selectorName;</span><br><span class="line">- (NSSet *)subclassTrackersHookingSelectorName:(NSString *)selectorName;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>调试，首先调用aspect_add方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">static id aspect_add(id self, SEL selector, AspectOptions options, id block, NSError **error) &#123;</span><br><span class="line">    NSCParameterAssert(self);</span><br><span class="line">    NSCParameterAssert(selector);</span><br><span class="line">    NSCParameterAssert(block);</span><br><span class="line"></span><br><span class="line">    __block AspectIdentifier *identifier = nil;</span><br><span class="line">    aspect_performLocked(^&#123;</span><br><span class="line">        if (aspect_isSelectorAllowedAndTrack(self, selector, options, error)) &#123;</span><br><span class="line">            AspectsContainer *aspectContainer = aspect_getContainerForObject(self, selector);</span><br><span class="line">            identifier = [AspectIdentifier identifierWithSelector:selector object:self options:options block:block error:error];  //生成AspectIdentifier</span><br><span class="line">            if (identifier) &#123;</span><br><span class="line">                [aspectContainer addAspect:identifier withOptions:options];</span><br><span class="line">                //区分options向aspectContainer的数组添加aspect</span><br><span class="line"></span><br><span class="line">                // Modify the class to allow message interception.</span><br><span class="line">                aspect_prepareClassAndHookSelector(self, selector, error);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    return identifier;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static AspectsContainer *aspect_getContainerForObject(NSObject *self, SEL selector) &#123;</span><br><span class="line">    NSCParameterAssert(self);</span><br><span class="line">    SEL aliasSelector = aspect_aliasForSelector(selector);//拼接生成新selector</span><br><span class="line">    AspectsContainer *aspectContainer = objc_getAssociatedObject(self, aliasSelector);</span><br><span class="line">    if (!aspectContainer) &#123;</span><br><span class="line">        aspectContainer = [AspectsContainer new];</span><br><span class="line">        objc_setAssociatedObject(self, aliasSelector, aspectContainer, OBJC_ASSOCIATION_RETAIN);</span><br><span class="line">    &#125;</span><br><span class="line">    //当前对象如果不存在aliasSelector,给当前对象绑定属性aliasSelector</span><br><span class="line">    return aspectContainer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>aspect_performLocked 使用OSSpinLock</li>
+<li>aspect_isSelectorAllowedAndTrack 过滤当前aspect的selector是否为合法的selector</li>
+<li>生成AspectIdentifier,根据block生成block签名,根据options加入AspectContainer的相应数组</li>
+<li>aspect_prepareClassAndHookSelector hook方法<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static void aspect_prepareClassAndHookSelector(NSObject *self, SEL selector, NSError **error) &#123;</span><br><span class="line">    NSCParameterAssert(selector);</span><br><span class="line">    Class klass = aspect_hookClass(self, error);</span><br><span class="line">    Method targetMethod = class_getInstanceMethod(klass, selector);</span><br><span class="line">    IMP targetMethodIMP = method_getImplementation(targetMethod);</span><br><span class="line">    if (!aspect_isMsgForwardIMP(targetMethodIMP)) &#123;</span><br><span class="line">        const char *typeEncoding = method_getTypeEncoding(targetMethod);</span><br><span class="line">        SEL aliasSelector = aspect_aliasForSelector(selector);</span><br><span class="line">        if (![klass instancesRespondToSelector:aliasSelector]) &#123;</span><br><span class="line">            __unused BOOL addedAlias = class_addMethod(klass, aliasSelector, method_getImplementation(targetMethod), typeEncoding);</span><br><span class="line">            NSCAssert(addedAlias, @&quot;Original implementation for %@ is already copied to %@ on %@&quot;, NSStringFromSelector(selector), NSStringFromSelector(aliasSelector), klass);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // We use forwardInvocation to hook in.</span><br><span class="line">        class_replaceMethod(klass, selector, aspect_getMsgForwardIMP(self, selector), typeEncoding);</span><br><span class="line">        AspectLog(@&quot;Aspects: Installed hook for -[%@ %@].&quot;, klass, NSStringFromSelector(selector));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>aspect_prepareClassAndHookSelector 方法主要操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">#pragma mark - Hook Class</span><br><span class="line"></span><br><span class="line">static Class aspect_hookClass(NSObject *self, NSError **error) &#123;</span><br><span class="line">    NSCParameterAssert(self);</span><br><span class="line">	Class statedClass = self.class;</span><br><span class="line">	Class baseClass = object_getClass(self);</span><br><span class="line">	NSString *className = NSStringFromClass(baseClass);</span><br><span class="line"></span><br><span class="line">	if ([className hasSuffix:AspectsSubclassSuffix]) &#123;</span><br><span class="line">		return baseClass;</span><br><span class="line">	&#125;else if (class_isMetaClass(baseClass)) &#123;</span><br><span class="line">        return aspect_swizzleClassInPlace((Class)self);</span><br><span class="line">        // Probably a KVO&apos;ed class. Swizzle in place. Also swizzle meta classes in place.</span><br><span class="line">    &#125;else if (statedClass != baseClass) &#123;</span><br><span class="line">        return aspect_swizzleClassInPlace(baseClass);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  //生成子类subclass</span><br><span class="line">	const char *subclassName = [className stringByAppendingString:AspectsSubclassSuffix].UTF8String;</span><br><span class="line">	Class subclass = objc_getClass(subclassName);</span><br><span class="line"></span><br><span class="line">	if (subclass == nil) &#123;</span><br><span class="line">		subclass = objc_allocateClassPair(baseClass, subclassName, 0);//Allocate subclass</span><br><span class="line">		if (subclass == nil) &#123;</span><br><span class="line">            NSString *errrorDesc = [NSString stringWithFormat:@&quot;objc_allocateClassPair failed to allocate class %s.&quot;, subclassName];</span><br><span class="line">            AspectError(AspectErrorFailedToAllocateClassPair, errrorDesc);</span><br><span class="line">            return nil;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">		aspect_swizzleForwardInvocation(subclass);//替换子类forwardInvocation方法</span><br><span class="line">		aspect_hookedGetClass(subclass, statedClass);//替换子类class方法为原类statedClass</span><br><span class="line">		aspect_hookedGetClass(object_getClass(subclass), statedClass);//替换子类的元类的class方法为原类statedClass</span><br><span class="line">		objc_registerClassPair(subclass);//注册子类</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	object_setClass(self, subclass);//替换当前对象的isa为subclass obj-&gt;changeIsa(cls)</span><br><span class="line">	return subclass;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>首先 对当前self进行hook class<br>此处self为AspectsViewController类型的对象，hook后为AspectsViewController<em>Aspects</em></li>
+<li>给子类也就是hook后的类AspectsViewController<em>Aspects</em>添加方法，name为aspect_aliasForSelector(selector),方法实现method_getImplementation(原selector的method实现)</li>
+<li><p>替换子类的原selector实现为aspect_getMsgForwardIMP(self, selector)</p>
+</li>
+<li><p>aspect_getMsgForwardIMP 作用<br>返回IMP,用于当消息转发的时候use forwardInvocation to hook</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">static IMP aspect_getMsgForwardIMP(NSObject *self, SEL selector) &#123;</span><br><span class="line">    IMP msgForwardIMP = _objc_msgForward;</span><br><span class="line">#if !defined(__arm64__)</span><br><span class="line"></span><br><span class="line">    Method method = class_getInstanceMethod(self.class, selector);</span><br><span class="line">    const char *encoding = method_getTypeEncoding(method);</span><br><span class="line">    BOOL methodReturnsStructValue = encoding[0] == _C_STRUCT_B;</span><br><span class="line">    if (methodReturnsStructValue) &#123;</span><br><span class="line">        @try &#123;</span><br><span class="line">            NSUInteger valueSize = 0;</span><br><span class="line">            NSGetSizeAndAlignment(encoding, &amp;valueSize, NULL);</span><br><span class="line"></span><br><span class="line">            if (valueSize == 1 || valueSize == 2 || valueSize == 4 || valueSize == 8) &#123;</span><br><span class="line">                methodReturnsStructValue = NO;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; @catch (__unused NSException *e) &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    if (methodReturnsStructValue) &#123;</span><br><span class="line">        msgForwardIMP = (IMP)_objc_msgForward_stret;</span><br><span class="line">    &#125;</span><br><span class="line">#endif</span><br><span class="line">    return msgForwardIMP;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>至此，准备工作已经结束，下面进行调试工作<br>当点击按钮的时候，查看到左边的函数调用栈，消息转发进入<strong>ASPECTS_ARE_BEING_CALLED</strong>这里是关键<br>之前说过，当前class已经被修改isa为子类，子类的selector方法被hook了IMP，消息进入转发流程<br><img src="/images/Aspects_hook原selector.png" alt="hook原selector"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">// This is the swizzled forwardInvocation: method.</span><br><span class="line">static void __ASPECTS_ARE_BEING_CALLED__(__unsafe_unretained NSObject *self, SEL selector, NSInvocation *invocation) &#123;</span><br><span class="line">    ...</span><br><span class="line">    SEL originalSelector = invocation.selector;</span><br><span class="line">	  SEL aliasSelector = aspect_aliasForSelector(invocation.selector);</span><br><span class="line">    invocation.selector = aliasSelector;</span><br><span class="line">    AspectsContainer *objectContainer = objc_getAssociatedObject(self, aliasSelector);</span><br><span class="line">    AspectsContainer *classContainer = aspect_getContainerForClass(object_getClass(self), aliasSelector);</span><br><span class="line">    AspectInfo *info = [[AspectInfo alloc] initWithInstance:self invocation:invocation];</span><br><span class="line">    NSArray *aspectsToRemove = nil;</span><br><span class="line"></span><br><span class="line">    // Before hooks.</span><br><span class="line">    aspect_invoke(classContainer.beforeAspects, info);</span><br><span class="line">    aspect_invoke(objectContainer.beforeAspects, info);</span><br><span class="line"></span><br><span class="line">    //子类执行 aliasSelector ，也就是原selector对应的method</span><br><span class="line">    // Instead hooks.</span><br><span class="line">    BOOL respondsToAlias = YES;</span><br><span class="line">    if (objectContainer.insteadAspects.count || classContainer.insteadAspects.count) &#123;</span><br><span class="line">        aspect_invoke(classContainer.insteadAspects, info);</span><br><span class="line">        aspect_invoke(objectContainer.insteadAspects, info);</span><br><span class="line">    &#125;else &#123;</span><br><span class="line">        Class klass = object_getClass(invocation.target);</span><br><span class="line">        do &#123;</span><br><span class="line">            if ((respondsToAlias = [klass instancesRespondToSelector:aliasSelector])) &#123;</span><br><span class="line">                [invocation invoke];</span><br><span class="line">                break;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;while (!respondsToAlias &amp;&amp; (klass = class_getSuperclass(klass)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //执行block的方法</span><br><span class="line">    // After hooks.</span><br><span class="line">    aspect_invoke(classContainer.afterAspects, info);</span><br><span class="line">    aspect_invoke(objectContainer.afterAspects, info);</span><br><span class="line"></span><br><span class="line">    //如果没有实现alias方法，执行原来的selector</span><br><span class="line">    if (!respondsToAlias) &#123;</span><br><span class="line">        invocation.selector = originalSelector;</span><br><span class="line">        SEL originalForwardInvocationSEL = NSSelectorFromString(AspectsForwardInvocationSelectorName);</span><br><span class="line">        if ([self respondsToSelector:originalForwardInvocationSEL]) &#123;</span><br><span class="line">            ((void( *)(id, SEL, NSInvocation *))objc_msgSend)(self, originalForwardInvocationSEL, invocation);</span><br><span class="line">        &#125;else &#123;</span><br><span class="line">            [self doesNotRecognizeSelector:invocation.selector];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Remove any hooks that are queued for deregistration.</span><br><span class="line">    [aspectsToRemove makeObjectsPerformSelector:@selector(remove)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>宏aspect_invoke<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#define aspect_invoke(aspects, info) \</span><br><span class="line">for (AspectIdentifier *aspect in aspects) &#123;\</span><br><span class="line">    [aspect invokeWithInfo:info];\</span><br><span class="line">    if (aspect.options &amp; AspectOptionAutomaticRemoval) &#123; \</span><br><span class="line">        aspectsToRemove = [aspectsToRemove?:@[] arrayByAddingObject:aspect]; \</span><br><span class="line">    &#125; \</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//调用AspectIdentifier的实例方法</span><br><span class="line">- (BOOL)invokeWithInfo:(id&lt;AspectInfo&gt;)info &#123;</span><br><span class="line">    NSInvocation *blockInvocation = [NSInvocation invocationWithMethodSignature:self.blockSignature];</span><br><span class="line">    NSInvocation *originalInvocation = info.originalInvocation;</span><br><span class="line">    NSUInteger numberOfArguments = self.blockSignature.numberOfArguments;</span><br><span class="line"></span><br><span class="line">    // Be extra paranoid. We already check that on hook registration.</span><br><span class="line">    if (numberOfArguments &gt; originalInvocation.methodSignature.numberOfArguments) &#123;</span><br><span class="line">        AspectLogError(@&quot;Block has too many arguments. Not calling %@&quot;, info);</span><br><span class="line">        return NO;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // The `self` of the block will be the AspectInfo. Optional.</span><br><span class="line">    if (numberOfArguments &gt; 1) &#123;</span><br><span class="line">        [blockInvocation setArgument:&amp;info atIndex:1];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	void *argBuf = NULL;</span><br><span class="line">    for (NSUInteger idx = 2; idx &lt; numberOfArguments; idx++) &#123;</span><br><span class="line">        const char *type = [originalInvocation.methodSignature getArgumentTypeAtIndex:idx];</span><br><span class="line">		NSUInteger argSize;</span><br><span class="line">		NSGetSizeAndAlignment(type, &amp;argSize, NULL);</span><br><span class="line"></span><br><span class="line">		if (!(argBuf = reallocf(argBuf, argSize))) &#123;</span><br><span class="line">            AspectLogError(@&quot;Failed to allocate memory for block invocation.&quot;);</span><br><span class="line">			return NO;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		[originalInvocation getArgument:argBuf atIndex:idx];</span><br><span class="line">		[blockInvocation setArgument:argBuf atIndex:idx];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    [blockInvocation invokeWithTarget:self.block]; //执行blockInvocation</span><br><span class="line"></span><br><span class="line">    if (argBuf != NULL) &#123;</span><br><span class="line">        free(argBuf);</span><br><span class="line">    &#125;</span><br><span class="line">    return YES;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>至此流程调用分析结束</p>
+<h2 id="Aspects原理"><a href="#Aspects原理" class="headerlink" title="Aspects原理"></a>Aspects原理</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">id objc_msgSend(id self, SEL op, ...) &#123;</span><br><span class="line">    if (!self) return nil;</span><br><span class="line">    IMP imp = class_getMethodImplementation(self-&gt;isa, SEL op);</span><br><span class="line">    imp(self, op, ...); //调用这个函数，伪代码...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//查找IMP</span><br><span class="line">IMP class_getMethodImplementation(Class cls, SEL sel) &#123;</span><br><span class="line">    if (!cls || !sel) return nil;</span><br><span class="line">    IMP imp = lookUpImpOrNil(cls, sel);</span><br><span class="line">    if (!imp) return _objc_msgForward; //_objc_msgForward 用于消息转发</span><br><span class="line">    return imp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>消息的发送最终走到objc_msgSend<br>消息转发流程图:<br><img src="/images/Aspects_SEL invoke流程图.png" alt="Aspects_SEL invoke流程图"></p>
+<p>Aspects 正是利用其中最灵活的forwardInvocation进行封装的<br>对于待 hook 的 selector，将其指向 objc_msgForward /objc_msgForward_stret ,<br>同时生成一个新的 aliasSelector 指向原来的 IMP，<br>并且 hook 住 forwardInvocation 函数，使他指向自己的实现。按照上面的思路，当被 hook 的 selector 被执行的时候，首先根据 selector 找到了 objc_msgForward / _objc_msgForward_stret ,而这个会触发消息转发，从而进入 forwardInvocation。同时由于 forwardInvocation 的指向也被修改了，因此会转入新的 forwardInvocation 函数，在里面执行需要嵌入的附加代码，完成之后，再转回原来的 IMP。</p>
+<h2 id="Aspects-执行流程"><a href="#Aspects-执行流程" class="headerlink" title="Aspects 执行流程"></a>Aspects 执行流程</h2><p>这里以实例对象为例,运行官方demo,对象方法的hook，首先需要先添加待hook的方法，aspect_add<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">static id aspect_add(id self, SEL selector, AspectOptions options, id block, NSError **error) &#123;</span><br><span class="line">    ...</span><br><span class="line">    __block AspectIdentifier *identifier = nil;</span><br><span class="line">    aspect_performLocked(^&#123;</span><br><span class="line">        if (aspect_isSelectorAllowedAndTrack(self, selector, options, error)) &#123;//1判断能否hook</span><br><span class="line">            ... //2 记录数据结构</span><br><span class="line">            aspect_prepareClassAndHookSelector(self, selector, error);//3 swizzling</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    return identifier;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>aspect_isSelectorAllowedAndTrack判断方法能否被hook,对于forwardInvocation、dealloc等方法在黑名单之中</li>
+<li>对于元类，需要保证类的方法只在继承链中被hook一次,,先从当前类开始查找方法是否已经被hook,否则从父类中查找,找到了说明能被hook且被hook过一次</li>
+<li><p>以下源码 从当前类开始，添加所有继承链上的AspectTracker的selectorNames或者subclassTracker</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">AspectTracker *tracker = nil;</span><br><span class="line">AspectTracker *subclassTracker = nil;</span><br><span class="line"></span><br><span class="line">do &#123;</span><br><span class="line">       tracker = swizzledClassesDict[currentClass];</span><br><span class="line">       if (!tracker) &#123;</span><br><span class="line">           tracker = [[AspectTracker alloc] initWithTrackedClass:currentClass]; //初始化</span><br><span class="line">           swizzledClassesDict[(id&lt;NSCopying&gt;)currentClass] = tracker; //赋值操作</span><br><span class="line">      &#125;</span><br><span class="line">      if (subclassTracker) &#123;</span><br><span class="line">           [tracker addSubclassTracker:subclassTracker hookingSelectorName:selectorName];</span><br><span class="line">      &#125; else &#123;</span><br><span class="line">           [tracker.selectorNames addObject:selectorName];</span><br><span class="line">      &#125;</span><br><span class="line">      // All superclasses get marked as having a subclass that is modified.</span><br><span class="line">      subclassTracker = tracker;</span><br><span class="line">&#125;while ((currentClass = class_getSuperclass(currentClass)));</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>aspect_prepareClassAndHookSelector 最重要的就是hook ForwardInvocation方法<br>刚注册子类的时候，子类没有forwardInvocation方法，aspect_swizzleForwardInvocation内class_addMethod不会执行，所以不会生成  NSSelectorFromString(AspectsForwardInvocationSelectorName)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">static void aspect_swizzleForwardInvocation(Class klass) &#123;</span><br><span class="line">    NSCParameterAssert(klass);</span><br><span class="line">    // If there is no method, replace will act like class_addMethod.</span><br><span class="line">    IMP originalImplementation = class_replaceMethod(klass, @selector(forwardInvocation:), (IMP)__ASPECTS_ARE_BEING_CALLED__, &quot;v@:@&quot;);</span><br><span class="line">    if (originalImplementation) &#123;</span><br><span class="line">        class_addMethod(klass, NSSelectorFromString(AspectsForwardInvocationSelectorName), originalImplementation, &quot;v@:@&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    AspectLog(@&quot;Aspects: %@ is now aspect aware.&quot;, NSStringFromClass(klass));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>aspect_hookClass之后，添加aliasSelector，方法指向原selector的实现，原selector指向转发IMP</p>
+</li>
+<li>方法转发<strong>ASPECTS_ARE_BEING_CALLED</strong> 最终执行到这个方法,依次处理before/instead/after逻辑以及调用原来的逻辑，如果不存在hook方法，能响应原始函数则执行原始函数，否则报错</li>
+</ul>
+<h2 id="加深了解"><a href="#加深了解" class="headerlink" title="加深了解"></a>加深了解</h2><ul>
+<li>NSMethodSignature *blockSignature:执行 block 所需要用到的具体信息：包括方法签名、参数等等</li>
+<li>block转化为NSInvocation<br>消息转发的时候，需要调用NSInvocation,hook的时候缓存的是block,因此需要将block转化为NSInvocation，<br>AspectIdentifier 内含有NSMethodSignature *blockSignature<br>就是在初始化的时候将block转化为NSInvocation</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">static NSMethodSignature *aspect_blockMethodSignature(id block, NSError **error) &#123;</span><br><span class="line">    AspectBlockRef layout = (__bridge void *)block;</span><br><span class="line">	if (!(layout-&gt;flags &amp; AspectBlockFlagsHasSignature)) &#123;</span><br><span class="line">        NSString *description = [NSString stringWithFormat:@&quot;The block %@ doesn&apos;t contain a type signature.&quot;, block];</span><br><span class="line">        AspectError(AspectErrorMissingBlockSignature, description);</span><br><span class="line">        return nil;</span><br><span class="line">    &#125;</span><br><span class="line">	void *desc = layout-&gt;descriptor;</span><br><span class="line">	desc += 2 * sizeof(unsigned long int);</span><br><span class="line">	if (layout-&gt;flags &amp; AspectBlockFlagsHasCopyDisposeHelpers) &#123;</span><br><span class="line">		desc += 2 * sizeof(void *);</span><br><span class="line">    &#125;</span><br><span class="line">	if (!desc) &#123;</span><br><span class="line">        NSString *description = [NSString stringWithFormat:@&quot;The block %@ doesn&apos;t has a type signature.&quot;, block];</span><br><span class="line">        AspectError(AspectErrorMissingBlockSignature, description);</span><br><span class="line">        return nil;</span><br><span class="line">    &#125;</span><br><span class="line">	const char *signature = (*(const char **)desc);</span><br><span class="line">	return [NSMethodSignature signatureWithObjCTypes:signature];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>NSInvocation的创建, 需要signature, argument.<br>signature可以从block中转换过来, 而参数则可以从原来的AspectInfo对象中取出来做转换<br>从Block获得编码的Signature，可以转化为方法签名<br>在源码block签名方法中打上断点，可以查看block具体结构体<br><img src="/images/Aspects_block_signature.png" alt="Aspects_block_signature"></p>
+<p>void *desc = layout-&gt;descriptor 这个指针就是用于获取block的签名, 根据clang的源码, 签名位于descriptor结构体的第三个变量, 所以将指针移动两个单位.<br>flag用于判断block的具体类型BLOCK_HAS_COPY_DISPOSE, 代表这个block是否有捕获外部参数, 如果有捕获则descriptor中会多插入两个变量, 所以需要将desc指针再移动两个单位</p>
+</li>
+</ul>
+<h2 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h2><p>以下code实践下，将block转化为NSInvocation执行方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">struct Block_literal_1 &#123;</span><br><span class="line">    void *isa; // initialized to &amp;_NSConcreteStackBlock or &amp;_NSConcreteGlobalBlock</span><br><span class="line">    int flags;</span><br><span class="line">    int reserved;</span><br><span class="line">    void (*invoke)(void *, ...);</span><br><span class="line">    struct Block_descriptor_1 &#123;</span><br><span class="line">        unsigned long int reserved;         // NULL</span><br><span class="line">        unsigned long int size;         // sizeof(struct Block_literal_1)</span><br><span class="line">        // optional helper functions</span><br><span class="line">        void (*copy_helper)(void *dst, void *src);     // IFF (1&lt;&lt;25)</span><br><span class="line">        void (*dispose_helper)(void *src);             // IFF (1&lt;&lt;25)</span><br><span class="line">        // required ABI.2010.3.16</span><br><span class="line">        const char *signature;                         // IFF (1&lt;&lt;30)</span><br><span class="line">    &#125; *descriptor;</span><br><span class="line">    // imported variables</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">static NSMethodSignature *blockSignature(id blockObj)</span><br><span class="line">&#123;</span><br><span class="line">    struct Block_literal_1 *block = (__bridge void *)blockObj;</span><br><span class="line"></span><br><span class="line">    int signatureFlag = 1 &lt;&lt; 30;</span><br><span class="line">    assert(block-&gt;flags &amp; signatureFlag);</span><br><span class="line"></span><br><span class="line">    void *desc = block-&gt;descriptor;</span><br><span class="line">    desc += 2 * sizeof(unsigned long int); //signature</span><br><span class="line"></span><br><span class="line">    int copyDisposeFlag = 1 &lt;&lt; 25;</span><br><span class="line">    if (block-&gt;flags &amp; copyDisposeFlag) &#123;</span><br><span class="line">        desc += 2 * sizeof(void *);</span><br><span class="line">    &#125;</span><br><span class="line">    const char *signature = (*(const char **)desc);</span><br><span class="line">    return [NSMethodSignature signatureWithObjCTypes:signature];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)testBlockInvocation</span><br><span class="line">&#123;</span><br><span class="line">    NSString* (^myblock) (NSString* , NSString* ) = ^(NSString* a, NSString* b)&#123;</span><br><span class="line">        NSLog(@&quot;a:%@,b:%@&quot;,a,b);</span><br><span class="line">        return [NSString stringWithFormat:@&quot;a:%@,b:%@&quot;,a,b];</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    NSString *result = myblock(@&quot;Tom&quot;,@&quot;Jerry&quot;);</span><br><span class="line">    XCTAssertTrue([result isEqualToString:[NSString stringWithFormat:@&quot;a:Tom,b:Jerry&quot;]], @&quot;result Must be a:Tom,b:Jerry&quot;);</span><br><span class="line"></span><br><span class="line">    NSMethodSignature *sig = blockSignature(myblock);</span><br><span class="line"></span><br><span class="line">    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:sig];</span><br><span class="line">    invocation.target = myblock;</span><br><span class="line"></span><br><span class="line">    NSArray *args = @[@&quot;Patty&quot;,@&quot;Cat&quot;];</span><br><span class="line"></span><br><span class="line">    for(NSUInteger i = 0; i &lt; args.count ; ++i)&#123;</span><br><span class="line">        NSString *object = args[i];</span><br><span class="line">        [invocation setArgument:&amp;object atIndex:i + 1];</span><br><span class="line">    &#125;</span><br><span class="line">    [invocation setTarget:myblock];</span><br><span class="line">    [invocation invoke];</span><br><span class="line">    // 获取返回值</span><br><span class="line">    id returnValue = nil;</span><br><span class="line">    if (sig.methodReturnLength) &#123;</span><br><span class="line">        //获取返回值</span><br><span class="line">        [invocation getReturnValue:&amp;returnValue];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 获取返回值的类型</span><br><span class="line">    const char *returnType = [sig methodReturnType];</span><br><span class="line">    NSLog(@&quot;返回值的类型 %s&quot;,returnType);</span><br><span class="line">    XCTAssertTrue([returnValue isEqualToString:@&quot;a:Patty,b:Cat&quot;], @&quot;result Must be a:Patty,b:Cat&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>打印结果如下<br>a:Tom,b:Jerry<br>a:Patty,b:Cat<br>返回值的类型 @”NSString”</p>
+<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="https://wereadteam.github.io/2016/06/30/Aspects/" target="_blank" rel="noopener">https://wereadteam.github.io/2016/06/30/Aspects/</a><br><a href="http://clang.llvm.org/docs/Block-ABI-Apple.html" target="_blank" rel="noopener">http://clang.llvm.org/docs/Block-ABI-Apple.html</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/13/Objc-autoreleasePool/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1615,185 +1795,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/15/Objc消息的发送和查找/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/15/Objc消息的发送和查找/" itemprop="url">Objc消息的发送和查找</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-15T14:17:14+08:00">
-                2018-01-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
-<blockquote>
-<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行</p>
-</blockquote>
-<h2 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h2><p>在main.m中实现如下代码，添加断点查看XXObject调用hello方法的执行流程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#import &quot;objc-runtime.h&quot;</span><br><span class="line">@interface XXObject: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation XXObject</span><br><span class="line">- (void)hello</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;hello&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        XXObject *obj = [[XXObject alloc] init];</span><br><span class="line">        [obj hello];//lldb  p (void *)@selector(hello) 方法也是在编译期间地址就确定了</span><br><span class="line">                    //lldb  (void *) $1 = 0x0000000100000f9c</span><br><span class="line">        [obj hello];//已经缓存过，直接从缓存取，走的是汇编代码，断点直接到方法实现了</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p><img src="/images/Objc消息缓存查找.png" alt="Objc消息缓存查找流程"></p>
-<p>方法先是通过 objc_msgSend_uncached去查找是否有方法的缓存，这个时候断点都没有走到，可见在编译阶段就可以去查找方法的缓存了，也就是说方法的地址在编译期间就已经确定了，和类在内存中的地址是一样的，下面去验证这一说法的正确性</p>
-<p>点进去可以看到，是使用的汇编语言执行的，以此来提高查找速度<br>在主函数中，任意断点处，打印lldb<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p (void *)@selector(hello)</span><br><span class="line">(void *) $1 = 0x0000000100000f8c</span><br><span class="line">(lldb) p (void *)@selector(undefined_hello)</span><br><span class="line">(void *) $2 = 0x000000010290ced0</span><br></pre></td></tr></table></figure></p>
-<p>可见在代码中，没有显示的申明方法undefined_hello，导致内存地址和已经申明的方法hello还是有些差距的，undefined_hello选择子是在运行时确定的，因此再次显示申明一次方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">main.m</span><br><span class="line">  __unused SEL sel = @selector(undefined_hello);</span><br><span class="line">  XXObject *obj = [[XXObject alloc] init];</span><br><span class="line">  [obj hello];</span><br><span class="line"></span><br><span class="line">lldb打印</span><br><span class="line">(lldb) p (void *)@selector(hello)</span><br><span class="line">(void *) $0 = 0x0000000100000f8c</span><br><span class="line">(lldb) p (void *)@selector(undefined_hello)</span><br><span class="line">(void *) $1 = 0x0000000100000f92</span><br></pre></td></tr></table></figure></p>
-<p>两个选择子内存地址已经想差不大了<br>由此可以得出猜测:<br>1.通过@selector打印选择子的地址，而不是通过hello方法的内存地址，可见在OC中有一份巨大的选择子表<br>2.只需要传入sel的name,就可以去查找对应的选择子内存地址，如果没有找到，就会自动生成一个SEL并插入到表中<br>3.在编译期间就可以把所有的头文件和实现文件中的方法和@selector()方式调用的sel都插入到表中</p>
-<p>在init方法执行前，打断点<br><img src="/images/Objc选择子地址.png" alt="Objc选择子地址"><br>打印选择子hello的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p SEL(0x0000000100000f8c)</span><br><span class="line">(SEL) $2 = &quot;hello&quot;</span><br></pre></td></tr></table></figure></p>
-<h2 id="msgSend"><a href="#msgSend" class="headerlink" title="msgSend"></a>msgSend</h2><p>具体方法 OBJC_EXPORT id objc_msgSend(id self, SEL op, …)没有实现方法，是汇编语言实现的具体实现</p>
-<p>当编译器遇到一个方法调用时，它会将方法的调用翻译成以下函数中的一个 objc_msgSend、objc_msgSend_stret、objc_msgSendSuper 和 objc_msgSendSuper_stret。<br>发送给对象的父类的消息会使用 objc_msgSendSuper 有数据结构作为返回值的方法会使用 objc_msgSendSuper_stret 或 objc_msgSend_stret 其它的消息都是使用 objc_msgSend 发送的</p>
-<p>现在看下整个的主流程，在调用hello方法的地方，打上断点之后，<br>整个流程中，没有找到方法缓存时，会通过调用lookUpImpOrForward查找方法的实现，打开这个函数的断点，<br>lookUpImpOrForward这个函数主要做的事情如下:</p>
-<ul>
-<li>查找缓存中是否存在方法的实现</li>
-<li>如果类没有初始化完成，就会去分配正确的可读写结构体</li>
-<li>当前类和父类中查找方法实现</li>
-<li>方法决议</li>
-</ul>
-<ol>
-<li><p>查找缓存<br>由于参数传入cache为NO,这里其实是不执行的，在汇编objc_msgSend_uncached已经做了缓存处理了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (cache) &#123; //缓存中查找</span><br><span class="line">      imp = cache_getImp(cls, sel);</span><br><span class="line">      if (imp) return imp;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>类初始化和实现</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> if (!cls-&gt;isRealized()) &#123;</span><br><span class="line">     rwlock_writer_t lock(runtimeLock);</span><br><span class="line">     realizeClass(cls);//为类分配可读写结构体 class_rw_t 的空间，并返回正确的类结构体。</span><br><span class="line"> &#125;</span><br><span class="line"> if (initialize  &amp;&amp;  !cls-&gt;isInitialized()) &#123;</span><br><span class="line">    _class_initialize (_class_getNonMetaClass(cls, inst));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>在当前类中查找，如果查找到了跳转done，否则去当前类查找search_method_list，查找到了调用log_and_fill_cache缓存该方法并跳转done</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">imp = cache_getImp(cls, sel);</span><br><span class="line">if (imp) goto done;</span><br><span class="line"></span><br><span class="line">// Try this class&apos;s method lists.</span><br><span class="line"></span><br><span class="line">meth = getMethodNoSuper_nolock(cls, sel);</span><br><span class="line">if (meth) &#123;</span><br><span class="line">    log_and_fill_cache(cls, meth-&gt;imp, sel, inst, cls);</span><br><span class="line">    imp = meth-&gt;imp;</span><br><span class="line">    goto done;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>去父类中查找方法，流程和3原理一致</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">curClass = cls;</span><br><span class="line">  while ((curClass = curClass-&gt;superclass)) &#123;</span><br><span class="line">      // Superclass cache.</span><br><span class="line">      imp = cache_getImp(curClass, sel);</span><br><span class="line">      if (imp) &#123;</span><br><span class="line">          if (imp != (IMP)_objc_msgForward_impcache) &#123;</span><br><span class="line">              log_and_fill_cache(cls, imp, sel, inst, curClass);</span><br><span class="line">              goto done;</span><br><span class="line">          &#125;</span><br><span class="line">          else &#123;</span><br><span class="line">              break;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      // Superclass method list.</span><br><span class="line">      meth = getMethodNoSuper_nolock(curClass, sel);</span><br><span class="line">      if (meth) &#123;</span><br><span class="line">          log_and_fill_cache(cls, meth-&gt;imp, sel, inst, curClass);</span><br><span class="line">          imp = meth-&gt;imp;</span><br><span class="line">          goto done;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">与当前类寻找实现的区别是：在父类中寻找到的 _objc_msgForward_impcache 实现会交给当前类来处理。</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>方法决议</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//在当前类和父类都没有找到对应的实现</span><br><span class="line">//判断当前类是否实现了 resolveInstanceMethod: 或者 resolveClassMethod: 方法，然后用objc_msgSend 执行sel，缓存方法</span><br><span class="line"></span><br><span class="line">if (resolver  &amp;&amp;  !triedResolver) &#123;</span><br><span class="line">    runtimeLock.unlockRead();</span><br><span class="line">    _class_resolveMethod(cls, sel, inst);</span><br><span class="line">    // Don&apos;t cache the result; we don&apos;t hold the lock so it may have</span><br><span class="line">    // changed already. Re-do the search from scratch instead.</span><br><span class="line">    triedResolver = YES;</span><br><span class="line">    goto retry;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>这部分调用_class_resolveMethod实现</p>
-<p>//如果当前类不是元类，调用_class_resolveInstanceMethod实现<br>否则，调用_class_resolveClassMethod<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">void _class_resolveMethod(Class cls, SEL sel, id inst)</span><br><span class="line">&#123;</span><br><span class="line">    if (! cls-&gt;isMetaClass()) &#123;</span><br><span class="line">        // try [cls resolveInstanceMethod:sel]</span><br><span class="line">        _class_resolveInstanceMethod(cls, sel, inst);</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // try [nonMetaClass resolveClassMethod:sel]</span><br><span class="line">        // and [cls resolveInstanceMethod:sel]</span><br><span class="line"></span><br><span class="line">        _class_resolveClassMethod(cls, sel, inst);</span><br><span class="line">        if (!lookUpImpOrNil(cls, sel, inst,</span><br><span class="line">                            NO/*initialize*/, YES/*cache*/, NO/*resolver*/))</span><br><span class="line">        &#123;</span><br><span class="line">            _class_resolveInstanceMethod(cls, sel, inst);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>在执行了 resolveInstanceMethod: 之后，会跳转到 retry 标签，重新执行查找方法实现的流程，只不过不会再调用 resolveInstanceMethod: 方法了（将 triedResolver 标记为 YES）</p>
-<ol>
-<li>消息转发<br>当在缓存，当前类，父类，resolveInstanceMethod都没有实现，则还有最后一步，消息转发<br>执行完后进行方法的缓存<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">imp = (IMP)_objc_msgForward_impcache;</span><br><span class="line">   cache_fill(cls, sel, imp, inst);</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<h2 id="方法缓存之后再次执行同方法"><a href="#方法缓存之后再次执行同方法" class="headerlink" title="方法缓存之后再次执行同方法"></a>方法缓存之后再次执行同方法</h2><p>上面例子中，如果执行两次相同的方法hello<br>在第二次hello方法执行行 打上断点，然后在lookUpImpOrForward这个函数第一行打上断点，发现并没有进入，可见已经在缓存中查找到了方法并执行，这一步直接在汇编实现了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p (objc_class *)[XXObject class]</span><br><span class="line">(objc_class *) $0 = 0x0000000100001480</span><br><span class="line">(lldb) p (cache_t *)0x0000000100001490</span><br><span class="line">(cache_t *) $1 = 0x0000000100001490</span><br><span class="line">(lldb) p *$1</span><br><span class="line">(cache_t) $2 = &#123;</span><br><span class="line">  _buckets = 0x0000000101905b50</span><br><span class="line">  _mask = 3</span><br><span class="line">  _occupied = 2</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $2.capacity()</span><br><span class="line">(mask_t) $3 = 4</span><br><span class="line">(lldb) p $2.buckets()[0]</span><br><span class="line">(bucket_t) $4 = &#123;</span><br><span class="line">  _key = 0</span><br><span class="line">  _imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $2.buckets()[1]</span><br><span class="line">(bucket_t) $5 = &#123;</span><br><span class="line">  _key = 4303608373</span><br><span class="line">  _imp = 0x00000001003459e0 (libobjc.A.dylib`::-[NSObject init]() at NSObject.mm:2312)</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $2.buckets()[2]</span><br><span class="line">(bucket_t) $6 = &#123;</span><br><span class="line">  _key = 4294971205</span><br><span class="line">  _imp = 0x0000000100000b30 (debug-objc`-[XXObject hello] at main.m:84)</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $2.buckets()[3]</span><br><span class="line">(bucket_t) $7 = &#123;</span><br><span class="line">  _key = 0</span><br><span class="line">  _imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
-<ul>
-<li>注意上面的XXObject类的指针和缓存的方法列表结构体指针有偏移，是不一样，偏移16<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p sizeof(Class)</span><br><span class="line">(unsigned long) $8 = 8</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>因为objc_Class继承自objc_Object，所以在cache_t对象之前还有一个隐藏的ISA和superClass，<br>所以cache_t相对偏移16</p>
-<p>以上可以获取到类XXObject的cache_t结构体中所有缓存过的方法列表，通过赋值清除方法缓存<br>类似使用如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(lldb) expr $2.buckets()[2] = $2.buckets()[1]</span><br><span class="line">(bucket_t) $8 = &#123;</span><br><span class="line">  _key = 0</span><br><span class="line">  _imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>然后再次调用hello方法，可以预料到方法再次通过lookUpImpOrForward函数去查找方法实现</p>
-<h2 id="类方法存储"><a href="#类方法存储" class="headerlink" title="类方法存储"></a>类方法存储</h2><p>这里又做了个小测试，测试类方法存储<br>PattyCat类写了个类方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">+ (void)eat</span><br></pre></td></tr></table></figure></p>
-<p>在objc_init方法处打上断点，查看当前类的元类，在编译的时候所存储的方法列表<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p [PattyCat class]</span><br><span class="line">(Class) $0 = PattyCat</span><br><span class="line">(lldb) p (objc_class *)$0</span><br><span class="line">(objc_class *) $2 = 0x00000001000014c0</span><br><span class="line">(lldb) p (object_getClass([PattyCat class]))</span><br><span class="line">(Class) $3 = 0x0000000100001498</span><br><span class="line">(lldb)</span><br><span class="line"></span><br><span class="line">(lldb) p (objc_class *)0x0000000100001498</span><br><span class="line">(objc_class *) $0 = 0x0000000100001498</span><br><span class="line">(lldb)  p (class_data_bits_t *)0x00000001000014b8</span><br><span class="line">(class_data_bits_t *) $1 = 0x00000001000014b8</span><br><span class="line">(lldb) p $1-&gt;data()</span><br><span class="line">warning: could not find Objective-C class data in the process. This may reduce the quality of type information available.</span><br><span class="line">(class_rw_t *) $2 = 0x0000000100001290</span><br><span class="line">(lldb) p (class_ro_t *)$2</span><br><span class="line">(class_ro_t *) $3 = 0x0000000100001290</span><br><span class="line">(lldb) p *$3</span><br><span class="line">(class_ro_t) $4 = &#123;</span><br><span class="line">  flags = 389</span><br><span class="line">  instanceStart = 40</span><br><span class="line">  instanceSize = 40</span><br><span class="line">  reserved = 0</span><br><span class="line">  ivarLayout = 0x0000000000000000 &lt;no value available&gt;</span><br><span class="line">  name = 0x0000000100000f34 &quot;PattyCat&quot;</span><br><span class="line">  baseMethodList = 0x0000000100001270</span><br><span class="line">  baseProtocols = 0x0000000000000000</span><br><span class="line">  ivars = 0x0000000000000000</span><br><span class="line">  weakIvarLayout = 0x0000000000000000 &lt;no value available&gt;</span><br><span class="line">  baseProperties = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p (method_list_t *)0x0000000100001270</span><br><span class="line">(method_list_t *) $6 = 0x0000000100001270</span><br><span class="line">(lldb) p *$6</span><br><span class="line">(method_list_t) $7 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 3&gt; = &#123;</span><br><span class="line">    entsizeAndFlags = 24</span><br><span class="line">    count = 1</span><br><span class="line">    first = &#123;</span><br><span class="line">      name = &quot;eat&quot;</span><br><span class="line">      types = 0x0000000100000f8c &quot;v16@0:8&quot; //这里可以看到，在编译的时候，已经存储好了类方法eat，存储在元类中</span><br><span class="line">      imp = 0x0000000100000b20 (debug-objc`+[PattyCat eat] at main.m:88)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">2018-02-01 15:54:27.808594+0800 debug-objc[14086:176179] I can eat</span><br><span class="line">(lldb) p sizeof(cache_t)</span><br><span class="line">(unsigned long) $8 = 16</span><br><span class="line">(lldb) p (cache_t *)0x00000001000014a8  在执行完[PattyCat class]方法时候，打印元类的缓存方法，查看class是否从NSObjetc的元类方法copy的</span><br><span class="line">(cache_t *) $11 = 0x00000001000014a8</span><br><span class="line">(lldb) p *$11</span><br><span class="line">(cache_t) $12 = &#123;</span><br><span class="line">  _buckets = 0x0000000100c450e0</span><br><span class="line">  _mask = 3</span><br><span class="line">  _occupied = 3</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p (bucket_t *)0x0000000100c450e0</span><br><span class="line">(bucket_t *) $13 = 0x0000000100c450e0</span><br><span class="line">(lldb) p *$13</span><br><span class="line">(bucket_t) $14 = &#123;</span><br><span class="line">  _key = 4303608336</span><br><span class="line">  _imp = 0x0000000100343b50 (libobjc.A.dylib`::+[NSObject class]() at NSObject.mm:1988) //此处可以证明类的class方法是从NSObject的类方法class拷贝得到的哈哈哈</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>为了提高消息传递的效率，ObjC 对 objc_msgSend 以及 cache_getImp 使用了汇编语言来编写。</p>
-<p>objc_msgSend的汇编文件在objc-msg-arm.s中</p>
-<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%9C%8B%20ObjC%20%E4%B8%AD%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81.md" target="_blank" rel="noopener">https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%9C%8B%20ObjC%20%E4%B8%AD%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81.md</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1844,7 +1845,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1932,7 +1933,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共28.6k字</span>
+<span class="post-count"> 博客全站共31.5k字</span>
 </div>
 
 
