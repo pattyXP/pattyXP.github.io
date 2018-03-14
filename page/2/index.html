@@ -275,6 +275,448 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/30/Objc消息的缓存/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/30/Objc消息的缓存/" itemprop="url">Objc消息的缓存</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-30T14:30:00+08:00">
+                2018-01-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>先来看下class对象的结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line"></span><br><span class="line">#if !__OBJC2__</span><br><span class="line">    Class super_class                                        OBJC2_UNAVAILABLE;</span><br><span class="line">    const char *name                                         OBJC2_UNAVAILABLE;</span><br><span class="line">    long version                                             OBJC2_UNAVAILABLE;</span><br><span class="line">    long info                                                OBJC2_UNAVAILABLE;</span><br><span class="line">    long instance_size                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_ivar_list *ivars                             OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_method_list **methodLists                    OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_cache *cache                                 OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_protocol_list *protocols                     OBJC2_UNAVAILABLE;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">&#125; OBJC2_UNAVAILABLE;</span><br></pre></td></tr></table></figure></p>
+<p>存在了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct objc_cache *cache</span><br></pre></td></tr></table></figure></p>
+<p>类型的方法缓存结构，objc_cache是一个结构体<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct objc_cache &#123;</span><br><span class="line">    unsigned int mask /* total = mask + 1 */                 OBJC2_UNAVAILABLE;</span><br><span class="line">    unsigned int occupied                                    OBJC2_UNAVAILABLE;</span><br><span class="line">    Method buckets[1]                                        OBJC2_UNAVAILABLE;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>mask表示当前能达到的最大index,从0开始，所以总是是mask+1</li>
+<li>occupied 当前被占用的位置数量</li>
+<li>buckets 数组表示的hash表，数组的每一项都代表的是方法，<br>类型是Method，Method的结构是objc_method,<br>里面存储了方法的method_name,method_types,method_imp<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_method *Method;</span><br><span class="line">struct objc_method &#123;</span><br><span class="line">    SEL method_name                                          OBJC2_UNAVAILABLE;</span><br><span class="line">    char *method_types                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    IMP method_imp                                           OBJC2_UNAVAILABLE;</span><br><span class="line">&#125;                                                            OBJC2_UNAVAILABLE;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>每个类都存在objc_cache的结构体缓存方法列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PattyCat *pcat = [PattyCat alloc];</span><br><span class="line">[pcat init];</span><br><span class="line"></span><br><span class="line">[pcat class];</span><br></pre></td></tr></table></figure>
+<p>所以在<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[pcat class]</span><br></pre></td></tr></table></figure></p>
+<p>处打上断点,在lookUpImpOrForward也打上断点，看看如何查找到父类的class方法流程</p>
+<ul>
+<li>去当前类的缓存cache_getImp查找，找不到去当前类的方法列表里methods.beginLists去查找，</li>
+<li>如果当前类不存在方法，就会通过while循环查找， 先在父类缓存查找方法cache_getImp，找不到就在当前父类的方法列表查找getMethodNoSuper_nolock，如果找不到就往上找，</li>
+<li>直到找到之后，都会缓存该方法实现 log_and_fill_cache(cls, meth-&gt;imp, sel, inst, curClass);缓存在类本身的方法缓存里。</li>
+</ul>
+<p>以上查找流程，当while循环两次之后，当curClass=NSObject,通过getMethodNoSuper_nolock查找到了class这个方法的method,<br><img src="/images/method_cache.png" alt="method缓存图"><br>可以看到class方法的type是 “#16@0:8”</p>
+<p>从下图可以看到如何执行的方法cache，此处将NSObject的-class方法进行缓存<br><img src="/images/method_cache_fill.png" alt="method缓存fill"></p>
+<p>cache_fill_nolock方法主要就是将cls的缓存方法结构体进行修改 bucket-&gt;set(key, imp);<br>如果cache的容量不够，则进行扩展cache-&gt;expand();<br>如果当前占用的数量还在总容量的3/4，则不扩展<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">static void cache_fill_nolock(Class cls, SEL sel, IMP imp, id receiver)</span><br><span class="line">&#123;</span><br><span class="line">    cacheUpdateLock.assertLocked();</span><br><span class="line"></span><br><span class="line">    // Never cache before +initialize is done</span><br><span class="line">    if (!cls-&gt;isInitialized()) return;</span><br><span class="line"></span><br><span class="line">    // Make sure the entry wasn&apos;t added to the cache by some other thread</span><br><span class="line">    // before we grabbed the cacheUpdateLock.</span><br><span class="line">    if (cache_getImp(cls, sel)) return;</span><br><span class="line"></span><br><span class="line">    cache_t *cache = getCache(cls);</span><br><span class="line">    cache_key_t key = getKey(sel);</span><br><span class="line"></span><br><span class="line">    // Use the cache as-is if it is less than 3/4 full</span><br><span class="line">    mask_t newOccupied = cache-&gt;occupied() + 1;</span><br><span class="line">    mask_t capacity = cache-&gt;capacity();</span><br><span class="line">    if (cache-&gt;isConstantEmptyCache()) &#123;</span><br><span class="line">        // Cache is read-only. Replace it.</span><br><span class="line">        cache-&gt;reallocate(capacity, capacity ?: INIT_CACHE_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    else if (newOccupied &lt;= capacity / 4 * 3) &#123;</span><br><span class="line">        // Cache is less than 3/4 full. Use it as-is.</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // Cache is too full. Expand it.</span><br><span class="line">        cache-&gt;expand();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Scan for the first unused slot and insert there.</span><br><span class="line">    // There is guaranteed to be an empty slot because the</span><br><span class="line">    // minimum size is 4 and we resized at 3/4 full.</span><br><span class="line">    bucket_t *bucket = cache-&gt;find(key, receiver);</span><br><span class="line">    if (bucket-&gt;key() == 0) cache-&gt;incrementOccupied();</span><br><span class="line">    bucket-&gt;set(key, imp);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>bucket设置之后，方法的cache存储结构如下<br><img src="/images/cache_bucket.png" alt="method缓存bucket"></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/26/由RACSwizzleClass引发的class思考/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/26/由RACSwizzleClass引发的class思考/" itemprop="url">由RACSwizzleClass引发的class思考</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-26T17:12:47+08:00">
+                2018-01-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>之前在看ReactiveCocoa的源码时候，看到交换类的class方法，存在些疑惑，记下来以免忘记</p>
+<p>下面是主要的code，两个类，存在继承关系<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#pragma mark -class</span><br><span class="line">@interface Cat: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation Cat</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface PattyCat: Cat</span><br><span class="line">@end</span><br><span class="line">@implementation PattyCat</span><br><span class="line">@end</span><br><span class="line">void RACSwizzleGetClass(Class class, Class statedClass) &#123;</span><br><span class="line">    SEL selector = @selector(class);</span><br><span class="line">    Method method = class_getInstanceMethod(class, selector);</span><br><span class="line">    IMP newIMP = imp_implementationWithBlock(^(id self) &#123;</span><br><span class="line">        return statedClass;</span><br><span class="line">    &#125;);</span><br><span class="line">    class_replaceMethod(class, selector, newIMP, method_getTypeEncoding(method));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[PattyCat class],[Cat class]);</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[[PattyCat new]class],[[Cat new]class]);</span><br><span class="line"></span><br><span class="line">        RACSwizzleGetClass([PattyCat class],[Cat class]);</span><br><span class="line"></span><br><span class="line">        NSLog(@&quot;%p \n %p&quot;,[PattyCat class],[Cat class]);</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[[PattyCat new]class],[[Cat new]class]);</span><br><span class="line"></span><br><span class="line">        /*</span><br><span class="line">        RACSwizzleGetClass 方法交换的class之后，</span><br><span class="line">        为什么打印的[PattyCat class]前后没有变化？</span><br><span class="line">        [[PattyCat new]class]变化了，怎么写才会有变化</span><br><span class="line">        */</span><br><span class="line">      &#125;</span><br><span class="line">      return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>实践<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[PattyCat class],[Cat class]);</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[[PattyCat new]class],[[Cat new]class]);</span><br><span class="line"></span><br><span class="line">        IMP pattyCat_Class_IMP_before = [[PattyCat class] methodForSelector:@selector(class)];</span><br><span class="line">        IMP pattyCat_Instance_IMP_before = [[PattyCat new] methodForSelector:@selector(class)];</span><br><span class="line">        IMP pattyCat_MetaClass_IMP_before = [object_getClass([PattyCat class]) methodForSelector:@selector(class)];</span><br><span class="line"></span><br><span class="line">        //第一种情况</span><br><span class="line">       // RACSwizzleGetClass([PattyCat class],[Cat class]);</span><br><span class="line"></span><br><span class="line">        //第二种情况</span><br><span class="line">        id metaClass = object_getClass([PattyCat class]);</span><br><span class="line">        RACSwizzleGetClass(metaClass,[Cat class]);</span><br><span class="line"></span><br><span class="line">        IMP pattyCat_Class_IMP_after = [[PattyCat class] methodForSelector:@selector(class)];</span><br><span class="line">        IMP pattyCat_Instance_IMP_after= [[PattyCat new] methodForSelector:@selector(class)];</span><br><span class="line">        IMP pattyCat_MetaClass_IMP_after = [object_getClass([PattyCat class]) methodForSelector:@selector(class)];</span><br><span class="line"></span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[PattyCat class],[Cat class]);</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[[PattyCat new]class],[[Cat new]class]);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> 对于第一种情况 RACSwizzleGetClass([PattyCat class],[Cat class]);<br> 打印前后 NSLog(@”%p \n %p”,[PattyCat class],[Cat class]);值没有变化</p>
+<p> 在左侧的结果里，可以看到<br> pattyCat_Class_IMP_before 和 pattyCat_Class_IMP_after 都是一样的结果<br> 但是pattyCat_Instance_IMP_before 和 pattyCat_Instance_IMP_after不一样了</p>
+<p> 说明swizzle交换的是-class方法，<br> 打印[[PattyCat new]class] 和 [[Cat new]class] 结果是一样的</p>
+<p> 原因：<br> RACSwizzleGetClass 的第一个参数 如果是[PattyCat class]，那么<br> 根据 NSObject.mm<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+ (Class)class &#123;</span><br><span class="line">return self;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> [PattyCat class]返回的是PattyCat对象自身，所以<br> class_replaceMethod(class, selector, newIMP, method_getTypeEncoding(method));<br> 这句话是去PattyCat对象的methodList方法列表里去查找class方法，找到的当然是-class，替换为Cat对象</p>
+<p> 对于第二种情况<br> id metaClass = object_getClass([PattyCat class]);<br> RACSwizzleGetClass(metaClass,[Cat class]);<br> 在左侧的结果里，可以看到 imp在前后都是一样的实现<br> 说明交互的是+class</p>
+<p> 打印[PattyCat class]和[Cat class]是一样的了，也就是替换了[PattyCat class]指向<br> 因为第一个参数传递的是元类，也就是获取的是+class，所以打印的时候，[PattyCat class]从patty_meta_class查找方法，<br> 找不到就去super_meta_class查找，直到NSObject_meta_class，查找到替换方法的返回结果，所以获取[PattyCat class]取到的是替换后的结果，打印结果和之前有变化</p>
+<h2 id="引申"><a href="#引申" class="headerlink" title="引申"></a>引申</h2><p>-class 和 +class 取值的地方<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PattyCat *pcat = [[PattyCat alloc]init];</span><br></pre></td></tr></table></figure></p>
+<p>[pcat class] 实例对象的class方法，是去PattyCat类查找class,如果没有，就一直去父类找，找到NSObject的-class方法，然后copy缓存一份在PattyCat的类列表里,虽然打印结果是一样的，但是指针地址%p是不一样的。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/18/ReactiveCocoa-RACDelegateProxy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/18/ReactiveCocoa-RACDelegateProxy/" itemprop="url">ReactiveCocoa RACDelegateProxy</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-18T13:49:25+08:00">
+                2018-01-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>ReactiveCocoa，将Cocoa世界中的代理，KVO，通知等桥接到了RAC的世界中，就是使用的RACDelegateProxy，通过运行时修改方法的运行机制，下面一起来熟悉下怎么做到的</p>
+<p>使用事例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">RACDelegateProxy *delegateProxy = [[RACDelegateProxy alloc]initWithProtocol:@protocol(UITextFieldDelegate)];</span><br><span class="line">   [[delegateProxy rac_signalForSelector:@selector(textFieldShouldReturn:)] subscribeNext:^(RACTuple *args) &#123;</span><br><span class="line">       UITextField *field = [args first];</span><br><span class="line">       [field resignFirstResponder];</span><br><span class="line">   &#125;];</span><br><span class="line"></span><br><span class="line">   self.textfield.delegate = (id&lt;UITextFieldDelegate&gt;)delegateProxy;</span><br><span class="line"></span><br><span class="line">   //防止delegateProxy被释放</span><br><span class="line">   objc_setAssociatedObject(self.textfield, _cmd, delegateProxy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);</span><br></pre></td></tr></table></figure>
+<h2 id="RACDelegateProxy"><a href="#RACDelegateProxy" class="headerlink" title="RACDelegateProxy"></a>RACDelegateProxy</h2><p>RACDelegateProxy 继承自NSObject<br>创建只有一个init方法initWithProtocol传入协议，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (instancetype)initWithProtocol:(Protocol *)protocol &#123;</span><br><span class="line">	NSCParameterAssert(protocol != NULL);</span><br><span class="line"></span><br><span class="line">	self = [super init];</span><br><span class="line"></span><br><span class="line">	class_addProtocol(self.class, protocol);</span><br><span class="line"></span><br><span class="line">	_protocol = protocol;</span><br><span class="line"></span><br><span class="line">	return self;</span><br><span class="line">&#125;</span><br><span class="line">给当前对象的类加上protocol</span><br></pre></td></tr></table></figure></p>
+<p>RACDelegateProxy 有一个属性 id rac_proxiedDelegate:如果没有实现signalForSelector，则消息真正转发的代理对象</p>
+<h3 id="消息转发"><a href="#消息转发" class="headerlink" title="消息转发"></a>消息转发</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (void)forwardInvocation:(NSInvocation *)invocation &#123;</span><br><span class="line">	[invocation invokeWithTarget:self.rac_proxiedDelegate]; //转发代理</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (NSMethodSignature *)methodSignatureForSelector:(SEL)selector &#123;</span><br><span class="line">  //获取协议必须和非必须的方法描述</span><br><span class="line">	struct objc_method_description methodDescription = protocol_getMethodDescription(_protocol, selector, NO, YES);</span><br><span class="line"></span><br><span class="line">	if (methodDescription.name == NULL) &#123;</span><br><span class="line">		methodDescription = protocol_getMethodDescription(_protocol, selector, YES, YES);</span><br><span class="line">		if (methodDescription.name == NULL) return [super methodSignatureForSelector:selector];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return [NSMethodSignature signatureWithObjCTypes:methodDescription.types];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="API"><a href="#API" class="headerlink" title="API"></a>API</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#pragma mark API</span><br><span class="line"></span><br><span class="line">- (RACSignal *)signalForSelector:(SEL)selector &#123;</span><br><span class="line">	return [self rac_signalForSelector:selector fromProtocol:_protocol];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (RACSignal *)rac_signalForSelector:(SEL)selector fromProtocol:(Protocol *)protocol &#123;</span><br><span class="line">	NSCParameterAssert(selector != NULL);</span><br><span class="line">	NSCParameterAssert(protocol != NULL);</span><br><span class="line"></span><br><span class="line">	return NSObjectRACSignalForSelector(self, selector, protocol);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="NSObjectRACSignalForSelector"><a href="#NSObjectRACSignalForSelector" class="headerlink" title="NSObjectRACSignalForSelector"></a>NSObjectRACSignalForSelector</h3><p>方法就是实现消息转发的关键，如何将seletor方法转化为信号RACSignal<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">static RACSignal *NSObjectRACSignalForSelector(NSObject *self, SEL selector, Protocol *protocol) &#123;</span><br><span class="line">	SEL aliasSelector = RACAliasForSelector(selector);</span><br><span class="line"></span><br><span class="line">	@synchronized (self) &#123;</span><br><span class="line">		RACSubject *subject = objc_getAssociatedObject(self, aliasSelector);</span><br><span class="line">		if (subject != nil) return subject;</span><br><span class="line"></span><br><span class="line">		Class class = RACSwizzleClass(self);</span><br><span class="line">		NSCAssert(class != nil, @&quot;Could not swizzle class of %@&quot;, self);</span><br><span class="line"></span><br><span class="line">		subject = [[RACSubject subject] setNameWithFormat:@&quot;%@ -rac_signalForSelector: %s&quot;, RACDescription(self), sel_getName(selector)];</span><br><span class="line">		objc_setAssociatedObject(self, aliasSelector, subject, OBJC_ASSOCIATION_RETAIN);</span><br><span class="line"></span><br><span class="line">		[self.rac_deallocDisposable addDisposable:[RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">			[subject sendCompleted];</span><br><span class="line">		&#125;]];</span><br><span class="line"></span><br><span class="line">		Method targetMethod = class_getInstanceMethod(class, selector);</span><br><span class="line">		if (targetMethod == NULL) &#123; //对不存在该方法，只需要获得方法的类型编码并将实现添加为 _objc_msgForward，交给消息转发流程进行处理即可。</span><br><span class="line">			const char *typeEncoding;</span><br><span class="line">			if (protocol == NULL) &#123;</span><br><span class="line">				typeEncoding = RACSignatureForUndefinedSelector(selector);</span><br><span class="line">			&#125; else &#123;</span><br><span class="line">        //protocol_getMethodDescription 两次从协议中获取可选和必须实现的方法的描述，并从结构体中拿出类型编码，最后为类添加这个之前不存在的方法：</span><br><span class="line"></span><br><span class="line">				if (methodDescription.name == NULL) &#123;</span><br><span class="line">					// Then fall back to looking for a required instance method.</span><br><span class="line">					methodDescription = protocol_getMethodDescription(protocol, selector, YES, YES);</span><br><span class="line">					NSCAssert(methodDescription.name != NULL, @&quot;Selector %@ does not exist in &lt;%s&gt;&quot;, NSStringFromSelector(selector), protocol_getName(protocol));</span><br><span class="line">				&#125;</span><br><span class="line"></span><br><span class="line">				typeEncoding = methodDescription.types;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			RACCheckTypeEncoding(typeEncoding);</span><br><span class="line"></span><br><span class="line">			// Define the selector to call -forwardInvocation:.</span><br><span class="line">			if (!class_addMethod(class, selector, _objc_msgForward, typeEncoding)) &#123;</span><br><span class="line">				NSDictionary *userInfo = @&#123;</span><br><span class="line">					NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedString(@&quot;A race condition occurred implementing %@ on class %@&quot;, nil), NSStringFromSelector(selector), class],</span><br><span class="line">					NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@&quot;Invoke -rac_signalForSelector: again to override the implementation.&quot;, nil)</span><br><span class="line">				&#125;;</span><br><span class="line"></span><br><span class="line">				return [RACSignal error:[NSError errorWithDomain:RACSelectorSignalErrorDomain code:RACSelectorSignalErrorMethodSwizzlingRace userInfo:userInfo]];</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; else if (method_getImplementation(targetMethod) != _objc_msgForward) &#123;</span><br><span class="line">			// Make a method alias for the existing method implementation.</span><br><span class="line">			const char *typeEncoding = method_getTypeEncoding(targetMethod);</span><br><span class="line"></span><br><span class="line">			RACCheckTypeEncoding(typeEncoding);</span><br><span class="line"></span><br><span class="line">			BOOL addedAlias __attribute__((unused)) = class_addMethod(class, aliasSelector, method_getImplementation(targetMethod), typeEncoding);</span><br><span class="line">			NSCAssert(addedAlias, @&quot;Original implementation for %@ is already copied to %@ on %@&quot;, NSStringFromSelector(selector), NSStringFromSelector(aliasSelector), class);</span><br><span class="line"></span><br><span class="line">			// Redefine the selector to call -forwardInvocation:.</span><br><span class="line">			class_replaceMethod(class, selector, _objc_msgForward, method_getTypeEncoding(targetMethod));</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		return subject;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上方法可以分为三个部分</p>
+<ul>
+<li>生成对应的aliasSelector，绑定RACSubject</li>
+<li>RACSwizzleClass</li>
+<li>class_addMethod</li>
+</ul>
+<p>class_addMethod 可以分为三部分</p>
+<ul>
+<li>targetMethod == NULL &amp;&amp;  Protocol == NULL : RACSignatureForUndefinedSelector根据selector生成不存在的方法，返回方法类型编码，然后class_addMethod</li>
+<li>protocol != NULL : 获取对应协议方法的类型编码,然后class_addMethod</li>
+<li>targetMethod ！= NULL  如果存在对应的方法，但是方法的实现不是objc_msgForward:将原方法的selector指向objc_msgForward，生成一个aliasSelector指向原方法的method实现</li>
+</ul>
+<p>以上三个部分，最后都实现 class_addMethod(class, selector, objc_msgForward, typeEncoding)</p>
+<p>注:上面方法中objc_msgForward实际是_objc_msgForward，因为编写有问题就简化了</p>
+<h3 id="RACSignatureForUndefinedSelector"><a href="#RACSignatureForUndefinedSelector" class="headerlink" title="RACSignatureForUndefinedSelector"></a>RACSignatureForUndefinedSelector</h3><p>根据selector生成对应的方法签名类型编码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">默认返回self 以及当前方法的选择子 SEL，也就是v@:</span><br><span class="line">根据Apple的参数类型，id类型的对象都用@表示,v表示void,:表示SEL</span><br><span class="line">如果selector中含有参数，拼接@，可见参数都是id类型</span><br><span class="line"></span><br><span class="line">static const char *RACSignatureForUndefinedSelector(SEL selector) &#123;</span><br><span class="line">	const char *name = sel_getName(selector);</span><br><span class="line">	NSMutableString *signature = [NSMutableString stringWithString:@&quot;v@:&quot;];</span><br><span class="line"></span><br><span class="line">	while ((name = strchr(name, &apos;:&apos;)) != NULL) &#123;</span><br><span class="line">		[signature appendString:@&quot;@&quot;];</span><br><span class="line">		name++;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return signature.UTF8String;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="重点swizzleClass"><a href="#重点swizzleClass" class="headerlink" title="重点swizzleClass"></a>重点swizzleClass</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">static Class RACSwizzleClass(NSObject *self) &#123;</span><br><span class="line">	Class statedClass = self.class;</span><br><span class="line">	Class baseClass = object_getClass(self);//获取self的isa：元类</span><br><span class="line"></span><br><span class="line">	Class knownDynamicSubclass = objc_getAssociatedObject(self, RACSubclassAssociationKey);</span><br><span class="line">	if (knownDynamicSubclass != Nil) return knownDynamicSubclass;</span><br><span class="line"></span><br><span class="line">	NSString *className = NSStringFromClass(baseClass);</span><br><span class="line"></span><br><span class="line">	if (statedClass != baseClass) &#123;</span><br><span class="line"></span><br><span class="line">		@synchronized (swizzledClasses()) &#123;</span><br><span class="line">			if (![swizzledClasses() containsObject:className]) &#123;</span><br><span class="line">				RACSwizzleForwardInvocation(baseClass);</span><br><span class="line">				RACSwizzleRespondsToSelector(baseClass);</span><br><span class="line">				RACSwizzleGetClass(baseClass, statedClass);</span><br><span class="line">				RACSwizzleGetClass(object_getClass(baseClass), statedClass);</span><br><span class="line">				RACSwizzleMethodSignatureForSelector(baseClass);</span><br><span class="line">				[swizzledClasses() addObject:className];</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		return baseClass;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	const char *subclassName = [className stringByAppendingString:RACSubclassSuffix].UTF8String;</span><br><span class="line">	Class subclass = objc_getClass(subclassName);</span><br><span class="line"></span><br><span class="line">  //生成baseClass对应的子类</span><br><span class="line">	if (subclass == nil) &#123;</span><br><span class="line">		subclass = objc_allocateClassPair(baseClass, subclassName, 0);</span><br><span class="line">		if (subclass == nil) return nil;</span><br><span class="line"></span><br><span class="line">		RACSwizzleForwardInvocation(subclass);</span><br><span class="line">		RACSwizzleRespondsToSelector(subclass);</span><br><span class="line"></span><br><span class="line">		RACSwizzleGetClass(subclass, statedClass);</span><br><span class="line">		RACSwizzleGetClass(object_getClass(subclass), statedClass);</span><br><span class="line"></span><br><span class="line">		RACSwizzleMethodSignatureForSelector(subclass);</span><br><span class="line"></span><br><span class="line">		objc_registerClassPair(subclass);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	object_setClass(self, subclass); //修改self为对应的子类，以后消息转发到了子类执行</span><br><span class="line">	objc_setAssociatedObject(self, RACSubclassAssociationKey, subclass, OBJC_ASSOCIATION_ASSIGN);</span><br><span class="line">	return subclass;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以分为三部分 主要是修改当前类的一些方法实现</p>
+<ul>
+<li><p>生成子类，然后替换子类的实现方法<br>子类RACDelegateProxy_RACSelectorSignal的class方法返回的对象是当前的类RACDelegateProxy</p>
+</li>
+<li><p>RACSwizzleForwardInvocation(baseClass);</p>
+</li>
+<li>RACSwizzleRespondsToSelector(baseClass);</li>
+<li>RACSwizzleMethodSignatureForSelector(baseClass);</li>
+<li>RACSwizzleGetClass</li>
+</ul>
+<h3 id="RACSwizzleForwardInvocation"><a href="#RACSwizzleForwardInvocation" class="headerlink" title="RACSwizzleForwardInvocation"></a>RACSwizzleForwardInvocation</h3><p>这是最主要的方法RACSwizzleForwardInvocation<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">将当前forwardInvocation实现替换为newForwardInvocation的实现</span><br><span class="line"></span><br><span class="line">static void RACSwizzleForwardInvocation(Class class) &#123;</span><br><span class="line">	SEL forwardInvocationSEL = @selector(forwardInvocation:);</span><br><span class="line">	Method forwardInvocationMethod = class_getInstanceMethod(class, forwardInvocationSEL);</span><br><span class="line"></span><br><span class="line">	// Preserve any existing implementation of -forwardInvocation:.</span><br><span class="line">	void (*originalForwardInvocation)(id, SEL, NSInvocation *) = NULL;</span><br><span class="line">	if (forwardInvocationMethod != NULL) &#123;</span><br><span class="line">		originalForwardInvocation = (__typeof__(originalForwardInvocation))method_getImplementation(forwardInvocationMethod);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	id newForwardInvocation = ^(id self, NSInvocation *invocation) &#123;</span><br><span class="line">		BOOL matched = RACForwardInvocation(self, invocation);</span><br><span class="line">		if (matched) return;</span><br><span class="line"></span><br><span class="line">		if (originalForwardInvocation == NULL) &#123;</span><br><span class="line">			[self doesNotRecognizeSelector:invocation.selector];</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			originalForwardInvocation(self, forwardInvocationSEL, invocation);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	class_replaceMethod(class, forwardInvocationSEL, imp_implementationWithBlock(newForwardInvocation), &quot;v@:@&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static BOOL RACForwardInvocation(id self, NSInvocation *invocation) &#123;</span><br><span class="line">	SEL aliasSelector = RACAliasForSelector(invocation.selector);</span><br><span class="line">	RACSubject *subject = objc_getAssociatedObject(self, aliasSelector);</span><br><span class="line"></span><br><span class="line">	Class class = object_getClass(invocation.target);</span><br><span class="line">	BOOL respondsToAlias = [class instancesRespondToSelector:aliasSelector];</span><br><span class="line">	if (respondsToAlias) &#123;</span><br><span class="line">		invocation.selector = aliasSelector;</span><br><span class="line">		[invocation invoke]; //响应方法的target</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	if (subject == nil) return respondsToAlias;</span><br><span class="line"></span><br><span class="line">	[subject sendNext:invocation.rac_argumentsTuple];//信号，传参</span><br><span class="line">	return YES;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="RACSwizzleMethodSignatureForSelector"><a href="#RACSwizzleMethodSignatureForSelector" class="headerlink" title="RACSwizzleMethodSignatureForSelector"></a>RACSwizzleMethodSignatureForSelector</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">//在方法不存在时，通过 objc_msgSendSuper 调用父类的 -methodSignatureForSelector: 方法获取方法签名。</span><br><span class="line"></span><br><span class="line">static void RACSwizzleMethodSignatureForSelector(Class class) &#123;</span><br><span class="line">	IMP newIMP = imp_implementationWithBlock(^(id self, SEL selector) &#123;</span><br><span class="line"></span><br><span class="line">		Class actualClass = object_getClass(self);</span><br><span class="line">		Method method = class_getInstanceMethod(actualClass, selector);</span><br><span class="line">		if (method == NULL) &#123;</span><br><span class="line"></span><br><span class="line">			struct objc_super target = &#123;</span><br><span class="line">				.super_class = class_getSuperclass(class),</span><br><span class="line">				.receiver = self,</span><br><span class="line">			&#125;;</span><br><span class="line">			NSMethodSignature * (*messageSend)(struct objc_super *, SEL, SEL) = (__typeof__(messageSend))objc_msgSendSuper;</span><br><span class="line">			return messageSend(&amp;target, @selector(methodSignatureForSelector:), selector);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		char const *encoding = method_getTypeEncoding(method);</span><br><span class="line">		return [NSMethodSignature signatureWithObjCTypes:encoding];</span><br><span class="line">	&#125;);</span><br><span class="line"></span><br><span class="line">	SEL selector = @selector(methodSignatureForSelector:);</span><br><span class="line">	Method methodSignatureForSelectorMethod = class_getInstanceMethod(class, selector);</span><br><span class="line">	class_replaceMethod(class, selector, newIMP, method_getTypeEncoding(methodSignatureForSelectorMethod));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="RACSwizzleGetClass"><a href="#RACSwizzleGetClass" class="headerlink" title="RACSwizzleGetClass"></a>RACSwizzleGetClass</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">static void RACSwizzleGetClass(Class class, Class statedClass) &#123;</span><br><span class="line">	SEL selector = @selector(class);</span><br><span class="line">	Method method = class_getInstanceMethod(class, selector);</span><br><span class="line">	IMP newIMP = imp_implementationWithBlock(^(id self) &#123;</span><br><span class="line">		return statedClass;</span><br><span class="line">	&#125;);</span><br><span class="line">	class_replaceMethod(class, selector, newIMP, method_getTypeEncoding(method));</span><br><span class="line">&#125;</span><br><span class="line">将class的selector(class)实现替换为newIMP，即返回(statedClass)</span><br></pre></td></tr></table></figure>
+<p>swizzleGetClass有点疑惑，所以写下code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">有两个类</span><br><span class="line">Cat 继承NSObject</span><br><span class="line">PattyCat 继承Cat</span><br><span class="line"></span><br><span class="line">Class object_getClass(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    if (obj) return obj-&gt;getIsa();</span><br><span class="line">    else return Nil;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)wanwan</span><br><span class="line">&#123;</span><br><span class="line">  NSLog(@&quot;PattyCat:%p&quot;,[PattyCat class]); //0x101bfa630</span><br><span class="line">  NSLog(@&quot;Cat:%p&quot;,[Cat class]);           //0x101bfa5e0</span><br><span class="line"></span><br><span class="line">  Class statedClass = PattyCat.class;                  //0x101bfa630</span><br><span class="line">  Class baseClass = object_getClass([PattyCat class]);//0x101bfa608</span><br><span class="line"></span><br><span class="line">  if (statedClass != baseClass) &#123;</span><br><span class="line">      RACSwizzleGetClass(baseClass, statedClass);//hook class方法</span><br><span class="line">      RACSwizzleGetClass(object_getClass(baseClass), statedClass);</span><br><span class="line"></span><br><span class="line">      NSLog(@&quot;PattyCat:%p&quot;,[PattyCat class]); //0x101bfa630</span><br><span class="line">      NSLog(@&quot;Cat:%p&quot;,[Cat class]);           //0x101bfa630</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">class实例方法存在NSObject的方法列表，类方法存在NSobject-MetaClass的类列表方法里面，所以RACSwizzleGetClass(baseClass, statedClass);第一次执行的时候，是将baseClass也就是在PattyCat的metaClass寻找类class方法，找不到继续往上找Cat-MetaClass，然后直到NSobject-MetaClass找到了，改变class返回为statedClass</span><br><span class="line"></span><br><span class="line">第二次执行  RACSwizzleGetClass(object_getClass(baseClass), statedClass);，从NSobject-MetaClass类列表方法查找Class方法，找到了返回为statedClass</span><br><span class="line"></span><br><span class="line">所以[PattyCat class]没有变化，返回statedClass的指针</span><br><span class="line">[Cat class]去Cat-MetaClass类列表查找，一直找到NSObject-metaClass找到后发现class返回的是statedClass，所以打印的也是statedClass的指针</span><br></pre></td></tr></table></figure></p>
+<p>实际上在了解以上步骤之后，对原来的RACSwizzleClass方法才加以了解<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">static Class RACSwizzleClass(NSObject *self) &#123;</span><br><span class="line">	Class statedClass = self.class;</span><br><span class="line">	Class baseClass = object_getClass(self);</span><br><span class="line"></span><br><span class="line">	Class knownDynamicSubclass = objc_getAssociatedObject(self, RACSubclassAssociationKey);</span><br><span class="line">	if (knownDynamicSubclass != Nil) return knownDynamicSubclass;</span><br><span class="line"></span><br><span class="line">	NSString *className = NSStringFromClass(baseClass);</span><br><span class="line"></span><br><span class="line">	if (statedClass != baseClass) &#123; //如果当前传进来的self是对象的话，此处不执行</span><br><span class="line">		 ...</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	const char *subclassName = [className stringByAppendingString:RACSubclassSuffix].UTF8String;</span><br><span class="line">	Class subclass = objc_getClass(subclassName);</span><br><span class="line"></span><br><span class="line">	if (subclass == nil) &#123;</span><br><span class="line">		subclass = objc_allocateClassPair(baseClass, subclassName, 0);//从baseclass处生成子类</span><br><span class="line">		if (subclass == nil) return nil;</span><br><span class="line"></span><br><span class="line">    //替换子类的相应的方法</span><br><span class="line">		RACSwizzleForwardInvocation(subclass);</span><br><span class="line">		RACSwizzleRespondsToSelector(subclass);</span><br><span class="line"></span><br><span class="line">    //从上面的事例可以帮助理解，此处是将子类subclass的class方法返回为statedClass，也就是子类subclass的isa为statedClass</span><br><span class="line">		RACSwizzleGetClass(subclass, statedClass);</span><br><span class="line">		RACSwizzleGetClass(object_getClass(subclass), statedClass);</span><br><span class="line">    //这一步是将子类subclass的metaclass，isa指向statedClass</span><br><span class="line"></span><br><span class="line">		RACSwizzleMethodSignatureForSelector(subclass);</span><br><span class="line"></span><br><span class="line">		objc_registerClassPair(subclass);//注册子类</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	object_setClass(self, subclass);//将当前返回的类修改为子类，这样调用当前的方法会转发到子类去执行，但是为外部来说，返回的class还是statedClass也就是原来的类</span><br><span class="line">	objc_setAssociatedObject(self, RACSubclassAssociationKey, subclass, OBJC_ASSOCIATION_ASSIGN);</span><br><span class="line">	return subclass;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>strchr 是C函数，原型为<code>extern char *strchr(const char *s,char c)</code><br>可以查找出字符串s中首次出现c的位置，如果没找到，返回NULL</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>RACDelegateProxy 使用消息信号的形式监听所有的代理方法，可以用 block 的形式去代替原有的方法，为我们帮助简化代码。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/15/Objc消息的发送和查找/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1328,420 +1770,6 @@ __builtin_expect的作用
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/08/Block浅析持有对象/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/08/Block浅析持有对象/" itemprop="url">Block浅析持有对象</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-08T15:33:52+08:00">
-                2018-01-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="第一段"><a href="#第一段" class="headerlink" title="第一段"></a>第一段</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@interface TestObject ()</span><br><span class="line">@property (nonatomic, strong) NSString *name;</span><br><span class="line">@end</span><br><span class="line">@implementation TestObject</span><br><span class="line">- (void)test&#123;</span><br><span class="line">    ^&#123;</span><br><span class="line">        NSLog(@&quot;%@&quot;,self.name);</span><br><span class="line">    &#125;();</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
-<p>经过clang -rewrite-objc xx.m 之后得到 TestObject.cpp ，精简之后得到如下源码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"> // @interface TestObject ()</span><br><span class="line"> // @property (nonatomic, strong) NSString *name;</span><br><span class="line"> /* @end */</span><br><span class="line"></span><br><span class="line">// @implementation TestObject</span><br><span class="line"></span><br><span class="line">struct __TestObject__test_block_impl_0 &#123;</span><br><span class="line">    struct __block_impl impl;</span><br><span class="line">    struct __TestObject__test_block_desc_0* Desc;</span><br><span class="line">    TestObject *self;</span><br><span class="line">    __TestObject__test_block_impl_0(void *fp, struct __TestObject__test_block_desc_0 *desc, TestObject *_self, int flags=0) : self(_self) &#123;</span><br><span class="line">        impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">        impl.Flags = flags;</span><br><span class="line">        impl.FuncPtr = fp;</span><br><span class="line">        Desc = desc;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">static void __TestObject__test_block_func_0(struct __TestObject__test_block_impl_0 *__cself) &#123;</span><br><span class="line">    TestObject *self = __cself-&gt;self; // bound by copy</span><br><span class="line"></span><br><span class="line">    NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_TestObject_b2287f_mi_0,((NSString *(*)(id, SEL))(void *)objc_msgSend)((id)self, sel_registerName(&quot;name&quot;)));</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">  //这里可以观察到，在test_block_impl中，block持有了对象TestObject *self;</span><br></pre></td></tr></table></figure>
-<h2 id="第二段"><a href="#第二段" class="headerlink" title="第二段"></a>第二段</h2><p> OC源码<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">@interface TestObject ()</span><br><span class="line">@end</span><br><span class="line">@implementation TestObject</span><br><span class="line"></span><br><span class="line">int global_i = 1;</span><br><span class="line">static int static_global_j = 2;</span><br><span class="line"></span><br><span class="line">- (void)test</span><br><span class="line">&#123;</span><br><span class="line">    static int static_global_k = 3;</span><br><span class="line">    __block int value = 4;</span><br><span class="line"></span><br><span class="line">    void(^pig)()= ^()&#123;</span><br><span class="line">        global_i++;</span><br><span class="line">        static_global_j++;</span><br><span class="line">        static_global_k++;</span><br><span class="line">        value++;</span><br><span class="line">         NSLog(@&quot;Block中 变量 = %d  %d %d %d&quot;, global_i,static_global_j,static_global_k,value);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    global_i++;</span><br><span class="line">    static_global_j++;</span><br><span class="line">    static_global_k++;</span><br><span class="line">    value++;</span><br><span class="line">    NSLog(@&quot;Block中 变量 = %d  %d %d %d&quot;, global_i,static_global_j,static_global_k,value);</span><br><span class="line"></span><br><span class="line">    pig();</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
-<p>经过编译之后，得到大致的源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">可见block里没有引用全局变量，静态全局变量，静态变量</span><br><span class="line"></span><br><span class="line">struct __Block_byref_value_0 &#123;</span><br><span class="line">  void *__isa;</span><br><span class="line">__Block_byref_value_0 *__forwarding;</span><br><span class="line"> int __flags;</span><br><span class="line"> int __size;</span><br><span class="line"> int value;  //新增一个对象，与外部的变量value同名</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">struct __TestObject__test_block_impl_0 &#123;</span><br><span class="line">  struct __block_impl impl;</span><br><span class="line">  struct __TestObject__test_block_desc_0* Desc;</span><br><span class="line">  int *static_global_k;   </span><br><span class="line">  __Block_byref_value_0 *value; // by ref</span><br><span class="line">  __TestObject__test_block_impl_0(void *fp, struct __TestObject__test_block_desc_0 *desc, int *_static_global_k, __Block_byref_value_0 *_value, int flags=0) : static_global_k(_static_global_k), value(_value-&gt;__forwarding) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">在__TestObject__test_block_impl_0中</span><br><span class="line">static_global_k和__Block_byref_value_0 *value</span><br><span class="line">被Block从外面捕获进来，成为__TestObject__test_block_impl_0这个结构体的成员变量了。</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">static void __TestObject__test_block_func_0(struct __TestObject__test_block_impl_0 *__cself) &#123;</span><br><span class="line">  __Block_byref_value_0 *value = __cself-&gt;value; // bound by ref  </span><br><span class="line">  int *static_global_k = __cself-&gt;static_global_k; // bound by copy</span><br><span class="line"></span><br><span class="line">        global_i++;</span><br><span class="line">        static_global_j++;</span><br><span class="line">        (*static_global_k)++;</span><br><span class="line">        (value-&gt;__forwarding-&gt;value)++;</span><br><span class="line">         NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_TestObject_fb5e34_mi_0, global_i,static_global_j,(*static_global_k),(value-&gt;__forwarding-&gt;value));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>block捕获了自动变量value的值而不是地址，所以不会改变value在block外的值</p>
-<h2 id="循环引用"><a href="#循环引用" class="headerlink" title="循环引用"></a>循环引用</h2><p>OC代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">typedef void (^drink)();</span><br><span class="line"></span><br><span class="line">@interface Person : NSObject</span><br><span class="line">@property (nonatomic, strong) drink doDrink;</span><br><span class="line">@property (nonatomic, strong) NSString *eat;</span><br><span class="line">@end</span><br><span class="line">@implementation Person</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@interface BlockViewController ()</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation BlockViewController</span><br><span class="line"></span><br><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line"></span><br><span class="line">    Person *person = [[Person alloc] init];</span><br><span class="line">    person.eat = @&quot;山珍海味&quot;;</span><br><span class="line">    __weak typeof(Person*) weakSelf = person;</span><br><span class="line">    person.doDrink = ^&#123;</span><br><span class="line">        NSLog(@&quot;person eat = %@&quot;,weakSelf.eat);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>clang这样编译是不过的，将<strong>weak替换为</strong>unsafe_unretained，然后 clang -x objective-c -rewrite-objc -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk xx.m<br>clang之后源码，精简如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">struct __BlockViewController__viewDidLoad_block_impl_0 &#123;</span><br><span class="line">  struct __block_impl impl;</span><br><span class="line">  struct __BlockViewController__viewDidLoad_block_desc_0* Desc;</span><br><span class="line">  typeof(Person *) weakSelf;</span><br><span class="line">  __BlockViewController__viewDidLoad_block_impl_0(void *fp, struct __BlockViewController__viewDidLoad_block_desc_0 *desc, typeof(Person *) _weakSelf, int flags=0) : weakSelf(_weakSelf) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">static void __BlockViewController__viewDidLoad_block_func_0(struct __BlockViewController__viewDidLoad_block_impl_0 *__cself) &#123;</span><br><span class="line">  typeof(Person *) weakSelf = __cself-&gt;weakSelf; // bound by copy</span><br><span class="line"></span><br><span class="line">        NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_BlockViewController_7d49b7_mi_1,((NSString *(*)(id, SEL))(void *)objc_msgSend)((id)weakSelf, sel_registerName(&quot;eat&quot;)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">block持有的是typeof(Person *) weakSelf;</span><br><span class="line">底层实现objc_initWeak 和 objc_storeWeak</span><br></pre></td></tr></table></figure></p>
-<p>##总结:<br>自动变量是以值传递方式传递到Block的构造函数里面去的。Block只捕获Block中会用到的变量。由于只捕获了自动变量的值，并非内存地址，所以Block内部不能改变自动变量的值<br>Block捕获的外部变量可以改变值的是 静态变量，静态全局变量，全局变量</p>
-<p>下一篇将介绍__weak底层实现</p>
-<p>##<br><a href="http://nsoio.github.io/2015/06/28/ARC%E4%B8%ADweak%E5%AE%9E%E7%8E%B0/" target="_blank" rel="noopener">http://nsoio.github.io/2015/06/28/ARC%E4%B8%ADweak%E5%AE%9E%E7%8E%B0/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/08/load了解/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/08/load了解/" itemprop="url">load了解</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-08T11:29:31+08:00">
-                2018-01-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
-<blockquote>
-<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，</p>
-</blockquote>
-<p>##程序启动加载的流程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//dyld(The Dynamic Link Editor)是 Apple 的动态链接库，系统内核做好启动程序的初始准备后，将其他事务交给 dyld 负责</span><br><span class="line">_dyld-start</span><br><span class="line">|</span><br><span class="line">_objc_init</span><br><span class="line">|</span><br><span class="line">_dyld_objc_notify_register</span><br><span class="line">|</span><br><span class="line">load_images</span><br></pre></td></tr></table></figure></p>
-<p><img src="/images/load_images.png" alt="线程图"></p>
-<p>类方法加载的流程</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">void</span><br><span class="line">load_images(const char *path __unused, const struct mach_header *mh)</span><br><span class="line">&#123;</span><br><span class="line">    // Return without taking locks if there are no +load methods here.</span><br><span class="line">    if (!hasLoadMethods((const headerType *)mh)) return;</span><br><span class="line"></span><br><span class="line">    recursive_mutex_locker_t lock(loadMethodLock);</span><br><span class="line"></span><br><span class="line">    // Discover load methods</span><br><span class="line">    &#123;</span><br><span class="line">        rwlock_writer_t lock2(runtimeLock);</span><br><span class="line">        prepare_load_methods((const headerType *)mh);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Call +load methods (without runtimeLock - re-entrant)</span><br><span class="line">    call_load_methods();</span><br><span class="line">&#125;</span><br><span class="line">通过load_images进行类的存储prepare_load_methods，包括类的load方法和category方法，存在数组中loadable_classes和loadable_categories</span><br><span class="line">然后调用call_load_methods去调用call_class_loads和call_category_loads</span><br></pre></td></tr></table></figure>
-<p>prepare_load_methods //将需要调用 load 方法的类添加到一个列表中</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">void prepare_load_methods(const headerType *mhdr)</span><br><span class="line">&#123;</span><br><span class="line">    size_t count, i;</span><br><span class="line"></span><br><span class="line">    runtimeLock.assertWriting();</span><br><span class="line"></span><br><span class="line">    classref_t *classlist =</span><br><span class="line">        _getObjc2NonlazyClassList(mhdr, &amp;count);</span><br><span class="line">    for (i = 0; i &lt; count; i++) &#123;</span><br><span class="line">        schedule_class_load(remapClass(classlist[i]));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    category_t **categorylist = _getObjc2NonlazyCategoryList(mhdr, &amp;count);</span><br><span class="line">    for (i = 0; i &lt; count; i++) &#123;</span><br><span class="line">        category_t *cat = categorylist[i];</span><br><span class="line">        Class cls = remapClass(cat-&gt;cls);</span><br><span class="line">        if (!cls) continue;  // category for ignored weak-linked class</span><br><span class="line">        realizeClass(cls);</span><br><span class="line">        assert(cls-&gt;ISA()-&gt;isRealized());</span><br><span class="line">        add_category_to_loadable_list(cat);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>通过_getObjc2NonlazyClassList 获取所有的类的列表之后，会通过 remapClass 获取类对应的指针，<br>然后调用 schedule_class_load 递归地安排当前类和没有调用 + load 父类进入列表。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">static void schedule_class_load(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    if (!cls) return;</span><br><span class="line">    assert(cls-&gt;isRealized());</span><br><span class="line"></span><br><span class="line">    if (cls-&gt;data()-&gt;flags &amp; RW_LOADED) return;</span><br><span class="line"></span><br><span class="line">    schedule_class_load(cls-&gt;superclass);</span><br><span class="line"></span><br><span class="line">    add_class_to_loadable_list(cls);</span><br><span class="line">    cls-&gt;setInfo(RW_LOADED);</span><br><span class="line">&#125;</span><br><span class="line">在执行 add_class_to_loadable_list(cls) 将当前类加入加载列表之前，会先把父类加入待加载的列表，保证父类在子类前调用 load 方法。</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">void add_class_to_loadable_list(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    IMP method;</span><br><span class="line"></span><br><span class="line">    loadMethodLock.assertLocked();</span><br><span class="line"></span><br><span class="line">    method = cls-&gt;getLoadMethod();</span><br><span class="line">    if (!method) return;  // Don&apos;t bother if cls has no +load method</span><br><span class="line"></span><br><span class="line">    if (PrintLoading) &#123;</span><br><span class="line">        _objc_inform(&quot;LOAD: class &apos;%s&apos; scheduled for +load&quot;,</span><br><span class="line">                     cls-&gt;nameForLogging());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (loadable_classes_used == loadable_classes_allocated) &#123;</span><br><span class="line">        loadable_classes_allocated = loadable_classes_allocated*2 + 16;</span><br><span class="line">        loadable_classes = (struct loadable_class *)</span><br><span class="line">            realloc(loadable_classes,</span><br><span class="line">                              loadable_classes_allocated *</span><br><span class="line">                              sizeof(struct loadable_class));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    loadable_classes[loadable_classes_used].cls = cls;</span><br><span class="line">    loadable_classes[loadable_classes_used].method = method;</span><br><span class="line">    loadable_classes_used++;</span><br><span class="line">&#125;</span><br><span class="line">判断当前loadable_classes是否被分配完，如果没有剩余空间，就会在当前数组的基础上扩大数组的大小：realloc，然后把传入的 class 以及对应的方法的实现加到列表中</span><br></pre></td></tr></table></figure>
-<h2 id="疑问"><a href="#疑问" class="headerlink" title="疑问"></a>疑问</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(*load_method)(cls, SEL_load); 这一句可以调用 load 方法？</span><br><span class="line">cls执行load_method指针指向的函数地址</span><br></pre></td></tr></table></figure>
-<p>其实这里是C函数指针的概念<br>举例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">void run() &#123;</span><br><span class="line">    printf(&quot;Hello World\n&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        void (*dy_run)() = run;</span><br><span class="line">        (*dy_run)();</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line">其结果会发现执行了 run 方法，并输出了 Hello World。这里，我们通过一个 void (*fptr)() 类型的函数指针，将 run 函数获取出，并运行函数。实际上其中的工作是抓取 run 函数的地址并存储在指针变量中。我们通过指针运行对应的地址部分，其效果为执行了 run 函数。</span><br></pre></td></tr></table></figure></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总结一下 Class 中 load 方法的全部流程，用流程图将其描述一下：<br><img src="/images/流程图.png" alt="流程图"></p>
-<ul>
-<li>Load Images: 通过 dyld 载入 image 文件，引入 Class。</li>
-<li>Prepare Load Methods: 准备 load 方法。过滤无效类、无效方法，将 load 方法指针和所属 Class 指针收集至全局 Class 存储线性表 loadable_classes 中，其中会涉及到自动扩展空间和父类优先的递归调用问题。</li>
-<li>Call Load Methods: 根据收集到的函数指针，对 load 方法进行动态调用。进一步过滤无效方法，并记录 log 日志。</li>
-</ul>
-<h2 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h2><p>什么是images?<br>images表示的是二进制文件（可执行文件或者动态链接库.so文件）编译后的符号、代码等。所以 load_images 的工作是传入处理过后的二进制文件并让 Runtime 进行处理，并且每一个文件对应一个抽象实例来负责加载，这里的实例是 ImageLoader。</p>
-<p>ImageLoader 处理二进制文件的时机是在 main 入口函数以前，它在加载文件时主要做两个工作：</p>
-<ul>
-<li>在程序运行时它先将动态链接的 image 递归加载 （也就是上面测试栈中一串的递归调用的时刻）</li>
-<li>再从可执行文件 image 递归加载所有符号</li>
-</ul>
-<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BD%A0%E7%9C%9F%E7%9A%84%E4%BA%86%E8%A7%A3%20load%20%E6%96%B9%E6%B3%95%E4%B9%88%EF%BC%9F.md" target="_blank" rel="noopener">https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BD%A0%E7%9C%9F%E7%9A%84%E4%BA%86%E8%A7%A3%20load%20%E6%96%B9%E6%B3%95%E4%B9%88%EF%BC%9F.md</a></p>
-<p><a href="https://xiaozhuanlan.com/topic/3175268940" target="_blank" rel="noopener">https://xiaozhuanlan.com/topic/3175268940</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/05/Log/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/05/Log/" itemprop="url">Log</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-05T11:45:17+08:00">
-                2018-01-05
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># define DLog(fmt, ...) NSLog((@&quot;[文件名:%s]\n&quot; &quot;[函数名:%s]\n&quot; &quot;[行号:%d] \n&quot; fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__);</span><br></pre></td></tr></table></figure>
-<p>参数解释：<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">__VA_ARGS__</span><br><span class="line"></span><br><span class="line">是一个可变参数的宏，很少人知道这个宏，这个可变参数的宏是新的C99规范中新增的，目前似乎只有gcc支（VC6.0的编译器不支持）。宏前面加上##的作用在于，当可变参数的个数为0时，这里的##起到把前面多余的&quot;,&quot;去掉的作用,否则会编译出错, 你可以试试。</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__FILE__   宏在预编译时会替换成当前的源文件名</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__LINE__  宏在预编译时会替换成当前的行号</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__FUNCTION__  宏在预编译时会替换成当前的函数名称</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__PRETTY_FUNCTION__  底层库函数名</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fmt  实际上就是自己输入的参数 format</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1792,7 +1820,7 @@ __builtin_expect的作用
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-count">28</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1805,7 +1833,7 @@ __builtin_expect的作用
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -1880,7 +1908,7 @@ __builtin_expect的作用
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共31.5k字</span>
+<span class="post-count"> 博客全站共37.9k字</span>
 </div>
 
 

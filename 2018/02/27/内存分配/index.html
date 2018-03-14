@@ -78,7 +78,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="原理," />
+  <meta name="keywords" content="Hexo, Patty" />
 
 
 
@@ -96,18 +96,20 @@
 
 
 
-<meta name="description" content="在之前，一直以为类的isa结构图就是那张很经典的图，但是才发现有个特例情况下，有点变化 code123456789101112131415161718192021222324  PattyCat *pcat = [[PattyCat alloc] init];   NSLog(@&amp;quot;%p--pcat的isa:%p--%@-%@-%@&amp;quot;,(object_getClass([Patt">
-<meta name="keywords" content="原理">
+<meta name="description" content="本文分析内存使用Xcode自带的Instruments分析工具Alloctions运行profile下的Alloctions，可以看到有一栏统计All Heap &amp;amp; Anonymous VM使用的内存All Heap:堆上分配的内存情况Anonymous VM:虚拟内存分配 虚拟内存当应用向系统申请分配内存时，系统不会返回需要的物理内存地址，而是返回虚拟内存地址。当开始真正使用申请到的虚拟">
 <meta property="og:type" content="article">
-<meta property="og:title" content="KVO 实现原理分析">
-<meta property="og:url" content="https://pattyxp.github.io/2018/02/02/KVO-实现原理分析/index.html">
+<meta property="og:title" content="内存分配">
+<meta property="og:url" content="https://pattyxp.github.io/2018/02/27/内存分配/index.html">
 <meta property="og:site_name" content="温暖的弦">
-<meta property="og:description" content="在之前，一直以为类的isa结构图就是那张很经典的图，但是才发现有个特例情况下，有点变化 code123456789101112131415161718192021222324  PattyCat *pcat = [[PattyCat alloc] init];   NSLog(@&amp;quot;%p--pcat的isa:%p--%@-%@-%@&amp;quot;,(object_getClass([Patt">
+<meta property="og:description" content="本文分析内存使用Xcode自带的Instruments分析工具Alloctions运行profile下的Alloctions，可以看到有一栏统计All Heap &amp;amp; Anonymous VM使用的内存All Heap:堆上分配的内存情况Anonymous VM:虚拟内存分配 虚拟内存当应用向系统申请分配内存时，系统不会返回需要的物理内存地址，而是返回虚拟内存地址。当开始真正使用申请到的虚拟">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-02-02T05:11:55.000Z">
+<meta property="og:image" content="https://pattyxp.github.io/images/内存分配-1.png">
+<meta property="og:image" content="https://pattyxp.github.io/images/内存分配-alloc.png">
+<meta property="og:updated_time" content="2018-02-27T08:16:00.199Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="KVO 实现原理分析">
-<meta name="twitter:description" content="在之前，一直以为类的isa结构图就是那张很经典的图，但是才发现有个特例情况下，有点变化 code123456789101112131415161718192021222324  PattyCat *pcat = [[PattyCat alloc] init];   NSLog(@&amp;quot;%p--pcat的isa:%p--%@-%@-%@&amp;quot;,(object_getClass([Patt">
+<meta name="twitter:title" content="内存分配">
+<meta name="twitter:description" content="本文分析内存使用Xcode自带的Instruments分析工具Alloctions运行profile下的Alloctions，可以看到有一栏统计All Heap &amp;amp; Anonymous VM使用的内存All Heap:堆上分配的内存情况Anonymous VM:虚拟内存分配 虚拟内存当应用向系统申请分配内存时，系统不会返回需要的物理内存地址，而是返回虚拟内存地址。当开始真正使用申请到的虚拟">
+<meta name="twitter:image" content="https://pattyxp.github.io/images/内存分配-1.png">
 
 
 
@@ -136,13 +138,13 @@
 
 
 
-  <link rel="canonical" href="https://pattyxp.github.io/2018/02/02/KVO-实现原理分析/"/>
+  <link rel="canonical" href="https://pattyxp.github.io/2018/02/27/内存分配/"/>
 
 
 
 
 
-  <title>KVO 实现原理分析 | 温暖的弦</title>
+  <title>内存分配 | 温暖的弦</title>
   
 
 
@@ -275,7 +277,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/02/KVO-实现原理分析/">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/27/内存分配/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Patty">
@@ -292,7 +294,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">KVO 实现原理分析</h1>
+          <h1 class="post-title" itemprop="name headline">内存分配</h1>
         
 
         <div class="post-meta">
@@ -304,8 +306,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-02T11:59:38+08:00">
-                2018-02-02
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-27T15:07:05+08:00">
+                2018-02-27
               </time>
             
 
@@ -342,18 +344,25 @@
       
 
       
-        <p>在之前，一直以为类的isa结构图就是那张很经典的图，但是才发现有个特例情况下，有点变化</p>
-<h2 id="code"><a href="#code" class="headerlink" title="code"></a>code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">  PattyCat *pcat = [[PattyCat alloc] init];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   NSLog(@&quot;%p--pcat的isa:%p--%@-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910--pcat的isa:0x10408c870--PattyCat-Cat-Cat</span><br><span class="line">    */</span><br><span class="line">   [pcat addObserver:self</span><br><span class="line">         forKeyPath:@&quot;address&quot;</span><br><span class="line">         options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld</span><br><span class="line">         context:nil];</span><br><span class="line">   pcat.address = @&quot;有地址了&quot;;</span><br><span class="line">//    NSLog(@&quot;%@--%p&quot;,(object_getClass([PattyCat class])),object_getClass(pcat));</span><br><span class="line"></span><br><span class="line">   NSLog(@&quot;%p---pcat的isa:%p-新的子类是:%@-新的子类的isa:%p-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),object_getClass(object_getClass(pcat)),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910---pcat的isa:0x7b24000260a0-新的子类是:NSKVONotifying_PattyCat-新的子类的isa:0x7b2400026130-Cat-PattyCat</span><br><span class="line">    */</span><br><span class="line">   [pcat removeObserver:self forKeyPath:@&quot;address&quot;];</span><br><span class="line"></span><br><span class="line">  NSLog(@&quot;%p--pcat的isa:%p--%@-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910--pcat的isa:0x10408c870--PattyCat-Cat-Cat</span><br><span class="line">    */</span><br></pre></td></tr></table></figure>
-<p>在当前类中引入对象pcat,监听它的KVO变化之后，然后移除KVO，对象的isa以及superClass前后的变化如上</p>
-<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>苹果文档介绍</p>
-<blockquote>
-<p>Automatic key-value observing is implemented using a technique called isa-swizzling… When an observer is registered for an attribute of an object the isa pointer of the observed object is modified, pointing to an intermediate class rather than at the true class ..</p>
-</blockquote>
-<p>简要的来说，在我们对某个对象完成监听的注册后，编译器会修改监听对象（上文中的pcat）的isa指针，让这个指针指向一个新生成的中间类，中间类的命名格式如 NSKVONotifying_XX (XX 是pcat对象的class)</p>
-<p>苹果还 <strong>重写了这个子类的class方法跟description方法</strong> 来掩人耳目。<br>另外，新类相对于父类添加了一个NSKVONotifying_前缀，添加这个前缀是为了避免多次创建监听子类，节省资源</p>
-<p>以上通过object_getClass(pcat)命令得到了KVO前为PattyCat   KVO后值为 NSKVONotifying_PattyCat</p>
-<p>注: 以下两个方式得到类的指针是一样的哦<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p object_getClass(pcat)</span><br><span class="line">(Class) $0 = PattyCat</span><br><span class="line">(lldb) p (void *)$0</span><br><span class="line">(void *) $1 = 0x0000000100001188</span><br><span class="line"></span><br><span class="line">(lldb) p (objc_class *)[PattyCat class]</span><br><span class="line">(objc_class *) $2 = 0x0000000100001188</span><br></pre></td></tr></table></figure></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>对实例对象进行KVO观察的时候，实际上对象的isa已经不是之前的类对象了<br>移除KVO之后，恢复之前效果</p>
+        <p>本文分析内存使用Xcode自带的Instruments分析工具Alloctions<br>运行profile下的Alloctions，可以看到有一栏统计All Heap &amp; Anonymous VM使用的内存<br>All Heap:堆上分配的内存情况<br>Anonymous VM:虚拟内存分配</p>
+<h2 id="虚拟内存"><a href="#虚拟内存" class="headerlink" title="虚拟内存"></a>虚拟内存</h2><p>当应用向系统申请分配内存时，系统不会返回需要的物理内存地址，而是返回虚拟内存地址。当开始真正使用申请到的虚拟内存的时候，系统才将虚拟内存映射到具体的物理内存上。</p>
+<h2 id="内存页"><a href="#内存页" class="headerlink" title="内存页"></a>内存页</h2><p>系统将内存页分为三种状态。</p>
+<p>活跃内存页（active pages）- 这种内存页已经被映射到物理内存中，而且近期被访问过，处于活跃状态。<br>非活跃内存页（inactive pages）- 这种内存页已经被映射到物理内存中，但是近期没有被访问过。<br>可用的内存页（free pages）- 没有关联到虚拟内存页的物理内存页集合。</p>
+<p>当可用的内存页降低到一定的阀值时，系统就会采取低内存应对措施，在OSX中，系统会将非活跃内存页交换到硬盘上，而在iOS中，则会触发Memory Warning，如果你的App没有处理低内存警告并且还在后台占用太多内存，则有可能被杀掉。</p>
+<h2 id="VM-Region-Size"><a href="#VM-Region-Size" class="headerlink" title="VM Region Size"></a>VM Region Size</h2><p><img src="/images/内存分配-1.png" alt="内存分配"><br>上图是mac OS应用的 VM Tracker分析图，可以看到VM Tree Region有4种size</p>
+<ul>
+<li>Dirty Size</li>
+<li>Swapped Size:交换到硬盘上的大小 仅OSX系统适用</li>
+<li>Resident Size:实际使用物理内存的大小</li>
+<li>Virtual Size:虚拟内存大小</li>
+</ul>
+<h2 id="分配内存"><a href="#分配内存" class="headerlink" title="分配内存"></a>分配内存</h2><p>我们常使用以下几种方式来分配内存</p>
+<ul>
+<li>NSObject的 alloc 方法</li>
+<li>c函数的 malloc 方法<br>malloc有一个缺陷，必须配合memset将内存区中所有的值设置为0。这样就导致了一个问题:malloc出一块内存区域时，系统并没有分配物理内存。然而调用memset后，系统将会把malloc出的所有虚拟内存关联到物理内存上<br>因此系统建议使用calloc方法,calloc返回的内存区域会自动清零，而且只有使用时才会关联到物理内存并清零。</li>
+</ul>
+<p>以OC当中创建实例对象为例，最终调用方法_class_createInstanceFromZone<br>方法内部调用calloc来分配内存，下图显示调用栈的情况<br><img src="/images/内存分配-alloc.png" alt="内存分配-alloc"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line">_class_createInstanceFromZone(Class cls, size_t extraBytes, void *zone,</span><br><span class="line">                              bool cxxConstruct = true,</span><br><span class="line">                              size_t *outAllocatedSize = nil)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    size_t size = cls-&gt;instanceSize(extraBytes);</span><br><span class="line">    if (outAllocatedSize) *outAllocatedSize = size;</span><br><span class="line"></span><br><span class="line">    id obj;</span><br><span class="line">    if (!zone  &amp;&amp;  fast) &#123;</span><br><span class="line">        obj = (id)calloc(1, size);</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        if (zone) &#123;</span><br><span class="line">            obj = (id)malloc_zone_calloc ((malloc_zone_t *)zone, 1, size);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            obj = (id)calloc(1, size);</span><br><span class="line">        &#125;</span><br><span class="line">    ...</span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://juejin.im/post/5a5e13c45188257327399e19" target="_blank" rel="noopener">https://juejin.im/post/5a5e13c45188257327399e19</a></p>
 
       
     </div>
@@ -381,12 +390,6 @@
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/原理/" rel="tag"><i class="fa fa-tag"></i> 原理</a>
-          
-        </div>
-      
 
       
       
@@ -396,8 +399,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/01/31/Objc中的属性/" rel="next" title="Objc中的属性">
-                <i class="fa fa-chevron-left"></i> Objc中的属性
+              <a href="/2018/02/23/Aspects源码解析/" rel="next" title="Aspects源码解析">
+                <i class="fa fa-chevron-left"></i> Aspects源码解析
               </a>
             
           </div>
@@ -406,8 +409,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/02/03/Objc关联对象的实现/" rel="prev" title="Objc关联对象的实现">
-                Objc关联对象的实现 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/02/27/AFNetworking源码分析/" rel="prev" title="AFNetworking源码分析">
+                AFNetworking源码分析 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -540,7 +543,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#code"><span class="nav-number">1.</span> <span class="nav-text">code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#原理"><span class="nav-number">2.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟内存"><span class="nav-number">1.</span> <span class="nav-text">虚拟内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存页"><span class="nav-number">2.</span> <span class="nav-text">内存页</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VM-Region-Size"><span class="nav-number">3.</span> <span class="nav-text">VM Region Size</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分配内存"><span class="nav-number">4.</span> <span class="nav-text">分配内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#链接"><span class="nav-number">5.</span> <span class="nav-text">链接</span></a></li></ol></div>
             
 
           </div>
