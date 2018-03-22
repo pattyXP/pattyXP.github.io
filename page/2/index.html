@@ -275,6 +275,451 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/03/Objc关联对象的实现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/02/03/Objc关联对象的实现/" itemprop="url">Objc关联对象的实现</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-03T15:36:52+08:00">
+                2018-02-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>今天主要来聊一聊以下三个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">id objc_getAssociatedObject(id object, const void *key) &#123;</span><br><span class="line">    return _object_get_associative_reference(object, (void *)key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void objc_setAssociatedObject(id object, const void *key, id value, objc_AssociationPolicy policy) &#123;</span><br><span class="line">    _object_set_associative_reference(object, (void *)key, value, policy);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void objc_removeAssociatedObjects(id object)</span><br><span class="line">&#123;</span><br><span class="line">    if (object &amp;&amp; object-&gt;hasAssociatedObjects()) &#123;</span><br><span class="line">        _object_remove_assocations(object);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>分类添加属性的时候，由于系统没有办法自动将属性添加set和get方法，需要自动实现，就需要以上的方法来实现</p>
+<h2 id="事例code"><a href="#事例code" class="headerlink" title="事例code"></a>事例code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">@interface Dog: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation Dog</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface Dog(DanceCategory)</span><br><span class="line">@property (nonatomic, strong) NSString *categoryProperty;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Dog(DanceCategory)</span><br><span class="line">- (NSString *)categoryProperty</span><br><span class="line">&#123;</span><br><span class="line">    return objc_getAssociatedObject(self, _cmd);</span><br><span class="line">&#125;</span><br><span class="line">- (void)setCategoryProperty:(NSString *)categoryProperty</span><br><span class="line">&#123;</span><br><span class="line">    objc_setAssociatedObject(self, @selector(categoryProperty), categoryProperty, OBJC_ASSOCIATION_RETAIN_NONATOMIC);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        Dog *dd = [[Dog alloc] init];</span><br><span class="line">        dd.categoryProperty = @&quot;分类属性&quot;;</span><br><span class="line">        dd.categoryProperty;</span><br><span class="line">        objc_removeAssociatedObjects(dd);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><p>先看下设置属性的方法调用顺序<br><img src="/images/分类属性-调用堆栈.png" alt="调用堆栈.png"></p>
+<h3 id="object-set-associative-reference"><a href="#object-set-associative-reference" class="headerlink" title="object_set_associative_reference"></a>object_set_associative_reference</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy) &#123;</span><br><span class="line"></span><br><span class="line">    ObjcAssociation old_association(0, nil); //生成旧对象</span><br><span class="line">    id new_value = value ? acquireValue(value, policy) : nil;  </span><br><span class="line">    &#123;</span><br><span class="line">        AssociationsManager manager;</span><br><span class="line">        AssociationsHashMap &amp;associations(manager.associations());</span><br><span class="line">        disguised_ptr_t disguised_object = DISGUISE(object);</span><br><span class="line">        if (new_value) &#123;</span><br><span class="line">            AssociationsHashMap::iterator i = associations.find(disguised_object);</span><br><span class="line">            if (i != associations.end()) &#123;</span><br><span class="line">                // secondary table exists</span><br><span class="line">                ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">                ObjectAssociationMap::iterator j = refs-&gt;find(key);</span><br><span class="line">                if (j != refs-&gt;end()) &#123;</span><br><span class="line">                    old_association = j-&gt;second; //如果存在之前的值，给旧对象赋值</span><br><span class="line">                    j-&gt;second = ObjcAssociation(policy, new_value);</span><br><span class="line">                &#125; else &#123;</span><br><span class="line">                    (*refs)[key] = ObjcAssociation(policy, new_value);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                // create the new association (first time).</span><br><span class="line">                ObjectAssociationMap *refs = new ObjectAssociationMap;</span><br><span class="line">                associations[disguised_object] = refs;</span><br><span class="line">                (*refs)[key] = ObjcAssociation(policy, new_value);</span><br><span class="line">                object-&gt;setHasAssociatedObjects();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            // setting the association to nil breaks the association.</span><br><span class="line">            AssociationsHashMap::iterator i = associations.find(disguised_object);</span><br><span class="line">            if (i !=  associations.end()) &#123;</span><br><span class="line">                ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">                ObjectAssociationMap::iterator j = refs-&gt;find(key);</span><br><span class="line">                if (j != refs-&gt;end()) &#123;</span><br><span class="line">                    old_association = j-&gt;second;</span><br><span class="line">                    refs-&gt;erase(j);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    // 如果旧对象有值，进行释放</span><br><span class="line">    if (old_association.hasValue()) ReleaseValue()(old_association);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上主要操作:</p>
+<ul>
+<li>初始生成old_association，便于存储旧对象以及清除旧值</li>
+<li>acquireValue 方法内部是对value进行copy或者retain</li>
+<li>生成唯一的AssociationsManager 和 AssociationsHashMap</li>
+<li>disguised_object 是根据object生成的，下面需要根据newValue的值是否为空来处理两种情况</li>
+</ul>
+<ol>
+<li><p>newValue 存在</p>
+<ul>
+<li>在AssociationsHashMap中根据disguised_object作为key去取对应的object的AssociationsHashMap</li>
+<li><p>如果map存在</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ObjectAssociationMap *refs = i-&gt;second</span><br><span class="line">ObjectAssociationMap::iterator j = refs-&gt;find(key);</span><br><span class="line">if (j != refs-&gt;end()) &#123; //如果存在旧值，将旧值赋值给old_association</span><br><span class="line">    old_association = j-&gt;second;</span><br><span class="line">    j-&gt;second = ObjcAssociation(policy, new_value);//然后重新赋值</span><br><span class="line">&#125; else &#123; //如果不存在旧值，给map表设置key和value</span><br><span class="line">    (*refs)[key] = ObjcAssociation(policy, new_value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果map不存在，新生成ObjectAssociationMap</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ObjectAssociationMap *refs = new ObjectAssociationMap; //新生成ObjectAssociationMap</span><br><span class="line">associations[disguised_object] = refs; //将disguised_object作为key ,value是ObjectAssociationMap</span><br><span class="line">(*refs)[key] = ObjcAssociation(policy, new_value) //在ObjectAssociationMap中插入key和对应的ObjcAssociation</span><br><span class="line">object-&gt;setHasAssociatedObjects();//标记对象对应的标记位</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>newValue 为空 说明需要将对应的map表移除</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">AssociationsHashMap::iterator i = associations.find(disguised_object);</span><br><span class="line">if (i !=  associations.end()) &#123; //如果存在该object对应的map表，</span><br><span class="line">    ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">    ObjectAssociationMap::iterator j = refs-&gt;find(key); //从ObjectAssociationMap表中取出对应的key所对应的association</span><br><span class="line">    if (j != refs-&gt;end()) &#123;</span><br><span class="line">        old_association = j-&gt;second; //将存在的值赋值给old_association</span><br><span class="line">        refs-&gt;erase(j); //从表中将key对应的ObjcAssociation进行擦除</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<ul>
+<li>最后 如果存在旧值，将旧值释放即可<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (old_association.hasValue()) ReleaseValue()(old_association);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="object-get-associative-reference"><a href="#object-get-associative-reference" class="headerlink" title="object_get_associative_reference"></a>object_get_associative_reference</h3><p><img src="/images/分类属性-get.png" alt="getAssociation堆栈图"><br>上图是调用对象属性的get方法执行的堆栈结构图</p>
+<p>流程比上面的方法相对简单<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">id _object_get_associative_reference(id object, void *key) &#123;</span><br><span class="line">    id value = nil;</span><br><span class="line">    uintptr_t policy = OBJC_ASSOCIATION_ASSIGN;</span><br><span class="line">    &#123;</span><br><span class="line">        AssociationsManager manager;</span><br><span class="line">        AssociationsHashMap &amp;associations(manager.associations());</span><br><span class="line">        disguised_ptr_t disguised_object = DISGUISE(object);</span><br><span class="line">        AssociationsHashMap::iterator i = associations.find(disguised_object); //从AssociationsHashMap表中查找对象</span><br><span class="line">        if (i != associations.end()) &#123; //如果存在对象的话</span><br><span class="line">            ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">            ObjectAssociationMap::iterator j = refs-&gt;find(key); //从对象对应的ObjectAssociationMap表中根据key取出对应的value</span><br><span class="line">            if (j != refs-&gt;end()) &#123; //如果存在value</span><br><span class="line">                ObjcAssociation &amp;entry = j-&gt;second;</span><br><span class="line">                value = entry.value(); //将存在的ObjcAssociation属性对应赋值</span><br><span class="line">                policy = entry.policy();</span><br><span class="line">                if (policy &amp; OBJC_ASSOCIATION_GETTER_RETAIN) ((id(*)(id, SEL))objc_msgSend)(value, SEL_retain);   //对value进行retain</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    if (value &amp;&amp; (policy &amp; OBJC_ASSOCIATION_GETTER_AUTORELEASE)) &#123;</span><br><span class="line">        ((id(*)(id, SEL))objc_msgSend)(value, SEL_autorelease);</span><br><span class="line">    &#125;</span><br><span class="line">    return value; //最后将关联对象 ObjcAssociation 的值进行返回</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="objc-removeAssociatedObjects"><a href="#objc-removeAssociatedObjects" class="headerlink" title="objc_removeAssociatedObjects"></a>objc_removeAssociatedObjects</h2><p>先来看下调用remove方法的函数调用<br><img src="/images/分类属性-remove.png" alt="remove"><br>打印isa的结构，可以看到对象的has_assoc 标记为1，也就是存在关联对象</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">void _object_remove_assocations(id object) &#123;</span><br><span class="line">    vector&lt; ObjcAssociation,ObjcAllocator&lt;ObjcAssociation&gt; &gt; elements;</span><br><span class="line">    &#123;</span><br><span class="line">        AssociationsManager manager;</span><br><span class="line">        AssociationsHashMap &amp;associations(manager.associations());</span><br><span class="line">        if (associations.size() == 0) return; //如果不存在 返回</span><br><span class="line">        disguised_ptr_t disguised_object = DISGUISE(object);</span><br><span class="line">        AssociationsHashMap::iterator i = associations.find(disguised_object); //查找object对应的表</span><br><span class="line">        if (i != associations.end()) &#123;</span><br><span class="line">            // copy all of the associations that need to be removed.</span><br><span class="line">            ObjectAssociationMap *refs = i-&gt;second; //存在的话取出对应的object表</span><br><span class="line">            for (ObjectAssociationMap::iterator j = refs-&gt;begin(), end = refs-&gt;end(); j != end; ++j) &#123;</span><br><span class="line">                elements.push_back(j-&gt;second);//将表的元素存入elements</span><br><span class="line">            &#125;</span><br><span class="line">            delete refs; //移除object对应的表</span><br><span class="line">            associations.erase(i); //同时在AssociationsHashMap表中将object也移除</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    // the calls to releaseValue() happen outside of the lock.</span><br><span class="line">    for_each(elements.begin(), elements.end(), ReleaseValue()); //通过循环将elements元素都进行释放</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文就是对于如何给分类添加属性操作进行解读</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/02/KVO-实现原理分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/02/02/KVO-实现原理分析/" itemprop="url">KVO 实现原理分析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-02T11:59:38+08:00">
+                2018-02-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>在之前，一直以为类的isa结构图就是那张很经典的图，但是才发现有个特例情况下，有点变化</p>
+<h2 id="code"><a href="#code" class="headerlink" title="code"></a>code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">  PattyCat *pcat = [[PattyCat alloc] init];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   NSLog(@&quot;%p--pcat的isa:%p--%@-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910--pcat的isa:0x10408c870--PattyCat-Cat-Cat</span><br><span class="line">    */</span><br><span class="line">   [pcat addObserver:self</span><br><span class="line">         forKeyPath:@&quot;address&quot;</span><br><span class="line">         options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld</span><br><span class="line">         context:nil];</span><br><span class="line">   pcat.address = @&quot;有地址了&quot;;</span><br><span class="line">//    NSLog(@&quot;%@--%p&quot;,(object_getClass([PattyCat class])),object_getClass(pcat));</span><br><span class="line"></span><br><span class="line">   NSLog(@&quot;%p---pcat的isa:%p-新的子类是:%@-新的子类的isa:%p-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),object_getClass(object_getClass(pcat)),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910---pcat的isa:0x7b24000260a0-新的子类是:NSKVONotifying_PattyCat-新的子类的isa:0x7b2400026130-Cat-PattyCat</span><br><span class="line">    */</span><br><span class="line">   [pcat removeObserver:self forKeyPath:@&quot;address&quot;];</span><br><span class="line"></span><br><span class="line">  NSLog(@&quot;%p--pcat的isa:%p--%@-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910--pcat的isa:0x10408c870--PattyCat-Cat-Cat</span><br><span class="line">    */</span><br></pre></td></tr></table></figure>
+<p>在当前类中引入对象pcat,监听它的KVO变化之后，然后移除KVO，对象的isa以及superClass前后的变化如上</p>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>苹果文档介绍</p>
+<blockquote>
+<p>Automatic key-value observing is implemented using a technique called isa-swizzling… When an observer is registered for an attribute of an object the isa pointer of the observed object is modified, pointing to an intermediate class rather than at the true class ..</p>
+</blockquote>
+<p>简要的来说，在我们对某个对象完成监听的注册后，编译器会修改监听对象（上文中的pcat）的isa指针，让这个指针指向一个新生成的中间类，中间类的命名格式如 NSKVONotifying_XX (XX 是pcat对象的class)</p>
+<p>苹果还 <strong>重写了这个子类的class方法跟description方法</strong> 来掩人耳目。<br>另外，新类相对于父类添加了一个NSKVONotifying_前缀，添加这个前缀是为了避免多次创建监听子类，节省资源</p>
+<p>以上通过object_getClass(pcat)命令得到了KVO前为PattyCat   KVO后值为 NSKVONotifying_PattyCat</p>
+<p>注: 以下两个方式得到类的指针是一样的哦<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p object_getClass(pcat)</span><br><span class="line">(Class) $0 = PattyCat</span><br><span class="line">(lldb) p (void *)$0</span><br><span class="line">(void *) $1 = 0x0000000100001188</span><br><span class="line"></span><br><span class="line">(lldb) p (objc_class *)[PattyCat class]</span><br><span class="line">(objc_class *) $2 = 0x0000000100001188</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>对实例对象进行KVO观察的时候，实际上对象的isa已经不是之前的类对象了<br>移除KVO之后，恢复之前效果</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/31/Objc中的属性/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/31/Objc中的属性/" itemprop="url">Objc中的属性</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-31T14:58:14+08:00">
+                2018-01-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="基础OC源码与clang编译"><a href="#基础OC源码与clang编译" class="headerlink" title="基础OC源码与clang编译"></a>基础OC源码与clang编译</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">@interface Dog: NSObject</span><br><span class="line">@property (nonatomic, copy) NSString *sex;</span><br><span class="line">@property (nonatomic, copy) NSString *address;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>经过clang重写为cpp之后，文件主要的内容截取查看<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">#ifndef _REWRITER_typedef_Dog</span><br><span class="line">#define _REWRITER_typedef_Dog</span><br><span class="line">typedef struct objc_object Dog;</span><br><span class="line">typedef struct &#123;&#125; _objc_exc_Dog;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_sex;</span><br><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_address;</span><br><span class="line">struct Dog_IMPL &#123;</span><br><span class="line">	struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">	NSString *_name;</span><br><span class="line">	NSString *_sex;</span><br><span class="line">	NSString *_address;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// @property (nonatomic, copy) NSString *sex;</span><br><span class="line">// @property (nonatomic, copy) NSString *address;</span><br><span class="line">/* @end */</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/** implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">**/</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line">extern &quot;C&quot; __declspec(dllimport) void objc_setProperty (id, SEL, long, id, bool, bool);</span><br><span class="line"></span><br><span class="line">static void _I_Dog_setSex_(Dog * self, SEL _cmd, NSString *sex) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _sex), (id)sex, 0, 1); &#125;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_address)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _address), (id)address, 0, 1); &#125;</span><br><span class="line">// @end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    /* @autoreleasepool */ &#123; __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Dog_IMPL 结构体含有三个实例变量，其中两个是系统为property生成的，一个是自身的ivar<br>Dog实现 系统自动生成property对应的set和get方法</p>
+<p>对源码修改，添加如下code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@synthesize address = _name;</span><br></pre></td></tr></table></figure></p>
+<p>clang编译之后，两份.cpp文件对比</p>
+<p><img src="/images/cpp对比图.png" alt="cpp对比图"></p>
+<p>以下是两份对比内容的源码</p>
+<ul>
+<li><p>当前添加code之后的文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_name;</span><br><span class="line">// @synthesize address = _name;</span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_name)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _name), (id)address, 0, 1); &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line">	struct _ivar_t ivar_list[2];</span><br><span class="line">	2,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_sex, &quot;_sex&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;&#125;</span><br><span class="line">	&#123;&#123;(struct objc_selector *)&quot;address&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_address&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setAddress:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setAddress_&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;sex&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_sex&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setSex:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setSex_&#125;&#125;</span><br><span class="line">	&#123;&quot;address&quot;,&quot;T@\&quot;NSString\&quot;,C,N,V_name&quot;&#125;&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>未修改内容的cpp</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_address;</span><br><span class="line">	NSString *_address;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_address)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _address), (id)address, 0, 1); &#125;</span><br><span class="line">extern &quot;C&quot; unsigned long int OBJC_IVAR_$_Dog$_address __attribute__ ((used, section (&quot;__DATA,__objc_ivar&quot;))) = __OFFSETOFIVAR__(struct Dog, _address);</span><br><span class="line">	struct _ivar_t ivar_list[3];</span><br><span class="line">	3,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_sex, &quot;_sex&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_address, &quot;_address&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;&#125;</span><br><span class="line">	&#123;&#123;(struct objc_selector *)&quot;sex&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_sex&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setSex:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setSex_&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;address&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_address&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setAddress:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setAddress_&#125;&#125;</span><br><span class="line">	&#123;&quot;address&quot;,&quot;T@\&quot;NSString\&quot;,C,N,V_address&quot;&#125;&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>对比之后可以发现，当重写@synthesize方法, 自定义绑定属性<br>将属性和已经存在的成员变量进行绑定，编译器没有自动生成_address，在类中找不到这个变量的存在<br>所以当我们使用_address的时候，就会报错</p>
+<p>有了getter和setter，方便获取属性，从某个意义上 属性更加面向对象</p>
+<h3 id="查看系统为Dog类生成的实例变量"><a href="#查看系统为Dog类生成的实例变量" class="headerlink" title="查看系统为Dog类生成的实例变量"></a>查看系统为Dog类生成的实例变量</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">@interface Dog: NSObject</span><br><span class="line">@property (nonatomic, copy) NSString *sex;</span><br><span class="line">@property (nonatomic, copy) NSString *address;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        unsigned int ivarCount = 0;</span><br><span class="line">        Ivar * ivars =  class_copyIvarList([Dog class], &amp;ivarCount);</span><br><span class="line">        NSLog(@&quot;=======&quot;);</span><br><span class="line">        for (unsigned int idx = 0; idx &lt; ivarCount; idx++) &#123;</span><br><span class="line">            Ivar ivar = ivars[idx];</span><br><span class="line">            NSLog(@&quot;%s&quot;, ivar_getName(ivar));</span><br><span class="line">        &#125;</span><br><span class="line">        free(ivars);</span><br><span class="line"></span><br><span class="line">        unsigned int propertyCount;</span><br><span class="line">        objc_property_t * properties = class_copyPropertyList([Dog class], &amp;propertyCount);</span><br><span class="line">        NSLog(@&quot;=======&quot;);</span><br><span class="line">        for (unsigned int idx = 0; idx &lt; ivarCount; idx++) &#123;</span><br><span class="line">            objc_property_t property = properties[idx];</span><br><span class="line">            NSLog(@&quot;attribute:%s&quot;,property_getAttributes(property));</span><br><span class="line">        &#125;</span><br><span class="line">        free(properties);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">打印输出:</span><br><span class="line">_name _sex _address</span><br><span class="line"> attribute:T@&quot;NSString&quot;,C,N,V_sex</span><br><span class="line"> attribute:T@&quot;NSString&quot;,C,N,V_name</span><br></pre></td></tr></table></figure>
+<ul>
+<li>属性说明<br>使用property_getAttributes获得的描述是property_copyAttributeList<br>能获取到的所有的name和value的总体描述，<br>如 T@”NSDictionary”,C,N,V_dict1</li>
+</ul>
+<p>常用的属性如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">属性类型  name值：T  value：变化</span><br><span class="line">编码类型  name值：C(copy) &amp;(strong) W(weak) 空(assign) 等 value：无</span><br><span class="line">非/原子性 name值：空(atomic) N(Nonatomic)  value：无</span><br><span class="line">变量名称  name值：V  value：变化</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>OC 属性和实例变量是存在区别的</p>
+<p>实例变量，不会自动生成对应的getter和setter方法<br>属性，系统自动生成对应的getter和setter方法</p>
+<p>相比起变量，在编译期间，编译器做了很多工作，包括这些：</p>
+<ul>
+<li>使用@synthesize生成属性对应的ivar，通常ivar命名为下划线+属性名</li>
+<li>生成setter方法来设置ivar</li>
+<li>生成getter方法来获取ivar</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/30/Objc消息的缓存/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -625,9 +1070,10 @@
       
         
           
-            <p>ReactiveCocoa，将Cocoa世界中的代理，KVO，通知等桥接到了RAC的世界中，就是使用的RACDelegateProxy，通过运行时修改方法的运行机制，下面一起来熟悉下怎么做到的</p>
+            <p>本文源码为 ReactiveObjc 3.1.0 版本</p>
+<p>ReactiveCocoa，将Cocoa世界中的代理，KVO，通知等桥接到了RAC的世界中，就是使用的RACDelegateProxy，通过运行时修改方法的运行机制，下面一起来熟悉下怎么做到的</p>
 <p>使用事例</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">RACDelegateProxy *delegateProxy = [[RACDelegateProxy alloc]initWithProtocol:@protocol(UITextFieldDelegate)];</span><br><span class="line">   [[delegateProxy rac_signalForSelector:@selector(textFieldShouldReturn:)] subscribeNext:^(RACTuple *args) &#123;</span><br><span class="line">       UITextField *field = [args first];</span><br><span class="line">       [field resignFirstResponder];</span><br><span class="line">   &#125;];</span><br><span class="line"></span><br><span class="line">   self.textfield.delegate = (id&lt;UITextFieldDelegate&gt;)delegateProxy;</span><br><span class="line"></span><br><span class="line">   //防止delegateProxy被释放</span><br><span class="line">   objc_setAssociatedObject(self.textfield, _cmd, delegateProxy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">RACDelegateProxy *delegateProxy = [[RACDelegateProxy  alloc]initWithProtocol:@protocol(UITextFieldDelegate)];</span><br><span class="line"></span><br><span class="line">[[delegateProxy rac_signalForSelector:@selector(textFieldShouldReturn:)] subscribeNext:^(RACTuple *args) &#123;</span><br><span class="line">       UITextField *field = [args first];</span><br><span class="line">       [field resignFirstResponder];</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">self.textfield.delegate = (id&lt;UITextFieldDelegate&gt;)delegateProxy;</span><br><span class="line"></span><br><span class="line">//防止delegateProxy被释放</span><br><span class="line">objc_setAssociatedObject(self.textfield, _cmd, delegateProxy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);</span><br></pre></td></tr></table></figure>
 <h2 id="RACDelegateProxy"><a href="#RACDelegateProxy" class="headerlink" title="RACDelegateProxy"></a>RACDelegateProxy</h2><p>RACDelegateProxy 继承自NSObject<br>创建只有一个init方法initWithProtocol传入协议，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (instancetype)initWithProtocol:(Protocol *)protocol &#123;</span><br><span class="line">	NSCParameterAssert(protocol != NULL);</span><br><span class="line"></span><br><span class="line">	self = [super init];</span><br><span class="line"></span><br><span class="line">	class_addProtocol(self.class, protocol);</span><br><span class="line"></span><br><span class="line">	_protocol = protocol;</span><br><span class="line"></span><br><span class="line">	return self;</span><br><span class="line">&#125;</span><br><span class="line">给当前对象的类加上protocol</span><br></pre></td></tr></table></figure></p>
 <p>RACDelegateProxy 有一个属性 id rac_proxiedDelegate:如果没有实现signalForSelector，则消息真正转发的代理对象</p>
 <h3 id="消息转发"><a href="#消息转发" class="headerlink" title="消息转发"></a>消息转发</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (void)forwardInvocation:(NSInvocation *)invocation &#123;</span><br><span class="line">	[invocation invokeWithTarget:self.rac_proxiedDelegate]; //转发代理</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (NSMethodSignature *)methodSignatureForSelector:(SEL)selector &#123;</span><br><span class="line">  //获取协议必须和非必须的方法描述</span><br><span class="line">	struct objc_method_description methodDescription = protocol_getMethodDescription(_protocol, selector, NO, YES);</span><br><span class="line"></span><br><span class="line">	if (methodDescription.name == NULL) &#123;</span><br><span class="line">		methodDescription = protocol_getMethodDescription(_protocol, selector, YES, YES);</span><br><span class="line">		if (methodDescription.name == NULL) return [super methodSignatureForSelector:selector];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return [NSMethodSignature signatureWithObjCTypes:methodDescription.types];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -1307,474 +1753,11 @@ __builtin_expect的作用
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/10/Objc isa的存在/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/10/Objc isa的存在/" itemprop="url">Objc isa的存在</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-10T14:20:40+08:00">
-                2018-01-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
-<blockquote>
-<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">struct objc_object &#123;</span><br><span class="line">private:</span><br><span class="line">    isa_t isa;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">struct objc_class : objc_object &#123;</span><br><span class="line">    // Class ISA;</span><br><span class="line">    Class superclass;</span><br><span class="line">    cache_t cache;             // formerly cache pointer and vtable</span><br><span class="line">    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
-<p><img src="/images/isa.png" alt="结构图"></p>
-<p>在 Objective-C 中，对象的方法并没有存储于对象的结构体中（如果每一个对象都保存了自己能执行的方法，那么对内存的占用有极大的影响）。</p>
-<p>当实例方法被调用时，它要通过自己持有的 isa 来查找对应的类，然后在这里的 class_data_bits_t 结构体中查找对应方法的实现。同时，每一个 objc_class 也有一个指向自己的父类的指针 super_class 用来查找继承的方法。</p>
-<p>isa分析<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">union isa_t</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">  isa_t() &#123; &#125;</span><br><span class="line">  isa_t(uintptr_t value) : bits(value) &#123; &#125;</span><br><span class="line"></span><br><span class="line">  Class cls;</span><br><span class="line">  uintptr_t bits;</span><br><span class="line"></span><br><span class="line">  //如果是X86的结构，大致信息如下，还有arm_64这里就不贴了，大致字段差不多，多少有点差别</span><br><span class="line">  if __x86_64__  </span><br><span class="line">#   define ISA_MASK        0x00007ffffffffff8ULL</span><br><span class="line">#   define ISA_MAGIC_MASK  0x001f800000000001ULL</span><br><span class="line">#   define ISA_MAGIC_VALUE 0x001d800000000001ULL</span><br><span class="line"></span><br><span class="line">    struct &#123;</span><br><span class="line">    uintptr_t nonpointer        : 1;</span><br><span class="line">    uintptr_t has_assoc         : 1;</span><br><span class="line">    uintptr_t has_cxx_dtor      : 1;</span><br><span class="line">    uintptr_t shiftcls          : 44; // MACH_VM_MAX_ADDRESS 0x7fffffe00000</span><br><span class="line">    uintptr_t magic             : 6;</span><br><span class="line">    uintptr_t weakly_referenced : 1;</span><br><span class="line">    uintptr_t deallocating      : 1;</span><br><span class="line">    uintptr_t has_sidetable_rc  : 1;</span><br><span class="line">    uintptr_t extra_rc          : 8;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>首先，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">union isa_t &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>union结构体 结构比较灵活，如下所示，一次只能容纳一件事，但是这个东西可能是一个int，一个浮点数等，这取决于你如何声明它。<br>isa_t、cls、 bits 还有结构体共用同一块地址空间，isa 总共会占据 64 位的内存空间（决定于其中的结构体）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">typedef union MyUnion MYUNION;</span><br><span class="line">union MyUnion</span><br><span class="line">&#123;</span><br><span class="line">   int MyInt;</span><br><span class="line">   float MyFloat;</span><br><span class="line">&#125;;</span><br><span class="line">MyUnion将只包含一个int或一个浮点数，取决于你最近设置的。所以这样做：</span><br><span class="line"></span><br><span class="line">MYUNION u;</span><br><span class="line">u.MyInt = 10;</span><br><span class="line">你现在保持一个int等于10;</span><br><span class="line"></span><br><span class="line">u.MyFloat = 1.0;</span><br><span class="line">你现在拥有一个等于1.0的浮动。</span><br></pre></td></tr></table></figure></p>
-<p>isa的内存结构图<br><img src="images/isa内存结构图.png" alt="isa结构图"></p>
-<p>初始化<br>对于bits的设置可以在初始化中进行设置 objc-object.h<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">inline void</span><br><span class="line">objc_object::initInstanceIsa(Class cls, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!cls-&gt;instancesRequireRawIsa());</span><br><span class="line">    assert(hasCxxDtor == cls-&gt;hasCxxDtor());</span><br><span class="line"></span><br><span class="line">    initIsa(cls, true, hasCxxDtor);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">inline void</span><br><span class="line">objc_object::initIsa(Class cls, bool nonpointer, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!isTaggedPointer());</span><br><span class="line"></span><br><span class="line">    if (!nonpointer) &#123;</span><br><span class="line">        isa.cls = cls;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        assert(!DisableNonpointerIsa);</span><br><span class="line">        assert(!cls-&gt;instancesRequireRawIsa());</span><br><span class="line"></span><br><span class="line">        isa_t newisa(0);</span><br><span class="line"></span><br><span class="line">#if SUPPORT_INDEXED_ISA</span><br><span class="line">        assert(cls-&gt;classArrayIndex() &gt; 0);</span><br><span class="line">        newisa.bits = ISA_INDEX_MAGIC_VALUE; //赋值0x001d800000000001ULL</span><br><span class="line">        // isa.magic is part of ISA_MAGIC_VALUE</span><br><span class="line">        // isa.nonpointer is part of ISA_MAGIC_VALUE</span><br><span class="line">        newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">        newisa.indexcls = (uintptr_t)cls-&gt;classArrayIndex();</span><br><span class="line">#else</span><br><span class="line">        newisa.bits = ISA_MAGIC_VALUE;</span><br><span class="line">        // isa.magic is part of ISA_MAGIC_VALUE</span><br><span class="line">        // isa.nonpointer is part of ISA_MAGIC_VALUE</span><br><span class="line">        newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">        newisa.shiftcls = (uintptr_t)cls &gt;&gt; 3;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">        // This write must be performed in a single store in some cases</span><br><span class="line">        // (for example when realizing a class because other threads</span><br><span class="line">        // may simultaneously try to use the class).</span><br><span class="line">        // fixme use atomics here to guarantee single-store and to</span><br><span class="line">        // guarantee memory order w.r.t. the class index table</span><br><span class="line">        // ...but not too atomic because we don&apos;t want to hurt instantiation</span><br><span class="line">        isa = newisa;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>newisa.bits = ISA_INDEX_MAGIC_VALUE; //赋值0x001d800000000001ULL则对应的64位显示的值如下图<br><img src="/images/isa赋值.png" alt="isa赋值后"></p>
-<p>从图中了解到，在使用 ISA_MAGIC_VALUE 设置 isa_t 结构体之后，实际上只是设置了 indexed 以及 magic 这两部分的值。</p>
-<ul>
-<li>indexed 表示 isa_t 的类型<ul>
-<li>0 表示 raw isa，也就是没有结构体的部分，访问对象的 isa 会直接返回一个指向 cls 的指针，也就是在 iPhone 迁移到 64 位系统之前时 isa 的类型。</li>
-<li>1 表示当前 isa 不是指针，但是其中也有 cls 的信息，只是其中关于类的指针都是保存在 shiftcls 中。</li>
-</ul>
-</li>
-<li><p>magic 的值为 0x3b 用于调试器判断当前对象是真的对象还是没有初始化的空间</p>
-</li>
-<li><p>has_cxx_dtor:在设置 indexed 和 magic 值之后，会设置 isa 的 has_cxx_dtor，这一位表示当前对象有 C++ 或者 ObjC 的析构器(destructor)，如果没有析构器就会快速释放内存。</p>
-</li>
-<li><p>shiftcls: 将当前对象对应的类指针存入 isa 结构体中</p>
-<blockquote>
-<p>isa.shiftcls = (uintptr_t)cls &gt;&gt; 3;<br>所有类指针十六进制地址的最后一位都为 8 或者 0<br>将当前地址右移三位的主要原因是用于将 Class 指针中无用的后三位清除减小内存的消耗，因为类的指针要按照字节（8 bits）对齐内存，其指针后三位都是没有意义的 0。</p>
-</blockquote>
-</li>
-</ul>
-<ul>
-<li><p>ISA() 方法<br>因为我们使用结构体取代了原有的 isa 指针，所以要提供一个方法 ISA() 来返回类指针。</p>
-<p>其中 ISA_MASK 是宏定义，这里通过掩码的方式获取类指针：</p>
-<p>#define ISA_MASK 0x00007ffffffffff8ULL<br>inline Class<br>objc_object::ISA()<br>{</p>
-<pre><code>return (Class)(isa.bits &amp; ISA_MASK);//返回64bit中shiftcls位对应的值
-</code></pre><p>}</p>
-</li>
-</ul>
-<h2 id="其它-bits"><a href="#其它-bits" class="headerlink" title="其它 bits"></a>其它 bits</h2><p>  在 isa_t 中，我们还有一些没有介绍的其它 bits，在这个小结就简单介绍下这些 bits 的作用</p>
-<ul>
-<li>has_assoc<br>对象含有或者曾经含有关联引用，没有关联引用的可以更快地释放内存</li>
-<li>weakly_referenced<br>对象被指向或者曾经指向一个 ARC 的弱变量，没有弱引用的对象可以更快释放</li>
-<li>deallocating<br>对象正在释放内存</li>
-<li>has_sidetable_rc<br>对象的引用计数太大了，存不下</li>
-<li>extra_rc<br>对象的引用计数超过 1，会存在这个这个里面，如果引用计数为 10，extra_rc 的值就为 9</li>
-</ul>
-<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>1、前缀：<br>0开头表示8进制，0x或0X开头表示16进制。</p>
-<p>2、后缀：用来表示类型。<br>—— l或L表示long常量<br>—— u或U表示unsigned int常量<br>—— ul、uL、Ul、UL、lU、lu、LU、Lu表示unsigned long常量。（lu可以采用任意顺序和大小写表示）<br>—— ll、LL表示long long 常量。<br>—— ull、Ull、uLL、ULL表示unsigned long long常量。</p>
-<blockquote>
-<p>当希望常量被当作unsigned long long表示就在后面加上后缀ULL</p>
-</blockquote>
-<p>3、对于浮点常量，<br>—— f或F表示float<br>—— l或L表示long double<br>—— 其他都表示double</p>
-<p>4、不带后缀时的规则——尽可能采用小的类型：<br>—— 对于10进制：int-&gt;long-&gt;long long<br>—— 对于8进制或16进制：int-&gt;unsigned int-&gt;long-&gt;unsigned long-&gt;long long -&gt;unsigned long long</p>
-<h2 id="元类"><a href="#元类" class="headerlink" title="元类"></a>元类</h2><p>元类是Class对象的类。<br>简单的说：<br>将消息发送给对象时，会在对象的类的方法列表中查找该消息。<br>当你发送消息给一个类时，这个消息在类的元类的方法列表中查找。<br>元类是必不可少的，因为它存储了类的方法Class。Class因为每个类Class都有一个潜在唯一的类方法列表，所以每个方法都必须有一个唯一的元类。意味着所有的Class对象本身都不是同一个类。</p>
-<p>元类具有NSObject元类作为它的类。<br>元类，也是一个对象，元类的class就是NSObject,NSObject的元类是自身。这意味着元类isa上的指针指向NSObject自己（这是它自己的一个实例）。</p>
-<p>code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">Class newClass =</span><br><span class="line">    objc_allocateClassPair([NSError class], &quot;RuntimeErrorSubclass&quot;, 0);</span><br><span class="line">class_addMethod(newClass, @selector(report), (IMP)ReportFunction, &quot;v@:&quot;);</span><br><span class="line">objc_registerClassPair(newClass);</span><br><span class="line"></span><br><span class="line">void ReportFunction(id self, SEL _cmd)</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;This object is %p.&quot;, self);</span><br><span class="line">    NSLog(@&quot;Class is %@, and super is %@.&quot;, [self class], [self superclass]);</span><br><span class="line"></span><br><span class="line">    Class currentClass = [self class];</span><br><span class="line">    for (int i = 1; i &lt; 5; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;Following the isa pointer %d times gives %p&quot;, i, currentClass);</span><br><span class="line">        currentClass = object_getClass(currentClass);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    NSLog(@&quot;NSObject&apos;s class is %p&quot;, [NSObject class]);</span><br><span class="line">    NSLog(@&quot;NSObject&apos;s meta class is %p&quot;, object_getClass([NSObject class]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">调用</span><br><span class="line">id instanceOfNewClass =</span><br><span class="line">    [[newClass alloc] initWithDomain:@&quot;someDomain&quot; code:0 userInfo:nil];</span><br><span class="line">[instanceOfNewClass performSelector:@selector(report)];</span><br><span class="line">[instanceOfNewClass release];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">在运行时创建一个类只需三个简单的步骤：</span><br><span class="line"></span><br><span class="line">为“类对”分配存储（使用objc_allocateClassPair）。</span><br><span class="line">根据需要将方法和ivars添加到类中（我已经添加了一个方法class_addMethod）。</span><br><span class="line">注册该类，以便可以使用（使用objc_registerClassPair）。</span><br><span class="line"></span><br><span class="line">该函数objc_allocateClassPair只返回一个值：类。另一半就是元类</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">打印如下:</span><br><span class="line">This object is 0x10010c810.</span><br><span class="line">Class is RuntimeErrorSubclass, and super is NSError.</span><br><span class="line">Following the isa pointer 1 times gives 0x10010c600</span><br><span class="line">Following the isa pointer 2 times gives 0x10010c630</span><br><span class="line">Following the isa pointer 3 times gives 0x7fff71038480</span><br><span class="line">Following the isa pointer 4 times gives 0x7fff71038480</span><br><span class="line">NSObject&apos;s class is 0x7fff710384a8</span><br><span class="line">NSObject&apos;s meta class is 0x7fff71038480</span><br><span class="line"></span><br><span class="line">通过isa重复的值来查看所到达的地址：</span><br><span class="line"></span><br><span class="line">该对象是地址0x10010c810。</span><br><span class="line">类是地址0x10010c600。</span><br><span class="line">元类是地址0x10010c630。</span><br><span class="line">元类的类（即NSObject元类）是地址0x7fff71038480。</span><br><span class="line">在NSObject元类的类本身。</span><br><span class="line">地址的价值并不重要，只是它展示了从类到元类到NSObject元类的进展。</span><br></pre></td></tr></table></figure></p>
-<p>object_getClass 与 objc_getClass<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Class cls = [XXObject class];</span><br><span class="line">NSLog(@&quot;%p&quot;,cls);                  //0x1000011a8</span><br><span class="line">NSLog(@&quot;%p&quot;,object_getClass(cls));//0x100001180  </span><br><span class="line">NSLog(@&quot;%p&quot;,objc_getClass([NSStringFromClass(cls)UTF8String]));//0x1000011a8  </span><br><span class="line"></span><br><span class="line">object_getClass 返回 isa指向的类</span><br><span class="line">objc_getClass方法只是单纯地返回了Class</span><br></pre></td></tr></table></figure></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>1.isa结构<br>2.元类 元类的概念</p>
-<ul>
-<li>Object_Class</li>
-<li><p>objc_class<br>3.类在内存中的位置，在编译期间就已经确定了<br>4.object_getClass(obj)返回的是obj中的isa指针；</p>
-<p>[obj class]则分两种情况：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"> // class方法</span><br><span class="line"> + (Class)class &#123;</span><br><span class="line">    return self;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">- (Class)class &#123;</span><br><span class="line">    return object_getClass(self);</span><br><span class="line">&#125;</span><br><span class="line">Class object_getClass(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    if (obj) return obj-&gt;getIsa();</span><br><span class="line">    else return Nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<ul>
-<li>二是当obj为类对象（包括元类和根类以及根元类）时，调用的是类方法：+ (Class)class，返回的结果为其本身。</li>
-<li>一是当obj为实例对象时，[obj class]中class是实例方法：- (Class)class，返回的obj对象中的isa指针；<br><img src="/images/OC-经典类的结构图查找isa.png" alt="OC-经典类的结构图查找isa"></li>
-</ul>
-<p>为了便于理解，修改上图的继承关系 NyanCat-&gt;Cat-&gt;NSObject<br><img src="/images/Objc-经典类的结构图查找isa详解.png" alt="Objc-经典类的结构图查找isa详解"></p>
-<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BB%8E%20NSObject%20%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BA%86%E8%A7%A3%20isa.md" target="_blank" rel="noopener">isa解读</a>  以上图片链接均来自于此链接</p>
-<p><a href="http://www.cocoawithlove.com/2010/01/what-is-meta-class-in-objective-c.html" target="_blank" rel="noopener">关于元类</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/09/为什么使用copy而不是Strong/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/09/为什么使用copy而不是Strong/" itemprop="url">为什么使用copy而不是Strong</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-09T17:20:30+08:00">
-                2018-01-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">//下面使用打印下指针看下</span><br><span class="line">NSMutableString *str1 = [NSMutableString stringWithFormat:@&quot;iOS&quot;];</span><br><span class="line">NSLog(@&quot;%p&quot;, str1);  //0x7b0c0006e0a0</span><br><span class="line">NSString *str_a1 = str1;</span><br><span class="line">NSLog(@&quot;%p&quot;, str_a1);  //0x7b0c0006e0a0</span><br><span class="line">NSString *str_b1 = [str1 copy];</span><br><span class="line">NSLog(@&quot;%p&quot;, str_b1);  //0xa00000000534f693</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">NSString *str2 = [NSMutableString stringWithFormat:@&quot;iOS&quot;];</span><br><span class="line">NSLog(@&quot;%p&quot;, str2);     //0x7b0c000776a0</span><br><span class="line">NSString *str_a2 = str2;</span><br><span class="line">NSLog(@&quot;%p&quot;, str_a2);  //0x7b0c000776a0</span><br><span class="line">NSString *str_b2 = [str2 copy];</span><br><span class="line">NSLog(@&quot;%p&quot;, str_b2);  //0xa00000000534f693</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">NSString *str3 = [NSString stringWithFormat:@&quot;iOS&quot;];</span><br><span class="line">NSLog(@&quot;%p&quot;, str3);   //0xa00000000534f693</span><br><span class="line">NSString *str_a3 = str3;</span><br><span class="line">NSLog(@&quot;%p&quot;, str_a3); //0xa00000000534f693</span><br><span class="line">NSString *str_b3 = [str3 copy];</span><br><span class="line">NSLog(@&quot;%p&quot;, str_b3); //0xa00000000534f693</span><br><span class="line"></span><br><span class="line">//结论:</span><br><span class="line"> 从一个 NSString 进行 copy 后赋值，copy 方法仍旧是浅拷贝</span><br><span class="line"> 从一个 NSMutableString 进行 copy 后赋值，copy 方法是深拷贝</span><br></pre></td></tr></table></figure>
-<p>当令 NSString 对象指针指向一个 NSMutableString 的时候，则会对一个对象进行深复制。这也就是我们一直所说的在一个 Class 的成员是 NSString 类型的时候，修饰属性应该使用 copy ，其实就是在使用 mutable 对象进行赋值的时候，防止 mutable 对象的改变从而影响成员变量。</p>
-<p>源码分析<br><a href="https://searchcode.com/file/12532490/libFoundation/Foundation/NSString.m" target="_blank" rel="noopener">NSString.m</a>中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (id)copyWithZone:(NSZone *)zone &#123;</span><br><span class="line">    if (NSStringClass == Nil)</span><br><span class="line">        NSStringClass = [NSString class];</span><br><span class="line">    return RETAIN(self);</span><br><span class="line">&#125;</span><br><span class="line">- (id)mutableCopyWithZone:(NSZone*)zone &#123;</span><br><span class="line">    return [[NSMutableString allocWithZone:zone] initWithString:self];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>NSString copy方法，返回的是self自身，属于浅拷贝<br>mutableCopyWithZone方法，返回新初始化的对象NSMutableString，所以是深拷贝</p>
-<p><a href="https://searchcode.com/file/68838008/jni%20w:%20itoa%20runtime%20and%20allocator/Foundation/NSMutableString.m" target="_blank" rel="noopener">NSMutableString.m</a> 中只发现了copyWithZone:和copy:方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-(id)copy &#123;</span><br><span class="line">    return [[NSString alloc] initWithString:self];</span><br><span class="line">&#125;</span><br><span class="line">-(id)copyWithZone:(NSZone*)zone &#123;</span><br><span class="line">    return [[NSString allocWithZone:zone] initWithString:self];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>NSMutableString copy方法，会变成深复制，因为返回的对象如源码所示，调用了 NSString 的全能初始化方法，并且由一个新的 NSString 持有。<br>在源码中并没有重写mutableCopy方法，也没有实现mutableCopyWithZone:方法，所以会调用父类的mutableCopyWithZone。而在父类中 mutableCopyWithZone:方法中调用了 NSMutableString 的全局初始化方法，所以依旧是深复制。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">@interface Man : NSObject</span><br><span class="line">@property (nonatomic, strong) NSString *eat;</span><br><span class="line">@property (nonatomic, copy) NSString *drink;</span><br><span class="line">@end</span><br><span class="line">@implementation Man</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">- (void)test</span><br><span class="line">&#123;</span><br><span class="line">  Man *man = [[Man alloc] init];</span><br><span class="line">  NSMutableString *str = [NSMutableString stringWithFormat:@&quot;山珍海味&quot;];</span><br><span class="line"></span><br><span class="line">  man.eat = str;</span><br><span class="line">  man.drink = str;</span><br><span class="line">  NSLog(@&quot;%@-%@&quot;,man.eat,man.drink); // 山珍海味-山珍海味</span><br><span class="line"></span><br><span class="line">  [str appendString:@&quot;白开水&quot;];</span><br><span class="line">  NSLog(@&quot;%@-%@&quot;,man.eat,man.drink); //山珍海味白开水-山珍海味</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Q 经典面试题：为什么 NSString 类型成员变量的修饰属性用 copy 而不是 strong (或 retain ) ？</p>
-<p>A 当我们通过一个 NSMutableString 对 NSString 变量进行赋值，如果 NSString 的 property 是 strong 类型的时候，就会随着 NSMutableString 类型的变量一起变化。<br>strong修饰，仅仅是指针引用，增加了引用计数器</p>
-<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="http://www.desgard.com/copy/" target="_blank" rel="noopener">http://www.desgard.com/copy/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/09/weak底层源码解析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/09/weak底层源码解析/" itemprop="url">weak底层源码解析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-09T14:20:56+08:00">
-                2018-01-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>本文分析是runtime源码 <a href="https://github.com/isaacselement/objc4-706" target="_blank" rel="noopener">objc4-706版本</a><br>OC code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// NSObject *obj = ...;</span><br><span class="line">__weak id weakPtr = obj;</span><br></pre></td></tr></table></figure></p>
-<p>底层转为源码为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// NSObject *obj = ...;</span><br><span class="line">objc_initWeak(&amp;weakPtr, obj);</span><br></pre></td></tr></table></figure></p>
-<p>来看下NSObject.mm<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line">objc_initWeak(id *location, id newObj)</span><br><span class="line">&#123;</span><br><span class="line">    if (!newObj) &#123;</span><br><span class="line">        *location = nil;</span><br><span class="line">        return nil;</span><br><span class="line">    &#125;</span><br><span class="line">    // 这里传递了三个 bool 数值</span><br><span class="line">    // 使用 template 进行常量参数传递是为了优化性能</span><br><span class="line">    return storeWeak&lt;false/*old*/, true/*new*/, true/*crash*/&gt;</span><br><span class="line">        (location, (objc_object*)newObj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>继续阅读 storeWeak() 的实现：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line">// HaveOld:	 true - 变量有值</span><br><span class="line">// 			false - 需要被及时清理，当前值可能为 nil</span><br><span class="line">// HaveNew:	 true - 需要被分配的新值，当前值可能为 nil</span><br><span class="line">// 			false - 不需要分配新值</span><br><span class="line">// CrashIfDeallocating: true - 说明 newObj 已经释放或者 newObj 不支持弱引用，该过程需要暂停</span><br><span class="line">// 			false - 用 nil 替代存储</span><br><span class="line"></span><br><span class="line">template &lt;bool HaveOld, bool HaveNew, bool CrashIfDeallocating&gt;</span><br><span class="line">static id</span><br><span class="line">storeWeak(id *location, objc_object *newObj)</span><br><span class="line">&#123;</span><br><span class="line">    assert(HaveOld  ||  HaveNew);</span><br><span class="line">    if (!HaveNew) assert(newObj == nil);</span><br><span class="line">    // 用于标记已经初始化的类</span><br><span class="line">    Class previouslyInitializedClass = nil;</span><br><span class="line">    id oldObj;</span><br><span class="line">     // 声明新旧辅助表</span><br><span class="line">    SideTable *oldTable;</span><br><span class="line">    SideTable *newTable;</span><br><span class="line"></span><br><span class="line">    // 获取新旧值（存在的话）的辅助表，并且加锁，</span><br><span class="line">    // 如果新旧值辅助表同时存在时，以锁的地址大小排序，防止锁的顺序问题</span><br><span class="line"> retry:</span><br><span class="line">    if (HaveOld) &#123;</span><br><span class="line">        // 如果有旧值的话，通过指针获取目标对象，  Q： 旧值的情况是不是指这个地址*location之前存的值？？？</span><br><span class="line">        // 再以目标对象的地址为索引，取得旧值对应的辅助表</span><br><span class="line">        oldObj = *location;</span><br><span class="line">        oldTable = &amp;SideTables()[oldObj];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        oldTable = nil;</span><br><span class="line">    &#125;</span><br><span class="line">    if (HaveNew) &#123;</span><br><span class="line">        // 如果有新值，以新值的地址为索引，取得新值对应的辅助表</span><br><span class="line">        newTable = &amp;SideTables()[newObj];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        newTable = nil;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    SideTable::lockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line"></span><br><span class="line">    if (HaveOld  &amp;&amp;  *location != oldObj) &#123;</span><br><span class="line">        // 线程冲突处理，</span><br><span class="line">        // 如果有旧值，但 location 指向的对象不为 oldObj，那很可能被其它线程修改过，</span><br><span class="line">        // 解锁并重试</span><br><span class="line">        SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line">        goto retry;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    if (HaveNew  &amp;&amp;  newObj) &#123;</span><br><span class="line">        Class cls = newObj-&gt;getIsa();</span><br><span class="line">        if (cls != previouslyInitializedClass  &amp;&amp;  </span><br><span class="line">            !((objc_class *)cls)-&gt;isInitialized())</span><br><span class="line">        &#123;</span><br><span class="line">            SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line">            _class_initialize(_class_getNonMetaClass(cls, (id)newObj));</span><br><span class="line"></span><br><span class="line">            previouslyInitializedClass = cls;</span><br><span class="line"></span><br><span class="line">            goto retry;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Clean up old value, if any.</span><br><span class="line">    // 从 oldObj 的弱引用条目删除弱引用的地址</span><br><span class="line">    if (HaveOld) &#123;</span><br><span class="line">        weak_unregister_no_lock(&amp;oldTable-&gt;weak_table, oldObj, location);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Assign new value, if any.</span><br><span class="line">    // 把弱引用的地址注册到 newObj 的弱引用条目</span><br><span class="line">    if (HaveNew) &#123;</span><br><span class="line">        newObj = (objc_object *)weak_register_no_lock(&amp;newTable-&gt;weak_table,</span><br><span class="line">                                                      (id)newObj, location,</span><br><span class="line">                                                      CrashIfDeallocating);</span><br><span class="line">        // weak_register_no_lock returns nil if weak store should be rejected</span><br><span class="line"></span><br><span class="line">        // Set is-weakly-referenced bit in refcount table.</span><br><span class="line">        if (newObj  &amp;&amp;  !newObj-&gt;isTaggedPointer()) &#123;</span><br><span class="line">            newObj-&gt;setWeaklyReferenced_nolock();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // Do not set *location anywhere else. That would introduce a race.</span><br><span class="line">        *location = (id)newObj;</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // No new value. The storage is not changed.</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line"></span><br><span class="line">    return (id)newObj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h2><ul>
-<li>SideTable 这个结构体 : 主要用于管理对象的引用计数和 weak 表</li>
-<li>&amp;SideTables()[oldObj] : 根据对象的地址在缓存中取出对应的 SideTable 实例<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">static StripedMap&lt;SideTable&gt;&amp; SideTables() &#123;</span><br><span class="line">    return *reinterpret_cast&lt;StripedMap&lt;SideTable&gt;*&gt;(SideTableBuf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>在取出实例方法的实现中，使用了 C++ 标准转换运算符 reinterpret_cast ，其表达方式为</p>
-<blockquote>
-<p>reinterpret_cast <new_type> (expression)<br>用来处理无关类型之间的转换。该关键字会产生一个新值，并保证与原参数（expression）拥有完全相同的比特位。</new_type></p>
-</blockquote>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="http://www.desgard.com/weak/" target="_blank" rel="noopener">http://www.desgard.com/weak/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1820,7 +1803,7 @@ __builtin_expect的作用
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-count">31</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1908,7 +1891,7 @@ __builtin_expect的作用
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共38.1k字</span>
+<span class="post-count"> 博客全站共42.6k字</span>
 </div>
 
 

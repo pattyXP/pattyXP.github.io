@@ -275,6 +275,553 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/22/记录一次坑/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/22/记录一次坑/" itemprop="url">记录一次坑</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-22T10:02:47+08:00">
+                2018-03-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>这真是一次莫名其妙的经历<br>场景如下:<br>有一个页面，底下有个按钮，莫名其妙的事就是 之前都测试的OK，突然之间不管点击什么地方，都会走按钮的逻辑，检查发现按钮的点击区域没有扩大，甚至点击返回按钮都被触动按钮点击事件，同样的页面，如果没有显示这个按钮一切逻辑倒是正常的，找同事看了下，笑话说如果真的是这样的效果，能做到也不容易啊</p>
+<p>后面发现可能是我电脑缓存的问题，于是把相关的库和工程的缓存都给清理了下，世界清静了 ~ ~ ~</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/20/ReactiveObjc-RACSubject/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/20/ReactiveObjc-RACSubject/" itemprop="url">ReactiveObjc-RACSubject</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-20T16:36:31+08:00">
+                2018-03-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>本文源码为 ReactiveObjc 3.1.0 版本</p>
+<h2 id="RACSubject"><a href="#RACSubject" class="headerlink" title="RACSubject"></a>RACSubject</h2><p>RACSubject 继承自 RACSignal，主要用于将非 RAC 的对象桥接到 RAC ，属于可变信号</p>
+<blockquote>
+<p>A subject can be thought of as a signal that you can manually control by sending next, completed, and error.They’re most helpful in bridging the non-RAC world to RAC, since they let you<br>manually control the sending of events.</p>
+</blockquote>
+<p>RACSubject 与子类<br><img src="/images/RACSubject.png" alt="RACSubject与子类关系"></p>
+<p>RACSubject 对外提供的接口只有两个，遵循<racsubscriber>协议<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@interface RACSubject&lt;ValueType&gt; : RACSignal&lt;ValueType&gt; &lt;RACSubscriber&gt;</span><br><span class="line"></span><br><span class="line">/// Returns a new subject.</span><br><span class="line">+ (instancetype)subject;</span><br><span class="line"></span><br><span class="line">// Redeclaration of the RACSubscriber method. Made in order to specify a generic type.</span><br><span class="line">- (void)sendNext:(nullable ValueType)value;</span><br></pre></td></tr></table></figure></racsubscriber></p>
+<ul>
+<li>举例子<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">RACSubject *subject = [RACSubject subject];</span><br><span class="line"></span><br><span class="line">// Subscriber 1</span><br><span class="line">[subject subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;1st Sub: %@&quot;, x);</span><br><span class="line">&#125;];</span><br><span class="line">[subject sendNext:@1];</span><br><span class="line"></span><br><span class="line">// Subscriber 2</span><br><span class="line">[subject subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;2nd Sub: %@&quot;, x);</span><br><span class="line">&#125;];</span><br><span class="line">[subject sendNext:@2];</span><br><span class="line"></span><br><span class="line">// Subscriber 3</span><br><span class="line">[subject subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;3rd Sub: %@&quot;, x);</span><br><span class="line">&#125;];</span><br><span class="line">[subject sendNext:@3];</span><br><span class="line">[subject sendCompleted];</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> 2018-01-17 14:14:56.437059+0800 ReactiveObjcTest[270:1821989] 1st Sub: 1</span><br><span class="line"> 2018-01-17 14:14:56.437269+0800 ReactiveObjcTest[270:1821989] 1st Sub: 2</span><br><span class="line"> 2018-01-17 14:14:56.437387+0800 ReactiveObjcTest[270:1821989] 2nd Sub: 2</span><br><span class="line"> 2018-01-17 14:14:56.437594+0800 ReactiveObjcTest[270:1821989] 1st Sub: 3</span><br><span class="line"> 2018-01-17 14:14:56.438327+0800 ReactiveObjcTest[270:1821989] 2nd Sub: 3</span><br><span class="line"> 2018-01-17 14:14:56.438564+0800 ReactiveObjcTest[270:1821989] 3rd Sub: 3</span><br><span class="line"></span><br><span class="line"> RACSubject 是时间相关的，它在发送消息时只会向已订阅的订阅者推送消息。</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>当调用sendNext方法<br>内部遍历当前数组内的subscriber，发送消息，和父类的不同就是可以先订阅，再发送信息，能否接收到消息取决于订阅的时间<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (void)sendNext:(id)value &#123;</span><br><span class="line">	[self enumerateSubscribersUsingBlock:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		[subscriber sendNext:value];</span><br><span class="line">	&#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="热信号-和-冷信号"><a href="#热信号-和-冷信号" class="headerlink" title="热信号 和 冷信号"></a>热信号 和 冷信号</h2><p>在RAC中，RACSignal 属于冷信号， 每个订阅者会收到所有的消息<br>RACSubject 属于热信号，消息的接收取决于订阅的时间</p>
+<p>从上面的例子中，可以观察到，由于 subscribeNext 调用时机不同，收到的消息内容序列不一样</p>
+<ul>
+<li>调用 subscribeNext 方法, 产生 RACSubscriber</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">RACSignal.m</span><br><span class="line">- (RACDisposable *)subscribeNext:(void (^)(id x))nextBlock &#123;</span><br><span class="line">	NSCParameterAssert(nextBlock != NULL);</span><br><span class="line"></span><br><span class="line">	RACSubscriber *o = [RACSubscriber subscriberWithNext:nextBlock error:NULL completed:NULL];</span><br><span class="line">	return [self subscribe:o];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>重写 <code>subscribe</code> 方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- (RACDisposable *)subscribe:(id&lt;RACSubscriber&gt;)subscriber &#123;</span><br><span class="line">	NSCParameterAssert(subscriber != nil);</span><br><span class="line"></span><br><span class="line">	RACCompoundDisposable *disposable = [RACCompoundDisposable compoundDisposable];</span><br><span class="line">	subscriber = [[RACPassthroughSubscriber alloc] initWithSubscriber:subscriber signal:self disposable:disposable];</span><br><span class="line"></span><br><span class="line">	NSMutableArray *subscribers = self.subscribers;</span><br><span class="line">	@synchronized (subscribers) &#123;</span><br><span class="line">		[subscribers addObject:subscriber];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	[disposable addDisposable:[RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">		@synchronized (subscribers) &#123;</span><br><span class="line">			// Since newer subscribers are generally shorter-lived, search</span><br><span class="line">			// starting from the end of the list.</span><br><span class="line">			NSUInteger index = [subscribers indexOfObjectWithOptions:NSEnumerationReverse passingTest:^ BOOL (id&lt;RACSubscriber&gt; obj, NSUInteger index, BOOL *stop) &#123;</span><br><span class="line">				return obj == subscriber;</span><br><span class="line">			&#125;];</span><br><span class="line"></span><br><span class="line">			if (index != NSNotFound) [subscribers removeObjectAtIndex:index];</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;]];</span><br><span class="line"></span><br><span class="line">	return disposable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该方法的作用</p>
+<ul>
+<li>产生 RACPassthroughSubscriber 实例</li>
+<li>将生成的 subscriber 添加入 RACSubject 拥有的数组里</li>
+<li>创建 disposable对象，在当前 subscriber 销毁时，将 自身从数组中移除</li>
+</ul>
+<ul>
+<li>sendNext</li>
+</ul>
+<p>由于 RACSubject 遵循了<racsubscriber>协议<br>所以可以调用 sendNext 等一系列方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">- (void)sendNext:(id)value &#123;</span><br><span class="line">	[self enumerateSubscribersUsingBlock:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		[subscriber sendNext:value];</span><br><span class="line">	&#125;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)sendError:(NSError *)error &#123;</span><br><span class="line">	[self.disposable dispose];</span><br><span class="line"></span><br><span class="line">	[self enumerateSubscribersUsingBlock:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		[subscriber sendError:error];</span><br><span class="line">	&#125;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)sendCompleted &#123;</span><br><span class="line">	[self.disposable dispose];</span><br><span class="line"></span><br><span class="line">	[self enumerateSubscribersUsingBlock:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		[subscriber sendCompleted];</span><br><span class="line">	&#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></racsubscriber></p>
+<p>以上方法都是调用forin 遍历自身的subscribes数组，调用block<br>这里会向每个 subscriber 都调用block<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (void)enumerateSubscribersUsingBlock:(void (^)(id&lt;RACSubscriber&gt; subscriber))block &#123;</span><br><span class="line">	NSArray *subscribers;</span><br><span class="line">	@synchronized (self.subscribers) &#123;</span><br><span class="line">		subscribers = [self.subscribers copy];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	for (id&lt;RACSubscriber&gt; subscriber in subscribers) &#123;</span><br><span class="line">		block(subscriber);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上方法为了防止发生资源竞争，都采用 <code>@synchronized</code> 来进行加锁</p>
+<p>关于 RACSubject 基本介绍到这里就差不多了</p>
+<p>下面看下子类</p>
+<h2 id="RACBehaviorSubject"><a href="#RACBehaviorSubject" class="headerlink" title="RACBehaviorSubject"></a>RACBehaviorSubject</h2><blockquote>
+<p>A behavior subject sends the last value it received when it is subscribed to.</p>
+</blockquote>
+<p>订阅时会向 订阅者发送最新的消息</p>
+<p>声明如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@interface RACBehaviorSubject&lt;ValueType&gt; : RACSubject&lt;ValueType&gt;</span><br><span class="line">/// Creates a new behavior subject with a default value. If it hasn&apos;t received</span><br><span class="line">/// any values when it gets subscribed to, it sends the default value.</span><br><span class="line">+ (instancetype)behaviorSubjectWithDefaultValue:(nullable ValueType)value;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>初始化<br>提供一个类方法，创建一个带有默认值的 subject ，如果订阅后没有收到任何值就会返回默认值</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">+ (instancetype)behaviorSubjectWithDefaultValue:(id)value &#123;</span><br><span class="line">	RACBehaviorSubject *subject = [self subject];</span><br><span class="line">	subject.currentValue = value;</span><br><span class="line">	return subject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>重写了 subscribe 方法</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (RACDisposable *)subscribe:(id&lt;RACSubscriber&gt;)subscriber &#123;</span><br><span class="line">	RACDisposable *subscriptionDisposable = [super subscribe:subscriber]; //将subscriber 添加入自身的数组</span><br><span class="line"></span><br><span class="line">	RACDisposable *schedulingDisposable = [RACScheduler.subscriptionScheduler schedule:^&#123;</span><br><span class="line">		@synchronized (self) &#123;</span><br><span class="line">			[subscriber sendNext:self.currentValue]; //发送最新的值</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;];</span><br><span class="line"></span><br><span class="line">	return [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">		[subscriptionDisposable dispose];</span><br><span class="line">		[schedulingDisposable dispose];</span><br><span class="line">	&#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>重写了 sendNext 方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (void)sendNext:(id)value &#123;</span><br><span class="line">	@synchronized (self) &#123;</span><br><span class="line">		self.currentValue = value;  //设置 最新的值</span><br><span class="line">		[super sendNext:value];     //向数组内每个订阅者都发送最新的值</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>事例</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">RACBehaviorSubject *subject = [RACBehaviorSubject behaviorSubjectWithDefaultValue:@10];</span><br><span class="line"></span><br><span class="line">  [subject subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">      NSLog(@&quot;1st Sub: %@&quot;, x);</span><br><span class="line">  &#125;];</span><br><span class="line">  [subject sendNext:@1];</span><br><span class="line"></span><br><span class="line">  [subject subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">      NSLog(@&quot;2nd Sub: %@&quot;, x);</span><br><span class="line">  &#125;];</span><br><span class="line">  [subject sendNext:@2];</span><br><span class="line"></span><br><span class="line">  // Subscriber 3</span><br><span class="line">  [subject subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">      NSLog(@&quot;3rd Sub: %@&quot;, x);</span><br><span class="line">  &#125;];</span><br><span class="line">  [subject sendNext:@3];</span><br><span class="line">  [subject sendCompleted];</span><br></pre></td></tr></table></figure>
+<p>将上面例子的 RACSubject 替换为 RACBehaviorSubject<br>打印log如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1st Sub: 10</span><br><span class="line">1st Sub: 1</span><br><span class="line">2nd Sub: 1</span><br><span class="line">1st Sub: 2</span><br><span class="line">2nd Sub: 2</span><br><span class="line">3rd Sub: 2</span><br><span class="line">1st Sub: 3</span><br><span class="line">2nd Sub: 3</span><br><span class="line">3rd Sub: 3</span><br></pre></td></tr></table></figure></p>
+<p>当第一个调用subscribeNext 方法时候，会向生成的RACSubscriber 对象发送当前最新的值，默认值为@10，[subscriber sendNext:self.currentValue];接收到之后执行nextBlock,<code>NSLog(@&quot;1st Sub: %@&quot;, x);</code> 后面流程都一致此处省略</p>
+<h2 id="RACReplaySubject"><a href="#RACReplaySubject" class="headerlink" title="RACReplaySubject"></a>RACReplaySubject</h2><p>订阅时会向 订阅者发送以前所有的消息</p>
+<p>对外声明一个类方法，创建带有给定容量的 subject<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@interface RACReplaySubject&lt;ValueType&gt; : RACSubject&lt;ValueType&gt;</span><br><span class="line">/// Creates a new replay subject with the given capacity. A capacity of</span><br><span class="line">/// RACReplaySubjectUnlimitedCapacity means values are never trimmed.</span><br><span class="line">+ (instancetype)replaySubjectWithCapacity:(NSUInteger)capacity;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@interface RACReplaySubject ()</span><br><span class="line">@property (nonatomic, assign, readonly) NSUInteger capacity;</span><br><span class="line">// These properties should only be modified while synchronized on self.</span><br><span class="line">@property (nonatomic, strong, readonly) NSMutableArray *valuesReceived;</span><br><span class="line">@property (nonatomic, assign) BOOL hasCompleted;</span><br><span class="line">@property (nonatomic, assign) BOOL hasError;</span><br><span class="line">@property (nonatomic, strong) NSError *error;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>内部valuesReceived，存储了收到了value，使用 synchronized 避免线程竞争</p>
+<ul>
+<li>初始化方法<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">+ (instancetype)replaySubjectWithCapacity:(NSUInteger)capacity &#123;</span><br><span class="line">	return [(RACReplaySubject *)[self alloc] initWithCapacity:capacity];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (instancetype)initWithCapacity:(NSUInteger)capacity &#123;</span><br><span class="line">	self = [super init];</span><br><span class="line"></span><br><span class="line">	_capacity = capacity;</span><br><span class="line">	_valuesReceived = (capacity == RACReplaySubjectUnlimitedCapacity ? [NSMutableArray array] : [NSMutableArray arrayWithCapacity:capacity]);</span><br><span class="line"></span><br><span class="line">	return self;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>根据入参 capacity 来初始化 内部的属性可变数组 valuesReceived</p>
+<p>下面是遵循协议的方法</p>
+<ul>
+<li>sendNext<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (void)sendNext:(id)value &#123;</span><br><span class="line">	@synchronized (self) &#123;</span><br><span class="line">		[self.valuesReceived addObject:value ?: RACTupleNil.tupleNil];</span><br><span class="line">		[super sendNext:value];</span><br><span class="line"></span><br><span class="line">		if (self.capacity != RACReplaySubjectUnlimitedCapacity &amp;&amp; self.valuesReceived.count &gt; self.capacity) &#123;</span><br><span class="line">			[self.valuesReceived removeObjectsInRange:NSMakeRange(0, self.valuesReceived.count - self.capacity)];</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>将参数 value 添加入数组 ，调用父类的方法，发送消息，向内部所以的订阅者都发送消息<br>如果数组的数量超过初始化时的限制，将之前数据移除</p>
+<ul>
+<li><code>[self.valuesReceived addObject:value ?: RACTupleNil.tupleNil];</code><br>当value为空，需要包装为 RACTupleNil</li>
+</ul>
+<ul>
+<li><p>sendCompleted</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (void)sendCompleted &#123;</span><br><span class="line">	@synchronized (self) &#123;</span><br><span class="line">		self.hasCompleted = YES;</span><br><span class="line">		[super sendCompleted];</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>sendError</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (void)sendError:(NSError *)e &#123;</span><br><span class="line">	@synchronized (self) &#123;</span><br><span class="line">		self.hasError = YES;</span><br><span class="line">		self.error = e;</span><br><span class="line">		[super sendError:e];</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>subscribe</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">- (RACDisposable *)subscribe:(id&lt;RACSubscriber&gt;)subscriber &#123;</span><br><span class="line">	RACCompoundDisposable *compoundDisposable = [RACCompoundDisposable compoundDisposable];</span><br><span class="line"></span><br><span class="line">	RACDisposable *schedulingDisposable = [RACScheduler.subscriptionScheduler schedule:^&#123;</span><br><span class="line">		@synchronized (self) &#123;</span><br><span class="line">			for (id value in self.valuesReceived) &#123;</span><br><span class="line">				if (compoundDisposable.disposed) return;</span><br><span class="line"></span><br><span class="line">				[subscriber sendNext:(value == RACTupleNil.tupleNil ? nil : value)];</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			if (compoundDisposable.disposed) return;</span><br><span class="line"></span><br><span class="line">			if (self.hasCompleted) &#123;</span><br><span class="line">				[subscriber sendCompleted];</span><br><span class="line">			&#125; else if (self.hasError) &#123;</span><br><span class="line">				[subscriber sendError:self.error];</span><br><span class="line">			&#125; else &#123;</span><br><span class="line">				RACDisposable *subscriptionDisposable = [super subscribe:subscriber];</span><br><span class="line">				[compoundDisposable addDisposable:subscriptionDisposable];</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;];</span><br><span class="line"></span><br><span class="line">	[compoundDisposable addDisposable:schedulingDisposable];</span><br><span class="line"></span><br><span class="line">	return compoundDisposable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>通过for循环 向 当前的subscriber 对象发送数组 valuesReceived 内的每个元素， 如果当前收到发送完成信号或者失败信号，就调用sendCompleted或者sendError方法</li>
+</ul>
+</li>
+<li><p>事例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">RACReplaySubject *subject = [RACReplaySubject subject];</span><br><span class="line"></span><br><span class="line">[subject subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;1st Subscriber: %@&quot;, x);</span><br><span class="line">&#125;];</span><br><span class="line">[subject sendNext:@1];</span><br><span class="line"></span><br><span class="line">[subject subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;2nd Subscriber: %@&quot;, x);</span><br><span class="line">&#125;];</span><br><span class="line">[subject sendNext:@2];</span><br><span class="line"></span><br><span class="line">[subject subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;3rd Subscriber: %@&quot;, x);</span><br><span class="line">&#125;];</span><br><span class="line">[subject sendNext:@3];</span><br><span class="line">[subject sendCompleted];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>打印log<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1st Subscriber: 1</span><br><span class="line">2nd Subscriber: 1</span><br><span class="line">1st Subscriber: 2</span><br><span class="line">2nd Subscriber: 2</span><br><span class="line">3rd Subscriber: 1</span><br><span class="line">3rd Subscriber: 2</span><br><span class="line">1st Subscriber: 3</span><br><span class="line">2nd Subscriber: 3</span><br><span class="line">3rd Subscriber: 3</span><br></pre></td></tr></table></figure></p>
+<p>当第一次调用subscribeNext 方法，会向当前生成的订阅对象RACSubscriber 发送所有的值，一开始数据为空，不会发送sendNext,将当前的subscriber对象 添加入subscribers数组<br>当第二次调用subscribeNext 方法, 会向当前生成的订阅对象RACSubscriber 发送所有的值，目前 valuesReceived内只有1，因此打印<code>NSLog(@&quot;2nd Subscriber: %@&quot;, x);</code>后续操作省略</p>
+<h2 id="RACGroupedSignal"><a href="#RACGroupedSignal" class="headerlink" title="RACGroupedSignal"></a>RACGroupedSignal</h2><p>分组信号，用来实现 RACSignal 的分组功能</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// A grouped signal is used by -[RACSignal groupBy:transform:].</span><br><span class="line">@interface RACGroupedSignal : RACSubject</span><br><span class="line"></span><br><span class="line">/// The key shared by the group.</span><br><span class="line">@property (nonatomic, readonly, copy) id&lt;NSCopying&gt; key;</span><br><span class="line">+ (instancetype)signalWithKey:(id&lt;NSCopying&gt;)key;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>初始化<br>初始化含有key属性的 Subject</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">+ (instancetype)signalWithKey:(id&lt;NSCopying&gt;)key &#123;</span><br><span class="line">	RACGroupedSignal *subject = [self subject];</span><br><span class="line">	subject.key = key;</span><br><span class="line">	return subject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>事例<br>配合groupBy:transform:方法返回 RACGroupedSignal对象</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signalA = [RACSignal createSignal:^RACDisposable *(id&lt;RACSubscriber&gt; subscriber)</span><br><span class="line">                         &#123;</span><br><span class="line">                             [subscriber sendNext:@1];</span><br><span class="line">                             [subscriber sendNext:@2];</span><br><span class="line">                             [subscriber sendNext:@3];</span><br><span class="line">                             [subscriber sendNext:@4];</span><br><span class="line">                             [subscriber sendNext:@5];</span><br><span class="line">                             [subscriber sendCompleted];</span><br><span class="line">                             return [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">                                 NSLog(@&quot;signal dispose&quot;);</span><br><span class="line">                             &#125;];</span><br><span class="line">                         &#125;];</span><br><span class="line"></span><br><span class="line">RACSignal *signalGroup = [signalA groupBy:^id&lt;NSCopying&gt;(NSNumber *object) &#123;</span><br><span class="line"></span><br><span class="line">                         return object.integerValue &gt; 3 ? @&quot;good&quot; : @&quot;bad&quot;;</span><br><span class="line">           &#125; transform:^id(NSNumber * object) &#123;</span><br><span class="line">                         return @(object.integerValue * 10);</span><br><span class="line">          &#125;];</span><br><span class="line">[[[signalGroup filter:^BOOL(RACGroupedSignal *value) &#123;</span><br><span class="line"></span><br><span class="line">                         return [(NSString *)value.key isEqualToString:@&quot;good&quot;];</span><br><span class="line">          &#125;] flatten]subscribeNext:^(id x) &#123;</span><br><span class="line">                         NSLog(@&quot;subscribeNext: %@&quot;, x);</span><br><span class="line"> &#125;];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>filter 方法用于过滤<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)filter:(BOOL (^)(id value))block &#123;</span><br><span class="line">	NSCParameterAssert(block != nil);</span><br><span class="line"></span><br><span class="line">	Class class = self.class;</span><br><span class="line"></span><br><span class="line">	return [[self flattenMap:^ id (id value) &#123;</span><br><span class="line">		if (block(value)) &#123;</span><br><span class="line">			return [class return:value];</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			return class.empty;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -filter:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果满足过滤条件<code>block(value)</code>，就返回 <code>[class return:value]</code>RACReturnSignal，否则返回<code>class.empty</code> RACEmptySignal<br>RACReturnSignal.m<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RACReturnSignal *signal = [[self alloc] init];</span><br><span class="line">signal-&gt;_value = value;</span><br></pre></td></tr></table></figure></p>
+<h2 id="注"><a href="#注" class="headerlink" title="注"></a>注</h2><p>RACTuple 元组类,类似NSArray,用来包装值</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>RACSubject 继承自 RACSignal ，但是内部存储了一些遵循 RACSubscriber协议的对象，将原有的不可变信号转为可变信号，在实际情况下运用非常方便</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/15/ReactiveObjc-RACSequence/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/15/ReactiveObjc-RACSequence/" itemprop="url">ReactiveObjc-RACSequence</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-15T15:12:30+08:00">
+                2018-03-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>本文源码为 ReactiveObjc 3.1.0 版本</p>
+<h2 id="RACSequence"><a href="#RACSequence" class="headerlink" title="RACSequence"></a>RACSequence</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@interface RACSequence&lt;__covariant ValueType&gt; : RACStream &lt;NSCoding, NSCopying, NSFastEnumeration&gt;</span><br><span class="line">@property (nonatomic, strong, readonly, nullable) ValueType head;</span><br><span class="line">@property (nonatomic, strong, readonly, nullable) RACSequence&lt;ValueType&gt; *tail;</span><br><span class="line">@property (nonatomic, copy, readonly) NSArray&lt;ValueType&gt; *array;</span><br><span class="line">@property (nonatomic, copy, readonly) NSEnumerator&lt;ValueType&gt; *objectEnumerator;</span><br><span class="line">@property (nonatomic, copy, readonly) RACSequence&lt;ValueType&gt; *eagerSequence;</span><br><span class="line">@property (nonatomic, copy, readonly) RACSequence&lt;ValueType&gt; *lazySequence;</span><br></pre></td></tr></table></figure>
+<p>RACSequence 主要由两部分组成， head 和 tail, head是一个 数字， tail 是 流RACSequence 的形式</p>
+<p>先来了解下 RACSequence 相关的子类<br><img src="RACSequence子类结构图.png" alt="RACSequence子类结构图"></p>
+<blockquote>
+<p>此图来自 <img src="https://github.com/Draveness/analyze/blob/43d828b6f516a57e12eeff69913ff49cc94a0f36/contents/ReactiveObjC/RACSequence.md" alt="Draveness博客"></p>
+</blockquote>
+<p>这里，和RACSignal类似，获取 head 和 tail 的方法需要被子类重写<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (id)head &#123;</span><br><span class="line">	NSCAssert(NO, @&quot;%s must be overridden by subclasses&quot;, __func__);</span><br><span class="line">	return nil;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (RACSequence *)tail &#123;</span><br><span class="line">	NSCAssert(NO, @&quot;%s must be overridden by subclasses&quot;, __func__);</span><br><span class="line">	return nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><p>empty<br>返回 RACEmptySequence 实例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSequence *)empty &#123;</span><br><span class="line">	return RACEmptySequence.empty;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>return<br>返回 RACUnarySequence 实例，将传入的参数作为 head，tail 返回 nil</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSequence *)return:(id)value &#123;</span><br><span class="line">	return [RACUnarySequence return:value];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (RACUnarySequence *)return:(id)value &#123;</span><br><span class="line">	RACUnarySequence *sequence = [[self alloc] init];</span><br><span class="line">	sequence.head = value;</span><br><span class="line">	return [sequence setNameWithFormat:@&quot;+return: %@&quot;, RACDescription(value)];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#pragma mark RACSequence</span><br><span class="line"></span><br><span class="line">- (RACSequence *)tail &#123;</span><br><span class="line">	return nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>bind</p>
+</li>
+</ul>
+<p>调用内部 bind:passingThroughValuesFromSequence:方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">- (RACSequence *)bind:(RACSequenceBindBlock (^)(void))block &#123;</span><br><span class="line">	RACSequenceBindBlock bindBlock = block();</span><br><span class="line">	return [[self bind:bindBlock passingThroughValuesFromSequence:nil] setNameWithFormat:@&quot;[%@] -bind:&quot;, self.name];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (RACSequence *)bind:(RACSequenceBindBlock)bindBlock passingThroughValuesFromSequence:(RACSequence *)passthroughSequence &#123;</span><br><span class="line"></span><br><span class="line">	__block RACSequence *valuesSeq = self;</span><br><span class="line">	__block RACSequence *current = passthroughSequence;</span><br><span class="line">	__block BOOL stop = NO;</span><br><span class="line"></span><br><span class="line">	RACSequence *sequence = [RACDynamicSequence sequenceWithLazyDependency:^ id &#123;</span><br><span class="line">		while (current.head == nil) &#123;</span><br><span class="line">			if (stop) return nil;</span><br><span class="line"></span><br><span class="line">			id value = valuesSeq.head;</span><br><span class="line"></span><br><span class="line">			if (value == nil) &#123;</span><br><span class="line">				stop = YES;</span><br><span class="line">				return nil;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			current = (id)bindBlock(value, &amp;stop);</span><br><span class="line">			if (current == nil) &#123;</span><br><span class="line">				stop = YES;</span><br><span class="line">				return nil;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			valuesSeq = valuesSeq.tail;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		NSCAssert([current isKindOfClass:RACSequence.class], @&quot;-bind: block returned an object that is not a sequence: %@&quot;, current);</span><br><span class="line">		return nil;</span><br><span class="line">	&#125; headBlock:^(id _) &#123;</span><br><span class="line">		return current.head;</span><br><span class="line">	&#125; tailBlock:^ id (id _) &#123;</span><br><span class="line">		if (stop) return nil;</span><br><span class="line"></span><br><span class="line">		return [valuesSeq bind:bindBlock passingThroughValuesFromSequence:current.tail];</span><br><span class="line">	&#125;];</span><br><span class="line"></span><br><span class="line">	sequence.name = self.name;</span><br><span class="line">	return sequence;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>内部创建 RACDynamicSequence 实例返回</p>
+<p>创建RACDynamicSequence</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSequence *)sequenceWithLazyDependency:(id (^)(void))dependencyBlock headBlock:(id (^)(id dependency))headBlock tailBlock:(RACSequence *(^)(id dependency))tailBlock &#123;</span><br><span class="line">  ...</span><br><span class="line">	RACDynamicSequence *seq = [[RACDynamicSequence alloc] init];</span><br><span class="line">	seq.headBlock = [headBlock copy];</span><br><span class="line">	seq.tailBlock = [tailBlock copy];</span><br><span class="line">	seq.dependencyBlock = [dependencyBlock copy];</span><br><span class="line">	seq.hasDependency = YES;</span><br><span class="line">	return seq;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建好 RACDynamicSequence 之后，获取 head</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (id)head &#123;</span><br><span class="line">	@synchronized (self) &#123;</span><br><span class="line">		id untypedHeadBlock = self.headBlock;</span><br><span class="line">		if (untypedHeadBlock == nil) return _head;</span><br><span class="line"></span><br><span class="line">		if (self.hasDependency) &#123;</span><br><span class="line">			if (self.dependencyBlock != nil) &#123;</span><br><span class="line">				_dependency = self.dependencyBlock();</span><br><span class="line">				self.dependencyBlock = nil;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			id (^headBlock)(id) = untypedHeadBlock;</span><br><span class="line">			_head = headBlock(_dependency);</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			id (^headBlock)(void) = untypedHeadBlock;</span><br><span class="line">			_head = headBlock();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		self.headBlock = nil;</span><br><span class="line">		return _head;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>为什么这里获取head之后，将headBlock 、dependencyBlock 均清空了下次怎么办<br>解惑:<br>第一次获取head时候，如果已经获取到，headBlock 、dependencyBlock  清空<br>第二次获取head时候，headBlock 已经为空，所以直接返回第一次获取的结果，不需要再次赋值</p>
+</blockquote>
+<p>获取tail,和 head 获取方法同理<br>获取的 tail 依赖 tailBlock 和 dependencyBlock, 最后返回的tail 执行返回 RACSequence对象<br><code>return [valuesSeq bind:bindBlock passingThroughValuesFromSequence:current.tail];</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">- (RACSequence *)tail &#123;</span><br><span class="line">	@synchronized (self) &#123;</span><br><span class="line">		id untypedTailBlock = self.tailBlock;</span><br><span class="line">		if (untypedTailBlock == nil) return _tail;</span><br><span class="line"></span><br><span class="line">		if (self.hasDependency) &#123;</span><br><span class="line">			if (self.dependencyBlock != nil) &#123;</span><br><span class="line">				_dependency = self.dependencyBlock();</span><br><span class="line">				self.dependencyBlock = nil;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			RACSequence * (^tailBlock)(id) = untypedTailBlock;</span><br><span class="line">			_tail = tailBlock(_dependency);</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			RACSequence * (^tailBlock)(void) = untypedTailBlock;</span><br><span class="line">			_tail = tailBlock();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		if (_tail.name == nil) _tail.name = self.name;</span><br><span class="line"></span><br><span class="line">		self.tailBlock = nil;</span><br><span class="line">		return _tail;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面通过更具体的代码来了解bind方法使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">RACSequence *sequence = [RACSequence sequenceWithHeadBlock:^id _Nullable&#123;</span><br><span class="line">    return @1;</span><br><span class="line">&#125; tailBlock:^RACSequence * _Nonnull&#123;</span><br><span class="line">    return  [RACSequence sequenceWithHeadBlock:^id _Nullable&#123;</span><br><span class="line">        return @2;</span><br><span class="line">    &#125; tailBlock:^RACSequence * _Nonnull&#123;</span><br><span class="line">        return [RACSequence return:@3];</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">RACSequence *bindSequence = [sequence bind:^RACSequenceBindBlock _Nonnull&#123;</span><br><span class="line">    return ^(NSNumber *value, BOOL *stop) &#123;</span><br><span class="line">        NSLog(@&quot;RACSequenceBindBlock: %@&quot;, value);</span><br><span class="line">        value = @(value.integerValue * 2);</span><br><span class="line">        return [RACSequence return:value];</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;BindSequence:  head=(%@) tail=(%@)&quot;, bindSequence.head, bindSequence.tail);</span><br></pre></td></tr></table></figure></p>
+<p>log 获取的 head 有值，获取的 tail 是 RACSequence对象，值暂时都是unresolved<br><code>BindSequence:  head=(2) tail=(&lt;RACDynamicSequence: 0x600000098560&gt;{ name = , head = (unresolved), tail = (unresolved) })</code></p>
+<p>上面的流程中，执行bind方法的block是惰性的， 只有在获取 RACSequence 对象的head以及tail的时候才会执行 LazyDependency,在 LazyDependency内部将value 执行bindBlock(value, &amp;stop),返回 RACUnarySequence 对象 最后通过head属性取出值</p>
+<blockquote>
+<p>注意:<br>在整个 ReactiveCocoa 中，所有的 RACSequence 对象在默认情况下都是惰性的，序列中的值只有在真正需要使用时才会被展开，在其他时间都是 unresolved。</p>
+</blockquote>
+<ul>
+<li>lazySequence 和 eagerSequence</li>
+</ul>
+<p>打印下上面例子的这两个属性值<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">RACSequence *sequence = [RACSequence sequenceWithHeadBlock:^id _Nullable&#123;</span><br><span class="line">       return @1;</span><br><span class="line">   &#125; tailBlock:^RACSequence * _Nonnull&#123;</span><br><span class="line">       return  [RACSequence sequenceWithHeadBlock:^id _Nullable&#123;</span><br><span class="line">           return @2;</span><br><span class="line">       &#125; tailBlock:^RACSequence * _Nonnull&#123;</span><br><span class="line">           return [RACSequence return:@3];</span><br><span class="line">       &#125;];</span><br><span class="line">   &#125;];</span><br><span class="line"></span><br><span class="line">   RACSequence *bindSequence = [sequence bind:^RACSequenceBindBlock _Nonnull&#123;</span><br><span class="line">       return ^(NSNumber *value, BOOL *stop) &#123;</span><br><span class="line">           NSLog(@&quot;RACSequenceBindBlock: %@&quot;, value);</span><br><span class="line">           value = @(value.integerValue * 2);</span><br><span class="line">           return [RACSequence return:value];</span><br><span class="line">       &#125;;</span><br><span class="line">   &#125;];</span><br><span class="line"></span><br><span class="line">   NSLog(@&quot;BindSequence: lazySequence=(%@)&quot;, bindSequence.lazySequence);</span><br><span class="line">   NSLog(@&quot;BindSequence: eagerSequence=(%@)&quot;, bindSequence.eagerSequence);</span><br><span class="line">   NSLog(@&quot;BindSequence: lazySequence=(%@)&quot;, bindSequence.lazySequence);</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">BindSequence: lazySequence=(&lt;RACDynamicSequence: 0x6000000971b0&gt;&#123; name = , head = (unresolved), tail = (unresolved) &#125;)</span><br><span class="line">BindSequence: eagerSequence=(&lt;RACEagerSequence: 0x600000223ec0&gt;&#123; name = , array = (</span><br><span class="line">    2,</span><br><span class="line">    4,</span><br><span class="line">    6</span><br><span class="line">) &#125;)</span><br><span class="line">BindSequence: lazySequence=(&lt;RACDynamicSequence: 0x6000000971b0&gt;&#123; name = , head = 2, tail = &lt;RACDynamicSequence: 0x600000095040&gt;&#123; name = , head = 4, tail = &lt;RACDynamicSequence: 0x6040000939c0&gt;&#123; name = , head = 6, tail = (null) &#125; &#125; &#125;)</span><br></pre></td></tr></table></figure>
+<p>可以看到 lazySequence 一开始还是unresolved ，调用 eagerSequence 之后，lazySequence 就不再是 unresolved</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (RACSequence *)lazySequence &#123;</span><br><span class="line">	return self;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (RACSequence *)eagerSequence &#123;</span><br><span class="line">	return [RACEagerSequence sequenceWithArray:self.array offset:0];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//RACArraySequence.m</span><br><span class="line">+ (RACSequence *)sequenceWithArray:(NSArray *)array offset:(NSUInteger)offset &#123;</span><br><span class="line">	NSCParameterAssert(offset &lt;= array.count);</span><br><span class="line"></span><br><span class="line">	if (offset == array.count) return self.empty;</span><br><span class="line"></span><br><span class="line">	RACArraySequence *seq = [[self alloc] init];</span><br><span class="line">	seq-&gt;_backingArray = [array copy];</span><br><span class="line">	seq-&gt;_offset = offset;</span><br><span class="line">	return seq;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>eager从字面上也可以了解到，就是提前获取所有的数据</p>
+<p>获取eagerSequence方法里面，有个参数<code>self.array</code><br>调用的是RACSequence的方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (NSArray *)array &#123;</span><br><span class="line">	NSMutableArray *array = [NSMutableArray array];</span><br><span class="line">	for (id obj in self) &#123;</span><br><span class="line">		[array addObject:obj];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return [array copy];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>打印self<br><figure class="highlight plain"><figcaption><span>self</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;RACDynamicSequence: 0x604000095cc0&gt;&#123; name = , head = 2, tail =</span><br><span class="line">&lt;RACDynamicSequence: 0x600000282ee0&gt;&#123; name = , head = 4, tail =</span><br><span class="line">&lt;RACDynamicSequence: 0x600000282ad0&gt;&#123; name = , head = 6, tail = (null) &#125; &#125; &#125;</span><br></pre></td></tr></table></figure></p>
+<p>好奇 array的obj是怎么来的，查看调用栈<br>RACSequence 有属性array，遵循协议 NSFastEnumeration ，因此执行forin的时候调用以下方法<br><code>- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id *)stackbuf count:(NSUInteger)len</code><br>该方法遍历获取 self ，通过<br><code>RACSequence *(^getSequence)(void) = ^{
+        return (__bridge RACSequence *)(void *)state-&gt;state;
+    };</code> 将当前对象内部的每一项state转化为sequence,然后获取head</p>
+<ul>
+<li>RACSequence 和 RACSignal</li>
+</ul>
+<p>两者存在区别，但是也可以相互转化</p>
+<ul>
+<li><p>RACSequence 转化为 RACSignal</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">RACSequence *sequence = @[@1,@2,@3].rac_sequence;</span><br><span class="line">RACSignal *signal = sequence.signal;</span><br><span class="line"></span><br><span class="line">[signal subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;signal: %@&quot;,x);</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> signal: 1</span><br><span class="line"> signal: 2</span><br><span class="line"> signal: 3</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+<p>下面看下具体实现源码</p>
+<p>内部是重新创建返回 RACSignal 通过递归调用 RACScheduler block方法，向 RACSubscriber 发送sendNext 直到结束</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">  - (RACSignal *)signal &#123;</span><br><span class="line">return [[self signalWithScheduler:[RACScheduler scheduler]] setNameWithFormat:@&quot;[%@] -signal&quot;, self.name];</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> - (RACSignal *)signalWithScheduler:(RACScheduler *)scheduler &#123;</span><br><span class="line"> 	return [[RACSignal createSignal:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line"> 		__block RACSequence *sequence = self;</span><br><span class="line"></span><br><span class="line"> 		return [scheduler scheduleRecursiveBlock:^(void (^reschedule)(void)) &#123;</span><br><span class="line"> 			if (sequence.head == nil) &#123;</span><br><span class="line"> 				[subscriber sendCompleted];</span><br><span class="line"> 				return;</span><br><span class="line"> 			&#125;</span><br><span class="line"></span><br><span class="line"> 			[subscriber sendNext:sequence.head];</span><br><span class="line"> 			sequence = sequence.tail;</span><br><span class="line"> 			reschedule();</span><br><span class="line"> 		&#125;];</span><br><span class="line"> 	&#125;] setNameWithFormat:@&quot;[%@] -signalWithScheduler: %@&quot;, self.name, scheduler];</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>RACSignal 转化为 RACSequence</p>
+</li>
+</ul>
+<p>内部创建 RACArraySequence ，收集到发出的所有信号<br>  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal = [RACSignal createSignal:^RACDisposable * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">      [subscriber sendNext:@1];</span><br><span class="line">      [subscriber sendNext:@2];</span><br><span class="line">      [subscriber sendNext:@3];</span><br><span class="line">      [subscriber sendCompleted];</span><br><span class="line">      return nil;</span><br><span class="line">  &#125;];</span><br><span class="line">  NSLog(@&quot;%@&quot;, signal.toArray.rac_sequence);</span><br><span class="line">  /*</span><br><span class="line">   &lt;RACArraySequence: 0x600000222ca0&gt;&#123; name = , array = (</span><br><span class="line">   1,</span><br><span class="line">   2,</span><br><span class="line">   3</span><br><span class="line">   ) &#125;</span><br><span class="line">   */</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>Map 、 Filter 、 flattenMap</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">NSArray *array=@[@(2),@(5),@(7),@(15)];</span><br><span class="line">  RACSequence *sequences = [array rac_sequence];</span><br><span class="line">  id mapData = [sequences map:^id(id value) &#123;</span><br><span class="line">      return @([value integerValue] * 2);</span><br><span class="line">  &#125;];</span><br><span class="line">  NSLog(@&quot;序列Map之后的数据:%@&quot;,[mapData array]);</span><br><span class="line"></span><br><span class="line">  id filterData = [sequences filter:^BOOL(id value) &#123;</span><br><span class="line">      return [value integerValue]%2 == 0;</span><br><span class="line">  &#125;];</span><br><span class="line">  NSLog(@&quot;序列Filter之后的数据:%@&quot;,[filterData array]);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  RACSequence *flatmapData = [sequences flattenMap:^__kindof RACSequence * _Nullable(id  _Nullable value) &#123;</span><br><span class="line">       if ([value integerValue]%2 == 0) &#123;</span><br><span class="line">           return [RACSequence sequenceWithHeadBlock:^id _Nullable&#123;</span><br><span class="line">               return value;</span><br><span class="line">           &#125; tailBlock:^RACSequence * _Nonnull&#123;</span><br><span class="line">               return nil;</span><br><span class="line">           &#125;];</span><br><span class="line">       &#125;</span><br><span class="line">       return [RACSequence empty];</span><br><span class="line">   &#125;];</span><br><span class="line">   NSLog(@&quot;先map再filter之后的数据:%@&quot;, flatmapData.eagerSequence);</span><br><span class="line">/*</span><br><span class="line">序列Map之后的数据:(</span><br><span class="line">    4,</span><br><span class="line">    10,</span><br><span class="line">    14,</span><br><span class="line">    30</span><br><span class="line">)</span><br><span class="line">序列Filter之后的数据:(</span><br><span class="line">    2</span><br><span class="line">)</span><br><span class="line">/*</span><br><span class="line"> &lt;RACEagerSequence: 0x6040002241c0&gt;&#123; name = , array = (</span><br><span class="line"> 2</span><br><span class="line"> ) &#125;</span><br><span class="line"> */</span><br><span class="line">*/</span><br></pre></td></tr></table></figure>
+<ul>
+<li>初始化<br>内部实际返回 RACDynamicSequence 对象<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSequence *)sequenceWithHeadBlock:(id (^)(void))headBlock tailBlock:(RACSequence&lt;id&gt; *(^)(void))tailBlock &#123;</span><br><span class="line">	return [[RACDynamicSequence sequenceWithHeadBlock:headBlock tailBlock:tailBlock] setNameWithFormat:@&quot;+sequenceWithHeadBlock:tailBlock:&quot;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/12/ReactiveObjc入门/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -346,10 +893,16 @@
       
         
           
-            <p>ReactiveCocoa，将各种不同的设计模式，代理响应，观察者模式，通知等设计模式的输入，都抽象成为信号，让单一的组件对自己的行为进行控制，简化控制器的负担。<br>ReactiveCocoa的核心是 信号 (RACSignal)</p>
-<h2 id="RACSignal-与-RACStream"><a href="#RACSignal-与-RACStream" class="headerlink" title="RACSignal 与 RACStream"></a>RACSignal 与 RACStream</h2><p>RACSignal 是 RACStream 抽象类 的子类，RACStream 另一个子类是 RACSequence<br><img src="/images/RAC-stream.png" alt="RAC-stream"></p>
-<p>在 ReactiveCocoa 的世界中 所有的消息都是通过信号的方式来传递，原有的设计模式都会简化为一种模型,下面先来介绍RACSignal相关</p>
-<p>RACStream作为抽象类，在实现内部抛出异常</p>
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文源码为 ReactiveObjc 3.1.0 版本</p>
+<p>ReactiveCocoa 开源已久，实现非常高效，对应OC中各种不同的设计模式，如代理响应，观察者模式，通知等模式的输入，都抽象为信号，让组件对自己的行为进行控制，简化控制器的负担。<br>本文作为系列开篇，先介绍最核心的 信号流 RACStream</p>
+<p>RACStream 是抽象类，两个子类分别是 RACSignal 和 RACSequence<br><img src="/images/RAC-stream.png" alt="RAC-stream"></p>
+<p>两者虽然都继承自RACStream,拥有父类的很多共同的特性，但是差异在于 推驱动 和 拉驱动的方式</p>
+<ul>
+<li>RACSignal : 推驱动， 每次当信号中出现新的数据，主动发送给所有的订阅者</li>
+<li>RACSequence : 拉驱动，每次出现新的数据，并不会通知当前的订阅对象，而是当订阅者再次需要使用 RACSequence 对象才会去获取最新的数据，由使用者自己去拉取新数据</li>
+</ul>
+<p>此文先介绍与RACSignal相关的信息</p>
+<h2 id="RACSignal"><a href="#RACSignal" class="headerlink" title="RACSignal"></a>RACSignal</h2><p>RACStream作为抽象类，在实现内部抛出异常</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+ (__kindof RACStream *)empty &#123;</span><br><span class="line">	NSString *reason = [NSString stringWithFormat:@&quot;%@ must be overridden by subclasses&quot;, NSStringFromSelector(_cmd)];</span><br><span class="line">	@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:reason userInfo:nil];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (__kindof RACStream *)bind:(RACStreamBindBlock (^)(void))block;</span><br><span class="line">+ (__kindof RACStream *)return:(id)value;</span><br><span class="line">- (__kindof RACStream *)concat:(RACStream *)stream;</span><br><span class="line">- (__kindof RACStream *)zipWith:(RACStream *)stream;</span><br></pre></td></tr></table></figure>
 <p>RACStream 需要子类实现这些方法，否则抛出异常<br>RACStream的分类Operations，定义了许多方法，只要子类实现以上的抽象方法，这些分类方法都能使用</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)flattenMap:(__kindof RACStream * (^)(id value))block &#123;</span><br><span class="line">	Class class = self.class;</span><br><span class="line"></span><br><span class="line">	return [[self bind:^&#123;</span><br><span class="line">		return ^(id value, BOOL *stop) &#123;</span><br><span class="line">			id stream = block(value) ?: [class empty];</span><br><span class="line">			NSCAssert([stream isKindOfClass:RACStream.class], @&quot;Value returned from -flattenMap: is not a stream: %@&quot;, stream);</span><br><span class="line"></span><br><span class="line">			return stream;</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -flattenMap:&quot;, self.name];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (__kindof RACStream *)flatten</span><br><span class="line">- (__kindof RACStream *)map:(id (^)(id value))block</span><br><span class="line">- (__kindof RACStream *)mapReplace:(id)object</span><br><span class="line">- (__kindof RACStream *)combinePreviousWithStart:(id)start reduce:(id (^)(id previous, id next))reduceBlock</span><br><span class="line">- (__kindof RACStream *)filter:(BOOL (^)(id value))block</span><br><span class="line">- (__kindof RACStream *)ignore:(id)value</span><br><span class="line">- (__kindof RACStream *)reduceEach:(RACReduceBlock)reduceBlock</span><br><span class="line">- (__kindof RACStream *)startWith:(id)value</span><br><span class="line">- (__kindof RACStream *)skip:(NSUInteger)skipCount</span><br><span class="line">- (__kindof RACStream *)take:(NSUInteger)count</span><br><span class="line">+ (__kindof RACStream *)join:(id&lt;NSFastEnumeration&gt;)streams block:(RACStream * (^)(id, id))block</span><br><span class="line">+ (__kindof RACStream *)zip:(id&lt;NSFastEnumeration&gt;)streams</span><br><span class="line">+ (__kindof RACStream *)zip:(id&lt;NSFastEnumeration&gt;)streams reduce:(RACGenericReduceBlock)reduceBlock</span><br><span class="line">+ (__kindof RACStream *)concat:(id&lt;NSFastEnumeration&gt;)streams</span><br><span class="line">- (__kindof RACStream *)scanWithStart:(id)startingValue reduce:(id (^)(id running, id next))reduceBlock</span><br><span class="line">- (__kindof RACStream *)scanWithStart:(id)startingValue reduceWithIndex:(id (^)(id, id, NSUInteger))reduceBlock</span><br><span class="line">- (__kindof RACStream *)takeUntilBlock:(BOOL (^)(id x))predicate</span><br><span class="line">- (__kindof RACStream *)takeWhileBlock:(BOOL (^)(id x))predicate</span><br><span class="line">- (__kindof RACStream *)skipUntilBlock:(BOOL (^)(id x))predicate</span><br><span class="line">- (__kindof RACStream *)skipWhileBlock:(BOOL (^)(id x))predicate</span><br><span class="line">- (__kindof RACStream *)distinctUntilChanged</span><br></pre></td></tr></table></figure>
@@ -377,17 +930,31 @@
 <li>无论何时，如果信号发出错误，都会向订阅者发送 -sendError: 消息。</li>
 </ul>
 <p>这里牵涉到了RACSubscriber，信号的订阅与信息的发送过程主要是由 RACSubscriber 类来处理的，这也是信号的处理过程中最重要的一部分</p>
-<h2 id="RACSubscriber"><a href="#RACSubscriber" class="headerlink" title="RACSubscriber"></a>RACSubscriber</h2><p>下面结合实例讲解下bind的使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal = [RACSignal createSignal:^RACDisposble * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">    [subscriber sendNext:@4];</span><br><span class="line">    return nil;</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">[signal subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">   NSLog(@&quot;signal %@&quot;,x);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure></p>
-<p>创建信号<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSignal *)createSignal:(RACDisposble * (^)(id&lt;RACSubscriber&gt; subscriber))didSubscribe &#123;</span><br><span class="line">	RACDynamicSignal *signal = [[self alloc] init];</span><br><span class="line">	signal-&gt;_didSubscribe = [didSubscribe copy];</span><br><span class="line">	return [signal setNameWithFormat:@&quot;+createSignal:&quot;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>信号创建之后，调用subscribeNext 不只会返回RACDisposble ，还生成一个 RACSubscriber 对象，向这个对象发送消息 -sendNext: 时，就向所有的订阅者发送消息。</p>
-<p>当调用subscribeNext方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (RACDisposble *)subscribeNext:(void (^)(id x))nextBlock &#123;</span><br><span class="line">	NSCParameterAssert(nextBlock != NULL);</span><br><span class="line"></span><br><span class="line">	RACSubscriber *o = [RACSubscriber subscriberWithNext:nextBlock error:NULL completed:NULL];</span><br><span class="line">	return [self subscribe:o];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>初始化方法创建RACSubscriber实例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+ (instancetype)subscriberWithNext:(void (^)(id x))next error:(void (^)(NSError *error))error completed:(void (^)(void))completed &#123;</span><br><span class="line">	RACSubscriber *subscriber = [[self alloc] init];</span><br><span class="line"></span><br><span class="line">	subscriber-&gt;_next = [next copy];</span><br><span class="line">	subscriber-&gt;_error = [error copy];</span><br><span class="line">	subscriber-&gt;_completed = [completed copy];</span><br><span class="line"></span><br><span class="line">	return subscriber;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>创建的RACSubscriber实例需要订阅,subscribe:方法需要被RACSignal的子类实现，如 RACDynamicSignal<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">RACSignal.m</span><br><span class="line">- (RACDisposble *)subscribe:(id&lt;RACSubscriber&gt;)subscriber &#123;</span><br><span class="line">	NSCAssert(NO, @&quot;This method must be overridden by subclasses&quot;);</span><br><span class="line">	return nil;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">RACDynamicSignal.m</span><br><span class="line">- (RACDisposble *)subscribe:(id&lt;RACSubscriber&gt;)subscriber &#123;</span><br><span class="line">	NSCParameterAssert(subscriber != nil);</span><br><span class="line"></span><br><span class="line">	RACCompoundDisposable *disposable = [RACCompoundDisposable compoundDisposable];</span><br><span class="line"></span><br><span class="line">  //将subscriber，signal，disposable绑定</span><br><span class="line">	subscriber = [[RACPassthroughSubscriber alloc] initWithSubscriber:subscriber signal:self disposable:disposable];</span><br><span class="line"></span><br><span class="line">	if (self.didSubscribe != NULL) &#123; //self.didSubscribe是初始化RACSignal时候赋值block</span><br><span class="line">		RACDisposble *schedulingDisposable = [RACScheduler.subscriptionScheduler schedule:^&#123;</span><br><span class="line">      //schedule即执行block()，也就是下面的内容</span><br><span class="line">			RACDisposble *innerDisposable = self.didSubscribe(subscriber);//将订阅者传进去执行结果</span><br><span class="line">			[disposable addDisposable:innerDisposable];</span><br><span class="line">		&#125;];</span><br><span class="line"></span><br><span class="line">		[disposable addDisposable:schedulingDisposable];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return disposable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>调用self.didSubscribe(subscriber)对订阅者发送消息，也就是执行了<br><code>[subscriber sendNext:@4];</code></p>
+<h2 id="RACSubscriber"><a href="#RACSubscriber" class="headerlink" title="RACSubscriber"></a>RACSubscriber</h2><p>下面结合实例讲解下信号订阅的过程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal = [RACSignal createSignal:^RACDisposble * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">    [subscriber sendNext:@4];</span><br><span class="line">    return nil;</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">[signal subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">   NSLog(@&quot;signal %@&quot;,x);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><p>createSignal 创建信号</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSignal *)createSignal:(RACDisposble * (^)(id&lt;RACSubscriber&gt; subscriber))didSubscribe &#123;</span><br><span class="line">	RACDynamicSignal *signal = [[self alloc] init];</span><br><span class="line">	signal-&gt;_didSubscribe = [didSubscribe copy];</span><br><span class="line">	return [signal setNameWithFormat:@&quot;+createSignal:&quot;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调用subscribeNext<br>信号创建之后，调用subscribeNext 不只会返回RACDisposble ，还生成一个 RACSubscriber 对象，向这个对象发送消息 -sendNext: 时，就向所有的订阅者发送消息。</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (RACDisposble *)subscribeNext:(void (^)(id x))nextBlock &#123;</span><br><span class="line">	NSCParameterAssert(nextBlock != NULL);</span><br><span class="line"></span><br><span class="line">	RACSubscriber *o = [RACSubscriber subscriberWithNext:nextBlock error:NULL completed:NULL];</span><br><span class="line">	return [self subscribe:o];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>创建RACSubscriber</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+ (instancetype)subscriberWithNext:(void (^)(id x))next error:(void (^)(NSError *error))error completed:(void (^)(void))completed &#123;</span><br><span class="line">	RACSubscriber *subscriber = [[self alloc] init];</span><br><span class="line"></span><br><span class="line">	subscriber-&gt;_next = [next copy];</span><br><span class="line">	subscriber-&gt;_error = [error copy];</span><br><span class="line">	subscriber-&gt;_completed = [completed copy];</span><br><span class="line"></span><br><span class="line">	return subscriber;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>subscribe<br>创建的RACSubscriber实例需要订阅,subscribe:方法需要被RACSignal的子类实现，如 RACDynamicSignal</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">RACSignal.m</span><br><span class="line">- (RACDisposble *)subscribe:(id&lt;RACSubscriber&gt;)subscriber &#123;</span><br><span class="line">	NSCAssert(NO, @&quot;This method must be overridden by subclasses&quot;);</span><br><span class="line">	return nil;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">RACDynamicSignal.m</span><br><span class="line">- (RACDisposble *)subscribe:(id&lt;RACSubscriber&gt;)subscriber &#123;</span><br><span class="line">	NSCParameterAssert(subscriber != nil);</span><br><span class="line"></span><br><span class="line">	RACCompoundDisposable *disposable = [RACCompoundDisposable compoundDisposable];</span><br><span class="line"></span><br><span class="line">  //将subscriber，signal，disposable绑定</span><br><span class="line">	subscriber = [[RACPassthroughSubscriber alloc] initWithSubscriber:subscriber signal:self disposable:disposable];</span><br><span class="line"></span><br><span class="line">	if (self.didSubscribe != NULL) &#123; //self.didSubscribe是初始化RACSignal时候赋值block</span><br><span class="line">		RACDisposble *schedulingDisposable = [RACScheduler.subscriptionScheduler schedule:^&#123;</span><br><span class="line">      //schedule即执行block()，也就是下面的内容</span><br><span class="line">			RACDisposble *innerDisposable = self.didSubscribe(subscriber);//将订阅者传进去执行结果</span><br><span class="line">			[disposable addDisposable:innerDisposable];</span><br><span class="line">		&#125;];</span><br><span class="line"></span><br><span class="line">		[disposable addDisposable:schedulingDisposable];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return disposable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调用self.didSubscribe(subscriber)对订阅者发送消息，也就是执行了<br><code>[subscriber sendNext:@4];</code></p>
+</li>
+<li><p>sendNext</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#pragma mark RACSubscriber</span><br><span class="line"></span><br><span class="line">- (void)sendNext:(id)value &#123;</span><br><span class="line">	@synchronized (self) &#123;</span><br><span class="line">		void (^nextBlock)(id) = [self.next copy];</span><br><span class="line">		if (nextBlock == nil) return;</span><br><span class="line"></span><br><span class="line">		nextBlock(value);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>sendNext操作，就是将subscribe初始化传进来的block进行copy然后调用参数执行block,所以将参数x传递进来<br>执行下面这句话<br><code>NSLog(@&quot;signal %@&quot;,x);</code><br>剩下 RACDisposble 暂时不管，至此一个信号的创建和订阅完毕</p>
+</li>
+</ul>
+<p>sendNext操作，就是将subscribe初始化传进来的block进行copy然后调用参数执行block,所以将参数x传递进来<br>执行下面这句话<br><code>NSLog(@&quot;signal %@&quot;,x);</code><br>忽略Error和RACDisposble，至此一个信号的创建和订阅完毕</p>
 <p>信号的订阅发送，可以按需定制<br><img src="/images/RAC-发送订阅.png" alt="RAC-发送订阅"></p>
-<p>原理大致相似，此处省略</p>
+<p>RACSignal其他方法的原理大致相似，有兴趣自行研究</p>
 <h2 id="RACDisposble"><a href="#RACDisposble" class="headerlink" title="RACDisposble"></a>RACDisposble</h2><p>在创建信号的时候，会返回一个 RACDisposble ，用于在订阅结束进行必要的清理</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@interface RACDisposable () &#123;</span><br><span class="line">	void * volatile _disposeBlock;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>RACDisposable 最核心的就是 <code>_disposeBlock</code> ，内部的方法都是围绕它进行处理</p>
@@ -404,13 +971,13 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">@interface RACCompoundDisposable () &#123;</span><br><span class="line"></span><br><span class="line">	pthread_mutex_t _mutex;</span><br><span class="line">	RACDisposable *_inlineDisposables[RACCompoundDisposableInlineCount];</span><br><span class="line">	CFMutableArrayRef _disposables;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (instancetype)initWithDisposables:(NSArray *)otherDisposables &#123;</span><br><span class="line">	self = [self init];</span><br><span class="line"></span><br><span class="line">	#if RACCompoundDisposableInlineCount</span><br><span class="line">	[otherDisposables enumerateObjectsUsingBlock:^(RACDisposable *disposable, NSUInteger index, BOOL *stop) &#123;</span><br><span class="line">		self-&gt;_inlineDisposables[index] = disposable;</span><br><span class="line"></span><br><span class="line">		// Stop after this iteration if we&apos;ve reached the end of the inlined</span><br><span class="line">		// array.</span><br><span class="line">		if (index == RACCompoundDisposableInlineCount - 1) *stop = YES;</span><br><span class="line">	&#125;];</span><br><span class="line">	#endif</span><br><span class="line"></span><br><span class="line">	if (otherDisposables.count &gt; RACCompoundDisposableInlineCount) &#123;</span><br><span class="line">		_disposables = RACCreateDisposablesArray();</span><br><span class="line"></span><br><span class="line">		CFRange range = CFRangeMake(RACCompoundDisposableInlineCount, (CFIndex)otherDisposables.count - RACCompoundDisposableInlineCount);</span><br><span class="line">		CFArrayAppendArray(_disposables, (__bridge CFArrayRef)otherDisposables, range);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return self;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>在对象持有的 RACDisposable 不超过 RACCompoundDisposableInlineCount(2) 时，都会存储在 <code>_inlineDisposables</code> 数组中，而更多的实例都会存储在 <code>_disposables</code> 中：</p>
 <p>值得注意的还有一个 addDisposable 方法<br>方法线程安全，如果_inlineDisposables数组内没有存满，先优先存储在inlineDisposbles数组，如果存满，往_disposables拼接数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">- (void)addDisposable:(RACDisposable *)disposable &#123;</span><br><span class="line">	NSCParameterAssert(disposable != self);</span><br><span class="line">	if (disposable == nil || disposable.disposed) return;</span><br><span class="line"></span><br><span class="line">	BOOL shouldDispose = NO;</span><br><span class="line"></span><br><span class="line">	pthread_mutex_lock(&amp;_mutex);</span><br><span class="line">	&#123;</span><br><span class="line">		if (_disposed) &#123;</span><br><span class="line">			shouldDispose = YES;</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			#if RACCompoundDisposableInlineCount</span><br><span class="line">			for (unsigned i = 0; i &lt; RACCompoundDisposableInlineCount; i++) &#123;</span><br><span class="line">				if (_inlineDisposables[i] == nil) &#123;</span><br><span class="line">					_inlineDisposables[i] = disposable;</span><br><span class="line">					goto foundSlot;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			#endif</span><br><span class="line"></span><br><span class="line">			if (_disposables == NULL) _disposables = RACCreateDisposablesArray();</span><br><span class="line">			CFArrayAppendValue(_disposables, (__bridge void *)disposable);</span><br><span class="line"></span><br><span class="line">			if (RACCOMPOUNDDISPOSABLE_ADDED_ENABLED()) &#123;</span><br><span class="line">				RACCOMPOUNDDISPOSABLE_ADDED(self.description.UTF8String, disposable.description.UTF8String, CFArrayGetCount(_disposables) + RACCompoundDisposableInlineCount);</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">		#if RACCompoundDisposableInlineCount</span><br><span class="line">		foundSlot:;</span><br><span class="line">		#endif</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	pthread_mutex_unlock(&amp;_mutex);</span><br><span class="line"></span><br><span class="line">	if (shouldDispose) [disposable dispose];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="订阅的销毁"><a href="#订阅的销毁" class="headerlink" title="订阅的销毁"></a>订阅的销毁</h2><p>在了解了相关RACDisposble之后，再来看下bind方法中关于这方面发处理,以下是缩略版<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)bind:(RACSignalBindBlock (^)(void))block &#123;</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">	return [[RACSignal createSignal:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		RACSignalBindBlock bindingBlock = block();</span><br><span class="line"></span><br><span class="line">		__block volatile int32_t signalCount = 1;   // indicates self</span><br><span class="line"></span><br><span class="line">		RACCompoundDisposable *compoundDisposable = [RACCompoundDisposable compoundDisposable];</span><br><span class="line"></span><br><span class="line">		void (^completeSignal)(RACDisposable *) = ...</span><br><span class="line"></span><br><span class="line">		void (^addSignal)(RACSignal *) = ...</span><br><span class="line"></span><br><span class="line">    RACSerialDisposable *selfDisposable = [[RACSerialDisposable alloc] init];</span><br><span class="line">    [compoundDisposable addDisposable:selfDisposable];</span><br><span class="line"></span><br><span class="line">    RACDisposable *bindingDisposable = [self subscribeNext:^(id x) &#123;</span><br><span class="line"></span><br><span class="line">      if (compoundDisposable.disposed) return;</span><br><span class="line"></span><br><span class="line">      BOOL stop = NO;</span><br><span class="line">      id signal = bindingBlock(x, &amp;stop);</span><br><span class="line"></span><br><span class="line">        if (signal != nil) addSignal(signal);</span><br><span class="line">        if (signal == nil || stop) &#123;</span><br><span class="line">          [selfDisposable dispose];</span><br><span class="line">          completeSignal(selfDisposable);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; completed:^&#123;</span><br><span class="line">        completeSignal(selfDisposable);</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">		selfDisposable.disposable = bindingDisposable;</span><br><span class="line">		return compoundDisposable;</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -bind:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="订阅的销毁"><a href="#订阅的销毁" class="headerlink" title="订阅的销毁"></a>订阅的销毁</h2><p>在了解了相关RACDisposble之后，再来看下bind方法中关于这方面发处理,以下是缩略版<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)bind:(RACSignalBindBlock (^)(void))block &#123;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    return [[RACSignal createSignal:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">        RACSignalBindBlock bindingBlock = block();</span><br><span class="line"></span><br><span class="line">        __block volatile int32_t signalCount = 1;   // indicates self</span><br><span class="line"></span><br><span class="line">        RACCompoundDisposable *compoundDisposable = [RACCompoundDisposable compoundDisposable];</span><br><span class="line"></span><br><span class="line">        void (^completeSignal)(RACDisposable *) = ...</span><br><span class="line"></span><br><span class="line">        void (^addSignal)(RACSignal *) = ...</span><br><span class="line"></span><br><span class="line">        RACSerialDisposable *selfDisposable = [[RACSerialDisposable alloc] init];</span><br><span class="line">        [compoundDisposable addDisposable:selfDisposable];</span><br><span class="line"></span><br><span class="line">        RACDisposable *bindingDisposable = [self subscribeNext:^(id x) &#123;</span><br><span class="line"></span><br><span class="line">            if (compoundDisposable.disposed) return;</span><br><span class="line">            BOOL stop = NO;</span><br><span class="line">            id signal = bindingBlock(x, &amp;stop);</span><br><span class="line"></span><br><span class="line">            if (signal != nil) addSignal(signal);</span><br><span class="line">            if (signal == nil || stop) &#123;</span><br><span class="line">                [selfDisposable dispose];</span><br><span class="line">                completeSignal(selfDisposable);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;&#125; completed:^&#123;</span><br><span class="line">            completeSignal(selfDisposable);</span><br><span class="line">        &#125;];</span><br><span class="line"></span><br><span class="line">        selfDisposable.disposable = bindingDisposable;</span><br><span class="line">        return compoundDisposable;</span><br><span class="line">    &#125;] setNameWithFormat:@&quot;[%@] -bind:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>简化后，可以观察到，信号的清理交给了 RACCompoundDisposable 实例，向 RACCompoundDisposable添加了 RACSerialDisposable ，将信号订阅后返回的 RACDisposable 交给了 RACSerialDisposable</p>
 <p>completeSignal 和  addSignal 负责新信号创建之后的清理<br>当订阅新信号，产生的 RACSerialDisposable 添加进 RACCompoundDisposable 实例<br>当信号完成，compoundDisposable进行清理工作</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">void (^completeSignal)(RACDisposable *) = ^(RACDisposable *finishedDisposable) &#123;</span><br><span class="line">    if (OSAtomicDecrement32Barrier(&amp;signalCount) == 0) &#123;</span><br><span class="line">      [subscriber sendCompleted];</span><br><span class="line">      [compoundDisposable dispose];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">      [compoundDisposable removeDisposable:finishedDisposable];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  void (^addSignal)(RACSignal *) = ^(RACSignal *signal) &#123;</span><br><span class="line">    OSAtomicIncrement32Barrier(&amp;signalCount);</span><br><span class="line"></span><br><span class="line">    RACSerialDisposable *selfDisposable = [[RACSerialDisposable alloc] init];</span><br><span class="line">    [compoundDisposable addDisposable:selfDisposable];</span><br><span class="line"></span><br><span class="line">    RACDisposable *disposable = [signal subscribeNext:^(id x) &#123;</span><br><span class="line">      [subscriber sendNext:x];</span><br><span class="line">    &#125; error:^(NSError *error) &#123;</span><br><span class="line">      [compoundDisposable dispose];</span><br><span class="line">      [subscriber sendError:error];</span><br><span class="line">    &#125; completed:^&#123;</span><br><span class="line">      @autoreleasepool &#123;</span><br><span class="line">        completeSignal(selfDisposable);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    selfDisposable.disposable = disposable;</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
-<p>下面结合事例code看下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal = [RACSignal createSignal:^RACDisposable * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">    [subscriber sendNext:@1];</span><br><span class="line">    [subscriber sendNext:@2];</span><br><span class="line">    [subscriber sendCompleted];</span><br><span class="line">    return [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">        NSLog(@&quot;Origin Signal Dispose&quot;);</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">RACSignal *blockSignal = [signal bind:^RACSignalBindBlock _Nonnull&#123;</span><br><span class="line">    return  ^(NSNumber *value, BOOL *stop) &#123;</span><br><span class="line">        value = @(value.integerValue * value.integerValue);</span><br><span class="line"></span><br><span class="line">        return [RACSignal createSignal:^RACDisposable * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">            for (int i=0; i&lt;value.integerValue; i++) &#123;</span><br><span class="line">                [subscriber sendNext:value];</span><br><span class="line">            &#125;</span><br><span class="line">            [subscriber sendCompleted];</span><br><span class="line">            return [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">                NSLog(@&quot;Binding Signal Dispose&quot;);</span><br><span class="line">            &#125;];</span><br><span class="line">        &#125;];</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">[blockSignal subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;signal %@&quot;,x);</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">打印log</span><br><span class="line">ReactiveObjcTest[17315:3506059] signal 1</span><br><span class="line">ReactiveObjcTest[17315:3506059] Binding Signal Dispose</span><br><span class="line">ReactiveObjcTest[17315:3506059] signal 4</span><br><span class="line">ReactiveObjcTest[17315:3506059] signal 4</span><br><span class="line">ReactiveObjcTest[17315:3506059] signal 4</span><br><span class="line">ReactiveObjcTest[17315:3506059] signal 4</span><br><span class="line">ReactiveObjcTest[17315:3506059] Binding Signal Dispose</span><br><span class="line">ReactiveObjcTest[17315:3506059] Origin Signal Dispose</span><br></pre></td></tr></table></figure></p>
+<h2 id="举栗子"><a href="#举栗子" class="headerlink" title="举栗子"></a>举栗子</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal = [RACSignal createSignal:^RACDisposable * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">    [subscriber sendNext:@1];</span><br><span class="line">    [subscriber sendNext:@2];</span><br><span class="line">    [subscriber sendCompleted];</span><br><span class="line">    return [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">        NSLog(@&quot;Origin Signal Dispose&quot;);</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">RACSignal *blockSignal = [signal bind:^RACSignalBindBlock _Nonnull&#123;</span><br><span class="line">    return  ^(NSNumber *value, BOOL *stop) &#123;</span><br><span class="line">        value = @(value.integerValue * value.integerValue);</span><br><span class="line"></span><br><span class="line">        return [RACSignal createSignal:^RACDisposable * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">            for (int i=0; i&lt;value.integerValue; i++) &#123;</span><br><span class="line">                [subscriber sendNext:value];</span><br><span class="line">            &#125;</span><br><span class="line">            [subscriber sendCompleted];</span><br><span class="line">            return [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">                NSLog(@&quot;Binding Signal Dispose&quot;);</span><br><span class="line">            &#125;];</span><br><span class="line">        &#125;];</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">[blockSignal subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;signal %@&quot;,x);</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">打印log</span><br><span class="line">ReactiveObjcTest[17315:3506059] signal 1</span><br><span class="line">ReactiveObjcTest[17315:3506059] Binding Signal Dispose</span><br><span class="line">ReactiveObjcTest[17315:3506059] signal 4</span><br><span class="line">ReactiveObjcTest[17315:3506059] signal 4</span><br><span class="line">ReactiveObjcTest[17315:3506059] signal 4</span><br><span class="line">ReactiveObjcTest[17315:3506059] signal 4</span><br><span class="line">ReactiveObjcTest[17315:3506059] Binding Signal Dispose</span><br><span class="line">ReactiveObjcTest[17315:3506059] Origin Signal Dispose</span><br></pre></td></tr></table></figure>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>RACSignal 相关的类及代码较简洁，方法也不是很复杂，但是之前并没有深入学习，理解还是需要分析的。<br>结合实际事例，查看调用栈分析情况容易入手，<br>使用上看着也方便，但是内部创建了多个实例对象，信号、订阅者、信号清理机制等，看着有点绕，但是使用block非常方便调用</p>
-<p>信号使用过程:<br>先订阅，然后发送信息，订阅者接收到消息<br>subscribeNext -&gt;产生Subscriber-&gt; sendNext -&gt;所有的Subscriber接收到消息</p>
+<p>RACSignal 使用过程:<br>先订阅，然后发送信息，订阅者接收到消息<br>创建信号-&gt;subscribeNext -&gt;产生Subscriber-&gt; 执行信号创建时候存储的block-&gt; sendNext -&gt; 所有的Subscriber接收到消息</p>
 <h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/ReactiveObjC/RACSignal.md" target="_blank" rel="noopener">https://github.com/Draveness/analyze/blob/master/contents/ReactiveObjC/RACSignal.md</a></p>
 
           
@@ -889,7 +1456,7 @@
 </ul>
 <p>至此，准备工作已经结束，下面进行调试工作<br>当点击按钮的时候，查看到左边的函数调用栈，消息转发进入<strong>ASPECTS_ARE_BEING_CALLED</strong>这里是关键<br>之前说过，当前class已经被修改isa为子类，子类的selector方法被hook了IMP，消息进入转发流程<br><img src="/images/Aspects_hook原selector.png" alt="hook原selector"></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">// This is the swizzled forwardInvocation: method.</span><br><span class="line">static void __ASPECTS_ARE_BEING_CALLED__(__unsafe_unretained NSObject *self, SEL selector, NSInvocation *invocation) &#123;</span><br><span class="line">    ...</span><br><span class="line">    SEL originalSelector = invocation.selector;</span><br><span class="line">	  SEL aliasSelector = aspect_aliasForSelector(invocation.selector);</span><br><span class="line">    invocation.selector = aliasSelector;</span><br><span class="line">    AspectsContainer *objectContainer = objc_getAssociatedObject(self, aliasSelector);</span><br><span class="line">    AspectsContainer *classContainer = aspect_getContainerForClass(object_getClass(self), aliasSelector);</span><br><span class="line">    AspectInfo *info = [[AspectInfo alloc] initWithInstance:self invocation:invocation];</span><br><span class="line">    NSArray *aspectsToRemove = nil;</span><br><span class="line"></span><br><span class="line">    // Before hooks.</span><br><span class="line">    aspect_invoke(classContainer.beforeAspects, info);</span><br><span class="line">    aspect_invoke(objectContainer.beforeAspects, info);</span><br><span class="line"></span><br><span class="line">    //子类执行 aliasSelector ，也就是原selector对应的method</span><br><span class="line">    // Instead hooks.</span><br><span class="line">    BOOL respondsToAlias = YES;</span><br><span class="line">    if (objectContainer.insteadAspects.count || classContainer.insteadAspects.count) &#123;</span><br><span class="line">        aspect_invoke(classContainer.insteadAspects, info);</span><br><span class="line">        aspect_invoke(objectContainer.insteadAspects, info);</span><br><span class="line">    &#125;else &#123;</span><br><span class="line">        Class klass = object_getClass(invocation.target);</span><br><span class="line">        do &#123;</span><br><span class="line">            if ((respondsToAlias = [klass instancesRespondToSelector:aliasSelector])) &#123;</span><br><span class="line">                [invocation invoke];</span><br><span class="line">                break;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;while (!respondsToAlias &amp;&amp; (klass = class_getSuperclass(klass)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //执行block的方法</span><br><span class="line">    // After hooks.</span><br><span class="line">    aspect_invoke(classContainer.afterAspects, info);</span><br><span class="line">    aspect_invoke(objectContainer.afterAspects, info);</span><br><span class="line"></span><br><span class="line">    //如果没有实现alias方法，执行原来的selector</span><br><span class="line">    if (!respondsToAlias) &#123;</span><br><span class="line">        invocation.selector = originalSelector;</span><br><span class="line">        SEL originalForwardInvocationSEL = NSSelectorFromString(AspectsForwardInvocationSelectorName);</span><br><span class="line">        if ([self respondsToSelector:originalForwardInvocationSEL]) &#123;</span><br><span class="line">            ((void( *)(id, SEL, NSInvocation *))objc_msgSend)(self, originalForwardInvocationSEL, invocation);</span><br><span class="line">        &#125;else &#123;</span><br><span class="line">            [self doesNotRecognizeSelector:invocation.selector];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Remove any hooks that are queued for deregistration.</span><br><span class="line">    [aspectsToRemove makeObjectsPerformSelector:@selector(remove)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>宏aspect_invoke<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#define aspect_invoke(aspects, info) \</span><br><span class="line">for (AspectIdentifier *aspect in aspects) &#123;\</span><br><span class="line">    [aspect invokeWithInfo:info];\</span><br><span class="line">    if (aspect.options &amp; AspectOptionAutomaticRemoval) &#123; \</span><br><span class="line">        aspectsToRemove = [aspectsToRemove?:@[] arrayByAddingObject:aspect]; \</span><br><span class="line">    &#125; \</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//调用AspectIdentifier的实例方法</span><br><span class="line">- (BOOL)invokeWithInfo:(id&lt;AspectInfo&gt;)info &#123;</span><br><span class="line">    NSInvocation *blockInvocation = [NSInvocation invocationWithMethodSignature:self.blockSignature];</span><br><span class="line">    NSInvocation *originalInvocation = info.originalInvocation;</span><br><span class="line">    NSUInteger numberOfArguments = self.blockSignature.numberOfArguments;</span><br><span class="line"></span><br><span class="line">    // Be extra paranoid. We already check that on hook registration.</span><br><span class="line">    if (numberOfArguments &gt; originalInvocation.methodSignature.numberOfArguments) &#123;</span><br><span class="line">        AspectLogError(@&quot;Block has too many arguments. Not calling %@&quot;, info);</span><br><span class="line">        return NO;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // The `self` of the block will be the AspectInfo. Optional.</span><br><span class="line">    if (numberOfArguments &gt; 1) &#123;</span><br><span class="line">        [blockInvocation setArgument:&amp;info atIndex:1];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	void *argBuf = NULL;</span><br><span class="line">    for (NSUInteger idx = 2; idx &lt; numberOfArguments; idx++) &#123;</span><br><span class="line">        const char *type = [originalInvocation.methodSignature getArgumentTypeAtIndex:idx];</span><br><span class="line">		NSUInteger argSize;</span><br><span class="line">		NSGetSizeAndAlignment(type, &amp;argSize, NULL);</span><br><span class="line"></span><br><span class="line">		if (!(argBuf = reallocf(argBuf, argSize))) &#123;</span><br><span class="line">            AspectLogError(@&quot;Failed to allocate memory for block invocation.&quot;);</span><br><span class="line">			return NO;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		[originalInvocation getArgument:argBuf atIndex:idx];</span><br><span class="line">		[blockInvocation setArgument:argBuf atIndex:idx];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    [blockInvocation invokeWithTarget:self.block]; //执行blockInvocation</span><br><span class="line"></span><br><span class="line">    if (argBuf != NULL) &#123;</span><br><span class="line">        free(argBuf);</span><br><span class="line">    &#125;</span><br><span class="line">    return YES;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>宏aspect_invoke<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#define aspect_invoke(aspects, info) \</span><br><span class="line">for (AspectIdentifier *aspect in aspects) &#123;\</span><br><span class="line">    [aspect invokeWithInfo:info];\</span><br><span class="line">    if (aspect.options &amp; AspectOptionAutomaticRemoval) &#123; \</span><br><span class="line">        aspectsToRemove = [aspectsToRemove?:@[] arrayByAddingObject:aspect]; \</span><br><span class="line">    &#125; \</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//调用AspectIdentifier的实例方法</span><br><span class="line">- (BOOL)invokeWithInfo:(id&lt;AspectInfo&gt;)info &#123;</span><br><span class="line">    NSInvocation *blockInvocation = [NSInvocation invocationWithMethodSignature:self.blockSignature];</span><br><span class="line">    NSInvocation *originalInvocation = info.originalInvocation;</span><br><span class="line">    NSUInteger numberOfArguments = self.blockSignature.numberOfArguments;</span><br><span class="line"></span><br><span class="line">    // Be extra paranoid. We already check that on hook registration.</span><br><span class="line">    if (numberOfArguments &gt; originalInvocation.methodSignature.numberOfArguments) &#123;</span><br><span class="line">        AspectLogError(@&quot;Block has too many arguments. Not calling %@&quot;, info);</span><br><span class="line">        return NO;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // The `self` of the block will be the AspectInfo. Optional.</span><br><span class="line">    if (numberOfArguments &gt; 1) &#123;</span><br><span class="line">        [blockInvocation setArgument:&amp;info atIndex:1];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	  void *argBuf = NULL;</span><br><span class="line">    for (NSUInteger idx = 2; idx &lt; numberOfArguments; idx++) &#123;</span><br><span class="line">        const char *type = [originalInvocation.methodSignature getArgumentTypeAtIndex:idx];</span><br><span class="line">		NSUInteger argSize;</span><br><span class="line">		NSGetSizeAndAlignment(type, &amp;argSize, NULL);</span><br><span class="line"></span><br><span class="line">		if (!(argBuf = reallocf(argBuf, argSize))) &#123;</span><br><span class="line">            AspectLogError(@&quot;Failed to allocate memory for block invocation.&quot;);</span><br><span class="line">			return NO;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		[originalInvocation getArgument:argBuf atIndex:idx];</span><br><span class="line">		[blockInvocation setArgument:argBuf atIndex:idx];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    [blockInvocation invokeWithTarget:self.block]; //执行blockInvocation</span><br><span class="line"></span><br><span class="line">    if (argBuf != NULL) &#123;</span><br><span class="line">        free(argBuf);</span><br><span class="line">    &#125;</span><br><span class="line">    return YES;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>至此流程调用分析结束</p>
 <h2 id="Aspects原理"><a href="#Aspects原理" class="headerlink" title="Aspects原理"></a>Aspects原理</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">id objc_msgSend(id self, SEL op, ...) &#123;</span><br><span class="line">    if (!self) return nil;</span><br><span class="line">    IMP imp = class_getMethodImplementation(self-&gt;isa, SEL op);</span><br><span class="line">    imp(self, op, ...); //调用这个函数，伪代码...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//查找IMP</span><br><span class="line">IMP class_getMethodImplementation(Class cls, SEL sel) &#123;</span><br><span class="line">    if (!cls || !sel) return nil;</span><br><span class="line">    IMP imp = lookUpImpOrNil(cls, sel);</span><br><span class="line">    if (!imp) return _objc_msgForward; //_objc_msgForward 用于消息转发</span><br><span class="line">    return imp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>消息的发送最终走到objc_msgSend<br>消息转发流程图:<br><img src="/images/Aspects_SEL invoke流程图.png" alt="Aspects_SEL invoke流程图"></p>
@@ -1429,456 +1996,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/03/Objc关联对象的实现/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/02/03/Objc关联对象的实现/" itemprop="url">Objc关联对象的实现</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-03T15:36:52+08:00">
-                2018-02-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>今天主要来聊一聊以下三个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">id objc_getAssociatedObject(id object, const void *key) &#123;</span><br><span class="line">    return _object_get_associative_reference(object, (void *)key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void objc_setAssociatedObject(id object, const void *key, id value, objc_AssociationPolicy policy) &#123;</span><br><span class="line">    _object_set_associative_reference(object, (void *)key, value, policy);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void objc_removeAssociatedObjects(id object)</span><br><span class="line">&#123;</span><br><span class="line">    if (object &amp;&amp; object-&gt;hasAssociatedObjects()) &#123;</span><br><span class="line">        _object_remove_assocations(object);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>分类添加属性的时候，由于系统没有办法自动将属性添加set和get方法，需要自动实现，就需要以上的方法来实现</p>
-<h2 id="事例code"><a href="#事例code" class="headerlink" title="事例code"></a>事例code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">@interface Dog: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation Dog</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface Dog(DanceCategory)</span><br><span class="line">@property (nonatomic, strong) NSString *categoryProperty;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Dog(DanceCategory)</span><br><span class="line">- (NSString *)categoryProperty</span><br><span class="line">&#123;</span><br><span class="line">    return objc_getAssociatedObject(self, _cmd);</span><br><span class="line">&#125;</span><br><span class="line">- (void)setCategoryProperty:(NSString *)categoryProperty</span><br><span class="line">&#123;</span><br><span class="line">    objc_setAssociatedObject(self, @selector(categoryProperty), categoryProperty, OBJC_ASSOCIATION_RETAIN_NONATOMIC);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        Dog *dd = [[Dog alloc] init];</span><br><span class="line">        dd.categoryProperty = @&quot;分类属性&quot;;</span><br><span class="line">        dd.categoryProperty;</span><br><span class="line">        objc_removeAssociatedObjects(dd);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><p>先看下设置属性的方法调用顺序<br><img src="/images/分类属性-调用堆栈.png" alt="调用堆栈.png"></p>
-<h3 id="object-set-associative-reference"><a href="#object-set-associative-reference" class="headerlink" title="object_set_associative_reference"></a>object_set_associative_reference</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy) &#123;</span><br><span class="line"></span><br><span class="line">    ObjcAssociation old_association(0, nil); //生成旧对象</span><br><span class="line">    id new_value = value ? acquireValue(value, policy) : nil;  </span><br><span class="line">    &#123;</span><br><span class="line">        AssociationsManager manager;</span><br><span class="line">        AssociationsHashMap &amp;associations(manager.associations());</span><br><span class="line">        disguised_ptr_t disguised_object = DISGUISE(object);</span><br><span class="line">        if (new_value) &#123;</span><br><span class="line">            AssociationsHashMap::iterator i = associations.find(disguised_object);</span><br><span class="line">            if (i != associations.end()) &#123;</span><br><span class="line">                // secondary table exists</span><br><span class="line">                ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">                ObjectAssociationMap::iterator j = refs-&gt;find(key);</span><br><span class="line">                if (j != refs-&gt;end()) &#123;</span><br><span class="line">                    old_association = j-&gt;second; //如果存在之前的值，给旧对象赋值</span><br><span class="line">                    j-&gt;second = ObjcAssociation(policy, new_value);</span><br><span class="line">                &#125; else &#123;</span><br><span class="line">                    (*refs)[key] = ObjcAssociation(policy, new_value);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                // create the new association (first time).</span><br><span class="line">                ObjectAssociationMap *refs = new ObjectAssociationMap;</span><br><span class="line">                associations[disguised_object] = refs;</span><br><span class="line">                (*refs)[key] = ObjcAssociation(policy, new_value);</span><br><span class="line">                object-&gt;setHasAssociatedObjects();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            // setting the association to nil breaks the association.</span><br><span class="line">            AssociationsHashMap::iterator i = associations.find(disguised_object);</span><br><span class="line">            if (i !=  associations.end()) &#123;</span><br><span class="line">                ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">                ObjectAssociationMap::iterator j = refs-&gt;find(key);</span><br><span class="line">                if (j != refs-&gt;end()) &#123;</span><br><span class="line">                    old_association = j-&gt;second;</span><br><span class="line">                    refs-&gt;erase(j);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    // 如果旧对象有值，进行释放</span><br><span class="line">    if (old_association.hasValue()) ReleaseValue()(old_association);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>以上主要操作:</p>
-<ul>
-<li>初始生成old_association，便于存储旧对象以及清除旧值</li>
-<li>acquireValue 方法内部是对value进行copy或者retain</li>
-<li>生成唯一的AssociationsManager 和 AssociationsHashMap</li>
-<li>disguised_object 是根据object生成的，下面需要根据newValue的值是否为空来处理两种情况</li>
-</ul>
-<ol>
-<li><p>newValue 存在</p>
-<ul>
-<li>在AssociationsHashMap中根据disguised_object作为key去取对应的object的AssociationsHashMap</li>
-<li><p>如果map存在</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ObjectAssociationMap *refs = i-&gt;second</span><br><span class="line">ObjectAssociationMap::iterator j = refs-&gt;find(key);</span><br><span class="line">if (j != refs-&gt;end()) &#123; //如果存在旧值，将旧值赋值给old_association</span><br><span class="line">    old_association = j-&gt;second;</span><br><span class="line">    j-&gt;second = ObjcAssociation(policy, new_value);//然后重新赋值</span><br><span class="line">&#125; else &#123; //如果不存在旧值，给map表设置key和value</span><br><span class="line">    (*refs)[key] = ObjcAssociation(policy, new_value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>如果map不存在，新生成ObjectAssociationMap</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ObjectAssociationMap *refs = new ObjectAssociationMap; //新生成ObjectAssociationMap</span><br><span class="line">associations[disguised_object] = refs; //将disguised_object作为key ,value是ObjectAssociationMap</span><br><span class="line">(*refs)[key] = ObjcAssociation(policy, new_value) //在ObjectAssociationMap中插入key和对应的ObjcAssociation</span><br><span class="line">object-&gt;setHasAssociatedObjects();//标记对象对应的标记位</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>newValue 为空 说明需要将对应的map表移除</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">AssociationsHashMap::iterator i = associations.find(disguised_object);</span><br><span class="line">if (i !=  associations.end()) &#123; //如果存在该object对应的map表，</span><br><span class="line">    ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">    ObjectAssociationMap::iterator j = refs-&gt;find(key); //从ObjectAssociationMap表中取出对应的key所对应的association</span><br><span class="line">    if (j != refs-&gt;end()) &#123;</span><br><span class="line">        old_association = j-&gt;second; //将存在的值赋值给old_association</span><br><span class="line">        refs-&gt;erase(j); //从表中将key对应的ObjcAssociation进行擦除</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<ul>
-<li>最后 如果存在旧值，将旧值释放即可<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (old_association.hasValue()) ReleaseValue()(old_association);</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h3 id="object-get-associative-reference"><a href="#object-get-associative-reference" class="headerlink" title="object_get_associative_reference"></a>object_get_associative_reference</h3><p><img src="/images/分类属性-get.png" alt="getAssociation堆栈图"><br>上图是调用对象属性的get方法执行的堆栈结构图</p>
-<p>流程比上面的方法相对简单<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">id _object_get_associative_reference(id object, void *key) &#123;</span><br><span class="line">    id value = nil;</span><br><span class="line">    uintptr_t policy = OBJC_ASSOCIATION_ASSIGN;</span><br><span class="line">    &#123;</span><br><span class="line">        AssociationsManager manager;</span><br><span class="line">        AssociationsHashMap &amp;associations(manager.associations());</span><br><span class="line">        disguised_ptr_t disguised_object = DISGUISE(object);</span><br><span class="line">        AssociationsHashMap::iterator i = associations.find(disguised_object); //从AssociationsHashMap表中查找对象</span><br><span class="line">        if (i != associations.end()) &#123; //如果存在对象的话</span><br><span class="line">            ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">            ObjectAssociationMap::iterator j = refs-&gt;find(key); //从对象对应的ObjectAssociationMap表中根据key取出对应的value</span><br><span class="line">            if (j != refs-&gt;end()) &#123; //如果存在value</span><br><span class="line">                ObjcAssociation &amp;entry = j-&gt;second;</span><br><span class="line">                value = entry.value(); //将存在的ObjcAssociation属性对应赋值</span><br><span class="line">                policy = entry.policy();</span><br><span class="line">                if (policy &amp; OBJC_ASSOCIATION_GETTER_RETAIN) ((id(*)(id, SEL))objc_msgSend)(value, SEL_retain);   //对value进行retain</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    if (value &amp;&amp; (policy &amp; OBJC_ASSOCIATION_GETTER_AUTORELEASE)) &#123;</span><br><span class="line">        ((id(*)(id, SEL))objc_msgSend)(value, SEL_autorelease);</span><br><span class="line">    &#125;</span><br><span class="line">    return value; //最后将关联对象 ObjcAssociation 的值进行返回</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="objc-removeAssociatedObjects"><a href="#objc-removeAssociatedObjects" class="headerlink" title="objc_removeAssociatedObjects"></a>objc_removeAssociatedObjects</h2><p>先来看下调用remove方法的函数调用<br><img src="/images/分类属性-remove.png" alt="remove"><br>打印isa的结构，可以看到对象的has_assoc 标记为1，也就是存在关联对象</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">void _object_remove_assocations(id object) &#123;</span><br><span class="line">    vector&lt; ObjcAssociation,ObjcAllocator&lt;ObjcAssociation&gt; &gt; elements;</span><br><span class="line">    &#123;</span><br><span class="line">        AssociationsManager manager;</span><br><span class="line">        AssociationsHashMap &amp;associations(manager.associations());</span><br><span class="line">        if (associations.size() == 0) return; //如果不存在 返回</span><br><span class="line">        disguised_ptr_t disguised_object = DISGUISE(object);</span><br><span class="line">        AssociationsHashMap::iterator i = associations.find(disguised_object); //查找object对应的表</span><br><span class="line">        if (i != associations.end()) &#123;</span><br><span class="line">            // copy all of the associations that need to be removed.</span><br><span class="line">            ObjectAssociationMap *refs = i-&gt;second; //存在的话取出对应的object表</span><br><span class="line">            for (ObjectAssociationMap::iterator j = refs-&gt;begin(), end = refs-&gt;end(); j != end; ++j) &#123;</span><br><span class="line">                elements.push_back(j-&gt;second);//将表的元素存入elements</span><br><span class="line">            &#125;</span><br><span class="line">            delete refs; //移除object对应的表</span><br><span class="line">            associations.erase(i); //同时在AssociationsHashMap表中将object也移除</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    // the calls to releaseValue() happen outside of the lock.</span><br><span class="line">    for_each(elements.begin(), elements.end(), ReleaseValue()); //通过循环将elements元素都进行释放</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文就是对于如何给分类添加属性操作进行解读</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/02/KVO-实现原理分析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/02/02/KVO-实现原理分析/" itemprop="url">KVO 实现原理分析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-02T11:59:38+08:00">
-                2018-02-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>在之前，一直以为类的isa结构图就是那张很经典的图，但是才发现有个特例情况下，有点变化</p>
-<h2 id="code"><a href="#code" class="headerlink" title="code"></a>code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">  PattyCat *pcat = [[PattyCat alloc] init];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   NSLog(@&quot;%p--pcat的isa:%p--%@-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910--pcat的isa:0x10408c870--PattyCat-Cat-Cat</span><br><span class="line">    */</span><br><span class="line">   [pcat addObserver:self</span><br><span class="line">         forKeyPath:@&quot;address&quot;</span><br><span class="line">         options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld</span><br><span class="line">         context:nil];</span><br><span class="line">   pcat.address = @&quot;有地址了&quot;;</span><br><span class="line">//    NSLog(@&quot;%@--%p&quot;,(object_getClass([PattyCat class])),object_getClass(pcat));</span><br><span class="line"></span><br><span class="line">   NSLog(@&quot;%p---pcat的isa:%p-新的子类是:%@-新的子类的isa:%p-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),object_getClass(object_getClass(pcat)),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910---pcat的isa:0x7b24000260a0-新的子类是:NSKVONotifying_PattyCat-新的子类的isa:0x7b2400026130-Cat-PattyCat</span><br><span class="line">    */</span><br><span class="line">   [pcat removeObserver:self forKeyPath:@&quot;address&quot;];</span><br><span class="line"></span><br><span class="line">  NSLog(@&quot;%p--pcat的isa:%p--%@-%@-%@&quot;,(object_getClass([PattyCat class])),object_getClass(pcat),object_getClass(pcat),pcat.superclass,[object_getClass(pcat) superclass]);</span><br><span class="line">   /*</span><br><span class="line">    0x10408c910--pcat的isa:0x10408c870--PattyCat-Cat-Cat</span><br><span class="line">    */</span><br></pre></td></tr></table></figure>
-<p>在当前类中引入对象pcat,监听它的KVO变化之后，然后移除KVO，对象的isa以及superClass前后的变化如上</p>
-<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>苹果文档介绍</p>
-<blockquote>
-<p>Automatic key-value observing is implemented using a technique called isa-swizzling… When an observer is registered for an attribute of an object the isa pointer of the observed object is modified, pointing to an intermediate class rather than at the true class ..</p>
-</blockquote>
-<p>简要的来说，在我们对某个对象完成监听的注册后，编译器会修改监听对象（上文中的pcat）的isa指针，让这个指针指向一个新生成的中间类，中间类的命名格式如 NSKVONotifying_XX (XX 是pcat对象的class)</p>
-<p>苹果还 <strong>重写了这个子类的class方法跟description方法</strong> 来掩人耳目。<br>另外，新类相对于父类添加了一个NSKVONotifying_前缀，添加这个前缀是为了避免多次创建监听子类，节省资源</p>
-<p>以上通过object_getClass(pcat)命令得到了KVO前为PattyCat   KVO后值为 NSKVONotifying_PattyCat</p>
-<p>注: 以下两个方式得到类的指针是一样的哦<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p object_getClass(pcat)</span><br><span class="line">(Class) $0 = PattyCat</span><br><span class="line">(lldb) p (void *)$0</span><br><span class="line">(void *) $1 = 0x0000000100001188</span><br><span class="line"></span><br><span class="line">(lldb) p (objc_class *)[PattyCat class]</span><br><span class="line">(objc_class *) $2 = 0x0000000100001188</span><br></pre></td></tr></table></figure></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>对实例对象进行KVO观察的时候，实际上对象的isa已经不是之前的类对象了<br>移除KVO之后，恢复之前效果</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/31/Objc中的属性/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/31/Objc中的属性/" itemprop="url">Objc中的属性</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-31T14:58:14+08:00">
-                2018-01-31
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="基础OC源码与clang编译"><a href="#基础OC源码与clang编译" class="headerlink" title="基础OC源码与clang编译"></a>基础OC源码与clang编译</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">@interface Dog: NSObject</span><br><span class="line">@property (nonatomic, copy) NSString *sex;</span><br><span class="line">@property (nonatomic, copy) NSString *address;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>经过clang重写为cpp之后，文件主要的内容截取查看<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">#ifndef _REWRITER_typedef_Dog</span><br><span class="line">#define _REWRITER_typedef_Dog</span><br><span class="line">typedef struct objc_object Dog;</span><br><span class="line">typedef struct &#123;&#125; _objc_exc_Dog;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_sex;</span><br><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_address;</span><br><span class="line">struct Dog_IMPL &#123;</span><br><span class="line">	struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">	NSString *_name;</span><br><span class="line">	NSString *_sex;</span><br><span class="line">	NSString *_address;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// @property (nonatomic, copy) NSString *sex;</span><br><span class="line">// @property (nonatomic, copy) NSString *address;</span><br><span class="line">/* @end */</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/** implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">**/</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line">extern &quot;C&quot; __declspec(dllimport) void objc_setProperty (id, SEL, long, id, bool, bool);</span><br><span class="line"></span><br><span class="line">static void _I_Dog_setSex_(Dog * self, SEL _cmd, NSString *sex) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _sex), (id)sex, 0, 1); &#125;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_address)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _address), (id)address, 0, 1); &#125;</span><br><span class="line">// @end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    /* @autoreleasepool */ &#123; __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>Dog_IMPL 结构体含有三个实例变量，其中两个是系统为property生成的，一个是自身的ivar<br>Dog实现 系统自动生成property对应的set和get方法</p>
-<p>对源码修改，添加如下code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@synthesize address = _name;</span><br></pre></td></tr></table></figure></p>
-<p>clang编译之后，两份.cpp文件对比</p>
-<p><img src="/images/cpp对比图.png" alt="cpp对比图"></p>
-<p>以下是两份对比内容的源码</p>
-<ul>
-<li><p>当前添加code之后的文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_name;</span><br><span class="line">// @synthesize address = _name;</span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_name)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _name), (id)address, 0, 1); &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line">	struct _ivar_t ivar_list[2];</span><br><span class="line">	2,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_sex, &quot;_sex&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;&#125;</span><br><span class="line">	&#123;&#123;(struct objc_selector *)&quot;address&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_address&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setAddress:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setAddress_&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;sex&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_sex&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setSex:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setSex_&#125;&#125;</span><br><span class="line">	&#123;&quot;address&quot;,&quot;T@\&quot;NSString\&quot;,C,N,V_name&quot;&#125;&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>未修改内容的cpp</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_address;</span><br><span class="line">	NSString *_address;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_address)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _address), (id)address, 0, 1); &#125;</span><br><span class="line">extern &quot;C&quot; unsigned long int OBJC_IVAR_$_Dog$_address __attribute__ ((used, section (&quot;__DATA,__objc_ivar&quot;))) = __OFFSETOFIVAR__(struct Dog, _address);</span><br><span class="line">	struct _ivar_t ivar_list[3];</span><br><span class="line">	3,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_sex, &quot;_sex&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_address, &quot;_address&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;&#125;</span><br><span class="line">	&#123;&#123;(struct objc_selector *)&quot;sex&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_sex&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setSex:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setSex_&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;address&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_address&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setAddress:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setAddress_&#125;&#125;</span><br><span class="line">	&#123;&quot;address&quot;,&quot;T@\&quot;NSString\&quot;,C,N,V_address&quot;&#125;&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>对比之后可以发现，当重写@synthesize方法, 自定义绑定属性<br>将属性和已经存在的成员变量进行绑定，编译器没有自动生成_address，在类中找不到这个变量的存在<br>所以当我们使用_address的时候，就会报错</p>
-<p>有了getter和setter，方便获取属性，从某个意义上 属性更加面向对象</p>
-<h3 id="查看系统为Dog类生成的实例变量"><a href="#查看系统为Dog类生成的实例变量" class="headerlink" title="查看系统为Dog类生成的实例变量"></a>查看系统为Dog类生成的实例变量</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">@interface Dog: NSObject</span><br><span class="line">@property (nonatomic, copy) NSString *sex;</span><br><span class="line">@property (nonatomic, copy) NSString *address;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        unsigned int ivarCount = 0;</span><br><span class="line">        Ivar * ivars =  class_copyIvarList([Dog class], &amp;ivarCount);</span><br><span class="line">        NSLog(@&quot;=======&quot;);</span><br><span class="line">        for (unsigned int idx = 0; idx &lt; ivarCount; idx++) &#123;</span><br><span class="line">            Ivar ivar = ivars[idx];</span><br><span class="line">            NSLog(@&quot;%s&quot;, ivar_getName(ivar));</span><br><span class="line">        &#125;</span><br><span class="line">        free(ivars);</span><br><span class="line"></span><br><span class="line">        unsigned int propertyCount;</span><br><span class="line">        objc_property_t * properties = class_copyPropertyList([Dog class], &amp;propertyCount);</span><br><span class="line">        NSLog(@&quot;=======&quot;);</span><br><span class="line">        for (unsigned int idx = 0; idx &lt; ivarCount; idx++) &#123;</span><br><span class="line">            objc_property_t property = properties[idx];</span><br><span class="line">            NSLog(@&quot;attribute:%s&quot;,property_getAttributes(property));</span><br><span class="line">        &#125;</span><br><span class="line">        free(properties);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">打印输出:</span><br><span class="line">_name _sex _address</span><br><span class="line"> attribute:T@&quot;NSString&quot;,C,N,V_sex</span><br><span class="line"> attribute:T@&quot;NSString&quot;,C,N,V_name</span><br></pre></td></tr></table></figure>
-<ul>
-<li>属性说明<br>使用property_getAttributes获得的描述是property_copyAttributeList<br>能获取到的所有的name和value的总体描述，<br>如 T@”NSDictionary”,C,N,V_dict1</li>
-</ul>
-<p>常用的属性如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">属性类型  name值：T  value：变化</span><br><span class="line">编码类型  name值：C(copy) &amp;(strong) W(weak) 空(assign) 等 value：无</span><br><span class="line">非/原子性 name值：空(atomic) N(Nonatomic)  value：无</span><br><span class="line">变量名称  name值：V  value：变化</span><br></pre></td></tr></table></figure></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>OC 属性和实例变量是存在区别的</p>
-<p>实例变量，不会自动生成对应的getter和setter方法<br>属性，系统自动生成对应的getter和setter方法</p>
-<p>相比起变量，在编译期间，编译器做了很多工作，包括这些：</p>
-<ul>
-<li>使用@synthesize生成属性对应的ivar，通常ivar命名为下划线+属性名</li>
-<li>生成setter方法来设置ivar</li>
-<li>生成getter方法来获取ivar</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1924,7 +2046,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-count">31</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2012,7 +2134,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共38.1k字</span>
+<span class="post-count"> 博客全站共42.6k字</span>
 </div>
 
 
