@@ -275,6 +275,180 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/24/ReactiveObjc-常用的变换操作/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/24/ReactiveObjc-常用的变换操作/" itemprop="url">ReactiveObjc 常用的变换操作</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-24T16:47:45+08:00">
+                2018-03-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>本文源码为 ReactiveObjc 3.1.0 版本</p>
+<p>除了入门篇介绍的一些常用方法，本篇来介绍下过滤和组合相关的方法底层实现</p>
+<ul>
+<li>filter</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)filter:(<span class="built_in">BOOL</span> (^)(<span class="keyword">id</span> value))block &#123;</span><br><span class="line">    <span class="built_in">NSCParameterAssert</span>(block != <span class="literal">nil</span>);</span><br><span class="line"></span><br><span class="line">    Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [[<span class="keyword">self</span> flattenMap:^ <span class="keyword">id</span> (<span class="keyword">id</span> value) &#123;  </span><br><span class="line">        <span class="keyword">if</span> (block(value)) &#123;</span><br><span class="line">            <span class="keyword">return</span> [<span class="keyword">class</span> <span class="keyword">return</span>:value];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">class</span>.empty;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;] setNameWithFormat:<span class="string">@"[%@] -filter:"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>内部调用flattenMap方法，在上篇已经介绍过了，此处略过。<br>如果满足筛选条件的即返回原信号的值，否则原信号的值被“吞”掉，返回空的信号 RACEmptySignal</p>
+<ul>
+<li>ignoreValues<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)ignoreValues &#123;</span><br><span class="line">    return [[self filter:^(id _) &#123;</span><br><span class="line">        return NO;</span><br><span class="line">    &#125;] setNameWithFormat:@&quot;[%@] -ignoreValues&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>ignoreValues 方法是对 filter 方法的封装，原信号的值都会被变换成empty空信号</p>
+<ul>
+<li>ignore:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (instancetype)ignore:(id)value &#123;</span><br><span class="line">    return [[self filter:^ BOOL (id innerValue) &#123;</span><br><span class="line">        return innerValue != value &amp;&amp; ![innerValue isEqual:value];</span><br><span class="line">    &#125;] setNameWithFormat:@&quot;[%@] -ignore: %@&quot;, self.name, [value rac_description]];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>对入参的value进行判断，当原信号和value不同的时候 返回原信号</p>
+<ul>
+<li>distinctUntilChanged<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)distinctUntilChanged &#123;</span><br><span class="line">    Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [[<span class="keyword">self</span> bind:^&#123;</span><br><span class="line">        __block <span class="keyword">id</span> lastValue = <span class="literal">nil</span>;</span><br><span class="line">        __block <span class="built_in">BOOL</span> initial = <span class="literal">YES</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ^(<span class="keyword">id</span> x, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!initial &amp;&amp; (lastValue == x || [x isEqual:lastValue])) <span class="keyword">return</span> [<span class="keyword">class</span> empty];</span><br><span class="line"></span><br><span class="line">            initial = <span class="literal">NO</span>;</span><br><span class="line">            lastValue = x;</span><br><span class="line">            <span class="keyword">return</span> [<span class="keyword">class</span> <span class="keyword">return</span>:x];</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;] setNameWithFormat:<span class="string">@"[%@] -distinctUntilChanged"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>每次变换中都记录一下原信号上一次发送过来的值，并与这一次进行比较，如果是相同的值，返回empty信号。只有和原信号上一次发送的值不同，变换后的新信号才把这个值发送出来。</p>
+<ul>
+<li>take<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)take:(<span class="built_in">NSUInteger</span>)count &#123;</span><br><span class="line">	Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (count == <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">class</span>.empty;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> [[<span class="keyword">self</span> bind:^&#123;</span><br><span class="line">		__block <span class="built_in">NSUInteger</span> taken = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> ^ <span class="keyword">id</span> (<span class="keyword">id</span> value, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">			<span class="keyword">if</span> (taken &lt; count) &#123;</span><br><span class="line">				++taken;</span><br><span class="line">				<span class="keyword">if</span> (taken == count) *stop = <span class="literal">YES</span>;</span><br><span class="line">				<span class="keyword">return</span> [<span class="keyword">class</span> <span class="keyword">return</span>:value];</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;] setNameWithFormat:<span class="string">@"[%@] -take: %lu"</span>, <span class="keyword">self</span>.name, (<span class="keyword">unsigned</span> <span class="keyword">long</span>)count];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>take:实现也非常简单，借助bind函数来实现的。<br>入参的count是原信号取值的个数,在bind的闭包中,taken计数从0开始取原信号的值,当taken取到count个数的时候，就停止取值。</p>
+<ul>
+<li>takeLast<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)takeLast:(<span class="built_in">NSUInteger</span>)count &#123;</span><br><span class="line">	<span class="keyword">return</span> [[RACSignal createSignal:^(<span class="keyword">id</span>&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		<span class="built_in">NSMutableArray</span> *valuesTaken = [<span class="built_in">NSMutableArray</span> arrayWithCapacity:count];</span><br><span class="line">		<span class="keyword">return</span> [<span class="keyword">self</span> subscribeNext:^(<span class="keyword">id</span> x) &#123;</span><br><span class="line">			[valuesTaken addObject:x ? : RACTupleNil.tupleNil];</span><br><span class="line"></span><br><span class="line">			<span class="keyword">while</span> (valuesTaken.count &gt; count) &#123;</span><br><span class="line">				[valuesTaken removeObjectAtIndex:<span class="number">0</span>];</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; error:^(<span class="built_in">NSError</span> *error) &#123;</span><br><span class="line">			[subscriber sendError:error];</span><br><span class="line">		&#125; completed:^&#123;</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">id</span> value <span class="keyword">in</span> valuesTaken) &#123;</span><br><span class="line">				[subscriber sendNext:value == RACTupleNil.tupleNil ? <span class="literal">nil</span> : value];</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			[subscriber sendCompleted];</span><br><span class="line">		&#125;];</span><br><span class="line">	&#125;] setNameWithFormat:<span class="string">@"[%@] -takeLast: %lu"</span>, <span class="keyword">self</span>.name, (<span class="keyword">unsigned</span> <span class="keyword">long</span>)count];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>和take相反，先将接受到的值都存储在可变数组valuesTaken上，当数组的数量超过入参count的值，就将之前的数据进行移除<br>订阅完成之后，通过for循环一次次的发送值<br>注:<br>1.如果值是空的RACTupleNil.tupleNil，就发送nil<br>2.如果原信号一直没有completed，那么takeLast:就一直没法发出任何信号来。</p>
+<ul>
+<li>takeUntilBlock<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)takeUntilBlock:(BOOL (^)(id x))predicate &#123;</span><br><span class="line">	NSCParameterAssert(predicate != nil);</span><br><span class="line"></span><br><span class="line">	Class class = self.class;</span><br><span class="line"></span><br><span class="line">	return [[self bind:^&#123;</span><br><span class="line">		return ^ id (id value, BOOL *stop) &#123;</span><br><span class="line">			if (predicate(value)) return nil;</span><br><span class="line"></span><br><span class="line">			return [class return:value];</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -takeUntilBlock:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>内部也是借助bind方法实现，根据传入的predicate闭包作为筛选条件，如果predicate( )闭包满足条件，那么新信号置为nil,停止发送新信号.</p>
+<ul>
+<li>takeWhileBlock<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)takeWhileBlock:(BOOL (^)(id x))predicate &#123;</span><br><span class="line">	NSCParameterAssert(predicate != nil);</span><br><span class="line"></span><br><span class="line">	return [[self takeUntilBlock:^ BOOL (id x) &#123;</span><br><span class="line">		return !predicate(x);</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -takeWhileBlock:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>内部调用takeUntilBlock，只是判断条件和之相反<br>如果满足条件，返回 非空的值，<br>如果不满足条件 返回 nil，停止发送新信号</p>
+<ul>
+<li>takeUntil<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)takeUntil:(RACSignal *)signalTrigger &#123;</span><br><span class="line">	return [[RACSignal createSignal:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		RACCompoundDisposable *disposable = [RACCompoundDisposable compoundDisposable];</span><br><span class="line">		void (^triggerCompletion)(void) = ^&#123;</span><br><span class="line">			[disposable dispose];</span><br><span class="line">			[subscriber sendCompleted];</span><br><span class="line">		&#125;;</span><br><span class="line"></span><br><span class="line">		RACDisposable *triggerDisposable = [signalTrigger subscribeNext:^(id _) &#123;</span><br><span class="line">			triggerCompletion();</span><br><span class="line">		&#125; completed:^&#123;</span><br><span class="line">			triggerCompletion();</span><br><span class="line">		&#125;];</span><br><span class="line"></span><br><span class="line">		[disposable addDisposable:triggerDisposable];</span><br><span class="line"></span><br><span class="line">		if (!disposable.disposed) &#123;</span><br><span class="line">			RACDisposable *selfDisposable = [self subscribeNext:^(id x) &#123;</span><br><span class="line">				[subscriber sendNext:x];</span><br><span class="line">			&#125; error:^(NSError *error) &#123;</span><br><span class="line">				[subscriber sendError:error];</span><br><span class="line">			&#125; completed:^&#123;</span><br><span class="line">				[disposable dispose];</span><br><span class="line">				[subscriber sendCompleted];</span><br><span class="line">			&#125;];</span><br><span class="line"></span><br><span class="line">			[disposable addDisposable:selfDisposable];</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		return disposable;</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -takeUntil: %@&quot;, self.name, signalTrigger];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>return一个新信号，在新信号中订阅原信号，当signalTrigger参数调用sendNext,那么就会调用triggerCompletion<br>取消原信号，新的信号发送sendCompleted</p>
+<ul>
+<li>skip<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)skip:(NSUInteger)skipCount &#123;</span><br><span class="line">	Class class = self.class;</span><br><span class="line"></span><br><span class="line">	return [[self bind:^&#123;</span><br><span class="line">		__block NSUInteger skipped = 0;</span><br><span class="line"></span><br><span class="line">		return ^(id value, BOOL *stop) &#123;</span><br><span class="line">			if (skipped &gt;= skipCount) return [class return:value];</span><br><span class="line"></span><br><span class="line">			skipped++;</span><br><span class="line">			return class.empty;</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -skip: %lu&quot;, self.name, (unsigned long)skipCount];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>借助bind方法，判断执行的次数，如果满足skipCount次数，则发送原信号，否则发送空信号</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/22/记录一次坑/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1010,6 +1184,45 @@
 <p>completeSignal 和  addSignal 负责新信号创建之后的清理<br>当订阅新信号，产生的 RACSerialDisposable 添加进 RACCompoundDisposable 实例<br>当信号完成，compoundDisposable进行清理工作</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> (^completeSignal)(RACDisposable *) = ^(RACDisposable *finishedDisposable) &#123;</span><br><span class="line">    <span class="keyword">if</span> (OSAtomicDecrement32Barrier(&amp;signalCount) == <span class="number">0</span>) &#123;</span><br><span class="line">      [subscriber sendCompleted];</span><br><span class="line">      [compoundDisposable dispose];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      [compoundDisposable removeDisposable:finishedDisposable];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  <span class="keyword">void</span> (^addSignal)(RACSignal *) = ^(RACSignal *signal) &#123;</span><br><span class="line">    OSAtomicIncrement32Barrier(&amp;signalCount);</span><br><span class="line"></span><br><span class="line">    RACSerialDisposable *selfDisposable = [[RACSerialDisposable alloc] init];</span><br><span class="line">    [compoundDisposable addDisposable:selfDisposable];</span><br><span class="line"></span><br><span class="line">    RACDisposable *disposable = [signal subscribeNext:^(<span class="keyword">id</span> x) &#123;</span><br><span class="line">      [subscriber sendNext:x];</span><br><span class="line">    &#125; error:^(<span class="built_in">NSError</span> *error) &#123;</span><br><span class="line">      [compoundDisposable dispose];</span><br><span class="line">      [subscriber sendError:error];</span><br><span class="line">    &#125; completed:^&#123;</span><br><span class="line">      <span class="keyword">@autoreleasepool</span> &#123;</span><br><span class="line">        completeSignal(selfDisposable);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    selfDisposable.disposable = disposable;</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
 <h2 id="举栗子"><a href="#举栗子" class="headerlink" title="举栗子"></a>举栗子</h2><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal = [RACSignal createSignal:^RACDisposable * _Nullable(<span class="keyword">id</span>&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">    [subscriber sendNext:@<span class="number">1</span>];</span><br><span class="line">    [subscriber sendNext:@<span class="number">2</span>];</span><br><span class="line">    [subscriber sendCompleted];</span><br><span class="line">    <span class="keyword">return</span> [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"Origin Signal Dispose"</span>);</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">RACSignal *blockSignal = [signal bind:^RACSignalBindBlock _Nonnull&#123;</span><br><span class="line">    <span class="keyword">return</span>  ^(<span class="built_in">NSNumber</span> *value, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">        value = @(value.integerValue * value.integerValue);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> [RACSignal createSignal:^RACDisposable * _Nullable(<span class="keyword">id</span>&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;value.integerValue; i++) &#123;</span><br><span class="line">                [subscriber sendNext:value];</span><br><span class="line">            &#125;</span><br><span class="line">            [subscriber sendCompleted];</span><br><span class="line">            <span class="keyword">return</span> [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">                <span class="built_in">NSLog</span>(<span class="string">@"Binding Signal Dispose"</span>);</span><br><span class="line">            &#125;];</span><br><span class="line">        &#125;];</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">[blockSignal subscribeNext:^(<span class="keyword">id</span>  _Nullable x) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"signal %@"</span>,x);</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">打印log</span><br><span class="line">ReactiveObjcTest[<span class="number">17315</span>:<span class="number">3506059</span>] signal <span class="number">1</span></span><br><span class="line">ReactiveObjcTest[<span class="number">17315</span>:<span class="number">3506059</span>] Binding Signal Dispose</span><br><span class="line">ReactiveObjcTest[<span class="number">17315</span>:<span class="number">3506059</span>] signal <span class="number">4</span></span><br><span class="line">ReactiveObjcTest[<span class="number">17315</span>:<span class="number">3506059</span>] signal <span class="number">4</span></span><br><span class="line">ReactiveObjcTest[<span class="number">17315</span>:<span class="number">3506059</span>] signal <span class="number">4</span></span><br><span class="line">ReactiveObjcTest[<span class="number">17315</span>:<span class="number">3506059</span>] signal <span class="number">4</span></span><br><span class="line">ReactiveObjcTest[<span class="number">17315</span>:<span class="number">3506059</span>] Binding Signal Dispose</span><br><span class="line">ReactiveObjcTest[<span class="number">17315</span>:<span class="number">3506059</span>] Origin Signal Dispose</span><br></pre></td></tr></table></figure>
+<h2 id="RACStream-相关的方法"><a href="#RACStream-相关的方法" class="headerlink" title="RACStream 相关的方法"></a>RACStream 相关的方法</h2><ul>
+<li>Map  一般用来信号变换</li>
+</ul>
+<p>事例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal1 = [RACSignal createSignal:^RACDisposable * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">		//block1</span><br><span class="line">			 [subscriber sendNext:@1];</span><br><span class="line">			 [subscriber sendCompleted];</span><br><span class="line">			 return nil;</span><br><span class="line">	 &#125;];</span><br><span class="line"></span><br><span class="line">RACSignal *mapSignal = [signal1 map:^id _Nullable(id  _Nullable value) &#123;</span><br><span class="line">	//block2</span><br><span class="line"> 			return @([value integerValue] * 10);</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">[mapSignal subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">	//block3</span><br><span class="line">		  NSLog(@&quot;value = %@&quot;,x);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure></p>
+<p>map 源码<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)map:(<span class="keyword">id</span> (^)(<span class="keyword">id</span> value))block &#123;</span><br><span class="line">	<span class="built_in">NSCParameterAssert</span>(block != <span class="literal">nil</span>);</span><br><span class="line">	<span class="comment">//block4</span></span><br><span class="line">	Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> [[<span class="keyword">self</span> flattenMap:^(<span class="keyword">id</span> value) &#123;</span><br><span class="line">		<span class="comment">// block5</span></span><br><span class="line">		<span class="keyword">return</span> [<span class="keyword">class</span> <span class="keyword">return</span>:block(value)];</span><br><span class="line">	&#125;] setNameWithFormat:<span class="string">@"[%@] -map:"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>self.class 实际返回signal的class，signal是RACDynamicSignal类型<br>map方法内部实际调用<code>flattenMap</code>方法</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)flattenMap:(__kindof RACStream * (^)(<span class="keyword">id</span> value))block &#123;</span><br><span class="line">	Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line">	<span class="comment">//block6</span></span><br><span class="line">	<span class="keyword">return</span> [[<span class="keyword">self</span> bind:^&#123;</span><br><span class="line">		<span class="comment">//block7</span></span><br><span class="line">		<span class="keyword">return</span> ^(<span class="keyword">id</span> value, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">			<span class="comment">//block8</span></span><br><span class="line">			<span class="keyword">id</span> stream = block(value) ?: [<span class="keyword">class</span> empty];</span><br><span class="line">			<span class="built_in">NSCAssert</span>([stream isKindOfClass:RACStream.class], <span class="string">@"Value returned from -flattenMap: is not a stream: %@"</span>, stream);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">return</span> stream;</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;] setNameWithFormat:<span class="string">@"[%@] -flattenMap:"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>flattenMap 内部调用的bind方法</p>
+<ul>
+<li>signal1创建，将block存入didSubscribe</li>
+<li>执行map方法，此处先执行 block4, block内部调用 flattenMap 方法，于是执行 block6</li>
+<li>block6 内部执行bind方法，于是创建新的信号作为返回结果 mapSignal</li>
+<li>bind方法内部执行<code>RACSignalBindBlock bindingBlock = block();</code> 也就是将 block7 进行储存</li>
+<li>然后调用bind方法内部的<code>[self subscribeNext:]</code>，对self进行订阅，self是map方法的调用者，也就是signal1，执行signal1的didSubscribe，</li>
+<li>signal1调用<code>sendNext</code>执行，然后执行 bind方法内部<code>id signal = bindingBlock(x, &amp;stop);</code>，也就是执行bind方法的入参闭包，此处执行block7</li>
+<li>接着执行block8,执行<code>id stream = block(value) ?: [class empty];</code> 此处执行block(value)，也就是flattenMap方法的入参闭包也就是block5</li>
+<li>block5执行<code>return [class return:block(value)];</code>此处的block闭包是执行map方法的block闭包，也就是block2<br><code>[class return:value]</code>内部返回 RACReturnSignal ，当返回结果有值，则返回，否则返回<code>[class empty]</code>，也就是RACEmptySignal</li>
+<li>返回信号不为nil，执行bind方法内部的<code>[signal subscribeNext:]</code> 对返回的信号进行订阅，由于返回的信号是RACReturnSignal类型，订阅之后直接调用subscribe方法执行sendNext，也就是订阅到执行block3</li>
+</ul>
+<p>map 就是将信号的值进行变换产生新的信号，将变换后的值进行发送出去，让调用者接收到新值</p>
+<p>打印<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2018-03-24 15:42:28.407001+0800 ReactiveObjcTest[96645:1260165] value = 10</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>mapReplace<br>不管signal1 发送什么值，都替换成@“A”。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signalB = [signal1 mapReplace:@&quot;A&quot;];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>mapReplace 源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (instancetype)mapReplace:(id)object &#123;</span><br><span class="line">    return [[self map:^(id _) &#123;</span><br><span class="line">        return object;</span><br><span class="line">    &#125;] setNameWithFormat:@&quot;[%@] -mapReplace: %@&quot;, self.name, [object rac_description]];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>mapReplace 内部调用map方法，只是返回的是参数object 固定的</p>
+<ul>
+<li>reduceEach<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal2 = [signal1 reduceEach:^id(NSNumber *num1 , NSNumber *num2)&#123;</span><br><span class="line">		 return @([num1 intValue] + [num2 intValue]);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>reduceEach 源码分析<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)reduceEach:(<span class="keyword">id</span> (^)())reduceBlock &#123;</span><br><span class="line">    <span class="built_in">NSCParameterAssert</span>(reduceBlock != <span class="literal">nil</span>);</span><br><span class="line"></span><br><span class="line">    __<span class="keyword">weak</span> RACStream *stream __attribute__((unused)) = <span class="keyword">self</span>;</span><br><span class="line">    <span class="keyword">return</span> [[<span class="keyword">self</span> map:^(RACTuple *t) &#123;</span><br><span class="line">        <span class="built_in">NSCAssert</span>([t isKindOfClass:RACTuple.class], <span class="string">@"Value from stream %@ is not a tuple: %@"</span>, stream, t);</span><br><span class="line">        <span class="keyword">return</span> [RACBlockTrampoline invokeBlock:reduceBlock withArguments:t];</span><br><span class="line">    &#125;] setNameWithFormat:<span class="string">@"[%@] -reduceEach:"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>此处先断言入参block是否为空，然后弱引用当前对象self<br>内部调用map方法，内部断言入参是否是合法的</p>
+<p>RACBlockTrampoline<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RACBlockTrampoline</span> ()</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">copy</span>) <span class="keyword">id</span> block;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithBlock:(<span class="keyword">id</span>)block &#123;</span><br><span class="line">	<span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line"></span><br><span class="line">	_block = [block <span class="keyword">copy</span>];</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (<span class="keyword">id</span>)invokeBlock:(<span class="keyword">id</span>)block withArguments:(RACTuple *)arguments &#123;</span><br><span class="line">	<span class="built_in">NSCParameterAssert</span>(block != <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">	RACBlockTrampoline *trampoline = [[<span class="keyword">self</span> alloc] initWithBlock:block];</span><br><span class="line">	<span class="keyword">return</span> [trampoline invokeWithArguments:arguments];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">id</span>)invokeWithArguments:(RACTuple *)arguments &#123;</span><br><span class="line">	SEL selector = [<span class="keyword">self</span> selectorForArgumentCount:arguments.count];</span><br><span class="line">	<span class="built_in">NSInvocation</span> *invocation = [<span class="built_in">NSInvocation</span> invocationWithMethodSignature:[<span class="keyword">self</span> methodSignatureForSelector:selector]];</span><br><span class="line">	invocation.selector = selector;</span><br><span class="line">	invocation.target = <span class="keyword">self</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (<span class="built_in">NSUInteger</span> i = <span class="number">0</span>; i &lt; arguments.count; i++) &#123;</span><br><span class="line">		<span class="keyword">id</span> arg = arguments[i];</span><br><span class="line">		<span class="built_in">NSInteger</span> argIndex = (<span class="built_in">NSInteger</span>)(i + <span class="number">2</span>);</span><br><span class="line">		[invocation setArgument:&amp;arg atIndex:argIndex];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	[invocation invoke];</span><br><span class="line"></span><br><span class="line">	__<span class="keyword">unsafe_unretained</span> <span class="keyword">id</span> returnVal;</span><br><span class="line">	[invocation getReturnValue:&amp;returnVal];</span><br><span class="line">	<span class="keyword">return</span> returnVal;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>内部持有 block，初始化的时候是给block赋值，动态的构造一个NSInvocation并执行<br>将结果进行返回，也是map闭包里面的返回值</p>
+<p>事例<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal1 = [RACSignal createSignal:^RACDisposable * _Nullable(<span class="keyword">id</span>&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">        RACTuple *tuple = [RACTuple tupleWithObjects:<span class="string">@"1"</span>,<span class="string">@"2"</span>, <span class="literal">nil</span>];</span><br><span class="line">        [subscriber sendNext:tuple];</span><br><span class="line">        [subscriber sendCompleted];</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">RACSignal *signal2 = [signal1 reduceEach:^<span class="keyword">id</span>(<span class="built_in">NSNumber</span> *num1 , <span class="built_in">NSNumber</span> *num2)&#123;</span><br><span class="line">      <span class="keyword">return</span> @([num1 intValue] + [num2 intValue]);</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">[signal2 subscribeNext:^(<span class="keyword">id</span>  _Nullable x) &#123;</span><br><span class="line">      <span class="built_in">NSLog</span>(<span class="string">@"value %@"</span>,x);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure></p>
+<p>reduceEach 内部还是调用 map 方法,当signal1的发出的值包裹的数据是RACTuple类型时，才可以使用该操作,入参是block，参数可以任意</p>
+<p>打印<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2018-03-24 16:24:39.880757+0800 ReactiveObjcTest[97285:1354826] value 3</span><br></pre></td></tr></table></figure></p>
+<p>剩下的方法这里先不介绍了,可自行查阅<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">- (RACSignal *)not;</span><br><span class="line">- (RACSignal *)and;</span><br><span class="line">- (RACSignal *)or;</span><br><span class="line">- (RACSignal *)reduceApply;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>RACSignal 相关的类及代码较简洁，方法也不是很复杂，但是之前并没有深入学习，理解还是需要分析的。<br>结合实际事例，查看调用栈分析情况容易入手，<br>使用上看着也方便，但是内部创建了多个实例对象，信号、订阅者、信号清理机制等，弄清楚流程就简单了</p>
 <h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/ReactiveObjC/RACSignal.md" target="_blank" rel="noopener">https://github.com/Draveness/analyze/blob/master/contents/ReactiveObjC/RACSignal.md</a></p>
 
@@ -1860,175 +2073,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/11/Objc-category篇/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/02/11/Objc-category篇/" itemprop="url">Objc category篇</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-11T11:05:02+08:00">
-                2018-02-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>在之前的文章中，分析load有提到对category中的load方法进行存储调用<br>现在我们来窥探一下category的作用</p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>category主要用于动态的为类添加一些方法和属性<br>在OC中，catefory是在运行期决议的。当编译完成,对象的内存布局已经确定，我们无法为类添加实例变量，通过category,可以设置关联对象，为类动态添加属性,也可以添加方法</p>
-<p>注:<br>extension它是在编译期，和类的.h和.m构成类的结构，可以添加实例变量，一般用于隐藏类的私有属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//Category</span><br><span class="line">@interface PattyDog (Category)</span><br><span class="line">// 只会生成set,get方法的声明,创建的对象没有name属性.</span><br><span class="line">@property (nonatomic,copy) NSString *name;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">// Extension(类扩展)</span><br><span class="line">@interface PattyDog</span><br><span class="line">// 创建name成员变量,并声明和实现set,get方法</span><br><span class="line">@property (nonatomic,copy) NSString *name;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
-<h2 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h2><p>在objc-runtime-new.h中,申明了category的结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">struct category_t &#123;</span><br><span class="line">    const char *name;</span><br><span class="line">    classref_t cls;</span><br><span class="line">    struct method_list_t *instanceMethods;</span><br><span class="line">    struct method_list_t *classMethods;</span><br><span class="line">    struct protocol_list_t *protocols;</span><br><span class="line">    struct property_list_t *instanceProperties;</span><br><span class="line">    // Fields below this point are not always present on disk.</span><br><span class="line">    struct property_list_t *_classProperties;</span><br><span class="line"></span><br><span class="line">    method_list_t *methodsForMeta(bool isMeta) &#123;</span><br><span class="line">        if (isMeta) return classMethods;</span><br><span class="line">        else return instanceMethods;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    property_list_t *propertiesForMeta(bool isMeta, struct header_info *hi);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>从上面可以了解到，category包含了</p>
-<ul>
-<li>类的名字</li>
-<li>类</li>
-<li>给类添加的  实例方法列表</li>
-<li>给类添加的  类方法列表</li>
-<li>给类添加的  协议列表</li>
-<li>给类添加的  属性列表</li>
-<li>给类添加的  类属性列表</li>
-</ul>
-<h2 id="具体操作"><a href="#具体操作" class="headerlink" title="具体操作"></a>具体操作</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">//Dog.h</span><br><span class="line">@interface Dog: NSObject</span><br><span class="line">- (void)printName;</span><br><span class="line">@end</span><br><span class="line">@interface Dog (Patty)</span><br><span class="line">@property(nonatomic, copy) NSString *name;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">//Dog.m</span><br><span class="line">@implementation Dog</span><br><span class="line">- (void)printName</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;CommonDog&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line">@implementation Dog(Patty)</span><br><span class="line">- (void)printName</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;PattyDog&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
-<p>下面将Dog.m文件进行clang编译，看下编译之后有哪些改动，以下是主要的变化</p>
-<ul>
-<li>category_t 结构体含有实例方法_CATEGORY_INSTANCE_METHODS<em>Dog</em><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(const struct _method_list_t *)&amp;_OBJC_$_CATEGORY_INSTANCE_METHODS_Dog_$_Patty,</span><br><span class="line"></span><br><span class="line">具体实现存储的方法只有一个，方法名称是printName，方法编码，函数地址都存储在里面</span><br><span class="line">__attribute__ ((used, section (&quot;__DATA,__objc_const&quot;))) = &#123;</span><br><span class="line"> sizeof(_objc_method),</span><br><span class="line"> 1,</span><br><span class="line"> &#123;&#123;(struct objc_selector *)&quot;printName&quot;, &quot;v16@0:8&quot;, (void *)_I_Dog_Patty_printName&#125;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">static __NSConstantStringImpl __NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_main1_a5e2f0_mi_0 __attribute__ ((section (&quot;__DATA, __cfstring&quot;))) = &#123;__CFConstantStringClassReference,0x000007c8,&quot;CommonDog&quot;,9&#125;;</span><br><span class="line">static __NSConstantStringImpl __NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_main1_a5e2f0_mi_1 __attribute__ ((section (&quot;__DATA, __cfstring&quot;))) = &#123;__CFConstantStringClassReference,0x000007c8,&quot;PattyDog&quot;,8&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// @implementation Dog</span><br><span class="line"></span><br><span class="line">static void _I_Dog_printName(Dog * self, SEL _cmd) &#123;</span><br><span class="line">    NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_main1_a5e2f0_mi_0);</span><br><span class="line">&#125;</span><br><span class="line">// @end</span><br><span class="line">// @implementation Dog(Patty)</span><br><span class="line"></span><br><span class="line">static void _I_Dog_Patty_printName(Dog * self, SEL _cmd) &#123;</span><br><span class="line">    NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_main1_a5e2f0_mi_1);</span><br><span class="line">&#125;</span><br><span class="line">// @end</span><br><span class="line"></span><br><span class="line">static struct /*_method_list_t*/ &#123;</span><br><span class="line">	unsigned int entsize;  // sizeof(struct _objc_method)</span><br><span class="line">	unsigned int method_count;</span><br><span class="line">	struct _objc_method method_list[1];</span><br><span class="line">&#125; _OBJC_$_CATEGORY_INSTANCE_METHODS_Dog_$_Patty __attribute__ ((used, section (&quot;__DATA,__objc_const&quot;))) = &#123;</span><br><span class="line">	sizeof(_objc_method),</span><br><span class="line">	1,</span><br><span class="line">	&#123;&#123;(struct objc_selector *)&quot;printName&quot;, &quot;v16@0:8&quot;, (void *)_I_Dog_Patty_printName&#125;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">extern &quot;C&quot; __declspec(dllexport) struct _class_t OBJC_CLASS_$_Dog;</span><br><span class="line"></span><br><span class="line">static struct _category_t _OBJC_$_CATEGORY_Dog_$_Patty __attribute__ ((used, section (&quot;__DATA,__objc_const&quot;))) =</span><br><span class="line">&#123;</span><br><span class="line">	&quot;Dog&quot;,</span><br><span class="line">	0, // &amp;OBJC_CLASS_$_Dog,</span><br><span class="line">	(const struct _method_list_t *)&amp;_OBJC_$_CATEGORY_INSTANCE_METHODS_Dog_$_Patty,</span><br><span class="line">	0,</span><br><span class="line">	0,</span><br><span class="line">	0,</span><br><span class="line">&#125;;</span><br><span class="line">static void OBJC_CATEGORY_SETUP_$_Dog_$_Patty(void ) &#123;</span><br><span class="line">	_OBJC_$_CATEGORY_Dog_$_Patty.cls = &amp;OBJC_CLASS_$_Dog;</span><br><span class="line">&#125;</span><br><span class="line">#pragma section(&quot;.objc_inithooks$B&quot;, long, read, write)</span><br><span class="line">__declspec(allocate(&quot;.objc_inithooks$B&quot;)) static void *OBJC_CATEGORY_SETUP[] = &#123;</span><br><span class="line">	(void *)&amp;OBJC_CATEGORY_SETUP_$_Dog_$_Patty,</span><br><span class="line">&#125;;</span><br><span class="line">static struct _class_t *L_OBJC_LABEL_CLASS_$ [1] __attribute__((used, section (&quot;__DATA, __objc_classlist,regular,no_dead_strip&quot;)))= &#123;</span><br><span class="line">	&amp;OBJC_CLASS_$_Dog,</span><br><span class="line">&#125;;</span><br><span class="line">static struct _category_t *L_OBJC_LABEL_CATEGORY_$ [1] __attribute__((used, section (&quot;__DATA, __objc_catlist,regular,no_dead_strip&quot;)))= &#123;</span><br><span class="line">	&amp;_OBJC_$_CATEGORY_Dog_$_Patty,</span><br><span class="line">&#125;;</span><br><span class="line">static struct IMAGE_INFO &#123; unsigned version; unsigned flag; &#125; _OBJC_IMAGE_INFO = &#123; 0, 2 &#125;;</span><br></pre></td></tr></table></figure>
-<h2 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h2><p>category是由OC动态加载（runtime）,多个category的调用顺序是无法保证的，<br>一般来说category内的方法需要添加前缀可避免重复添加导致编译出错<br>OC的运行入口，在objc-os.mm内<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">void _objc_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    static bool initialized = false;</span><br><span class="line">    if (initialized) return;</span><br><span class="line">    initialized = true;</span><br><span class="line"></span><br><span class="line">    // fixme defer initialization until an objc-using image is found?</span><br><span class="line">    environ_init();</span><br><span class="line">    tls_init();</span><br><span class="line">    static_init();</span><br><span class="line">    lock_init();</span><br><span class="line">    exception_init();</span><br><span class="line"></span><br><span class="line">    _dyld_objc_notify_register(&amp;map_2_images, load_images, unmap_image);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>通过上面的方法，在map_2_images函数里面进入加载images,最终调用到_read_images方法</p>
-<ul>
-<li>获取OC的category列表catlist</li>
-<li>然后remapClass</li>
-<li>如果category含有实例方法，协议或者属性列表，添加到类上</li>
-<li>如果category含有类方法列表，协议,添加到类的metaclass上<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">void _read_images(header_info **hList, uint32_t hCount, int totalClasses, int unoptimizedTotalClasses)</span><br><span class="line">&#123;</span><br><span class="line">...</span><br><span class="line">// Discover categories.</span><br><span class="line">    for (EACH_HEADER) &#123;</span><br><span class="line">        category_t **catlist =</span><br><span class="line">            _getObjc2CategoryList(hi, &amp;count);</span><br><span class="line">        bool hasClassProperties = hi-&gt;info()-&gt;hasCategoryClassProperties();</span><br><span class="line"></span><br><span class="line">        for (i = 0; i &lt; count; i++) &#123;</span><br><span class="line">            category_t *cat = catlist[i];</span><br><span class="line">            Class cls = remapClass(cat-&gt;cls);//从表中取出cat对应的cls</span><br><span class="line"></span><br><span class="line">            if (!cls) &#123;</span><br><span class="line">                // Category&apos;s target class is missing (probably weak-linked).</span><br><span class="line">                // Disavow any knowledge of this category.</span><br><span class="line">                catlist[i] = nil;</span><br><span class="line">                if (PrintConnecting) &#123;</span><br><span class="line">                    _objc_inform(&quot;CLASS: IGNORING category \?\?\?(%s) %p with &quot;</span><br><span class="line">                                 &quot;missing weak-linked target class&quot;,</span><br><span class="line">                                 cat-&gt;name, cat);</span><br><span class="line">                &#125;</span><br><span class="line">                continue;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            bool classExists = NO;</span><br><span class="line">            if (cat-&gt;instanceMethods ||  cat-&gt;protocols  </span><br><span class="line">                ||  cat-&gt;instanceProperties)</span><br><span class="line">            &#123;</span><br><span class="line">                addUnattachedCategoryForClass(cat, cls, hi);</span><br><span class="line">                if (cls-&gt;isRealized()) &#123;</span><br><span class="line">                    remethodizeClass(cls);</span><br><span class="line">                    classExists = YES;</span><br><span class="line">                &#125;</span><br><span class="line">                if (PrintConnecting) &#123;</span><br><span class="line">                    _objc_inform(&quot;CLASS: found category -%s(%s) %s&quot;,</span><br><span class="line">                                 cls-&gt;nameForLogging(), cat-&gt;name,</span><br><span class="line">                                 classExists ? &quot;on existing class&quot; : &quot;&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            if (cat-&gt;classMethods  ||  cat-&gt;protocols  </span><br><span class="line">                ||  (hasClassProperties &amp;&amp; cat-&gt;_classProperties))</span><br><span class="line">            &#123;</span><br><span class="line">                addUnattachedCategoryForClass(cat, cls-&gt;ISA(), hi);</span><br><span class="line">                if (cls-&gt;ISA()-&gt;isRealized()) &#123;</span><br><span class="line">                    remethodizeClass(cls-&gt;ISA());</span><br><span class="line">                &#125;</span><br><span class="line">                if (PrintConnecting) &#123;</span><br><span class="line">                    _objc_inform(&quot;CLASS: found category +%s(%s)&quot;,</span><br><span class="line">                                 cls-&gt;nameForLogging(), cat-&gt;name);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>绑定category的方法、协议等映射到类上，内部调用方法addUnattachedCategoryForClass<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">static void addUnattachedCategoryForClass(category_t *cat, Class cls,</span><br><span class="line">                                          header_info *catHeader)</span><br><span class="line">&#123;</span><br><span class="line">    runtimeLock.assertWriting();</span><br><span class="line"></span><br><span class="line">    // DO NOT use cat-&gt;cls! cls may be cat-&gt;cls-&gt;isa instead</span><br><span class="line">    NXMapTable *cats = unattachedCategories();  //初始化NXMapTable</span><br><span class="line">    category_list *list;</span><br><span class="line"></span><br><span class="line">    list = (category_list *)NXMapGet(cats, cls);//去Table表中查找对应cls的category列表</span><br><span class="line">    if (!list) &#123;</span><br><span class="line">        list = (category_list *)</span><br><span class="line">            calloc(sizeof(*list) + sizeof(list-&gt;list[0]), 1);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        list = (category_list *)</span><br><span class="line">            realloc(list, sizeof(*list) + sizeof(list-&gt;list[0]) * (list-&gt;count + 1));</span><br><span class="line">    &#125;</span><br><span class="line">    list-&gt;list[list-&gt;count++] = (locstamped_category_t)&#123;cat, catHeader&#125;;//扩大list</span><br><span class="line">    NXMapInsert(cats, cls, list); //将cls对应的list插入到表中</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>remethodizeClass 将cat一系列方法添加到类上<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line">static void remethodizeClass(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    category_list *cats;</span><br><span class="line">    bool isMeta;</span><br><span class="line"></span><br><span class="line">    runtimeLock.assertWriting();</span><br><span class="line"></span><br><span class="line">    isMeta = cls-&gt;isMetaClass();</span><br><span class="line"></span><br><span class="line">    // Re-methodizing: check for more categories</span><br><span class="line">    if ((cats = unattachedCategoriesForClass(cls, false/*not realizing*/))) &#123;</span><br><span class="line">        if (PrintConnecting) &#123;</span><br><span class="line">            _objc_inform(&quot;CLASS: attaching categories to class &apos;%s&apos; %s&quot;,</span><br><span class="line">                         cls-&gt;nameForLogging(), isMeta ? &quot;(meta)&quot; : &quot;&quot;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        attachCategories(cls, cats, true /*flush caches*/);        </span><br><span class="line">        free(cats);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void</span><br><span class="line">attachCategories(Class cls, category_list *cats, bool flush_caches)</span><br><span class="line">&#123;</span><br><span class="line">    if (!cats) return;</span><br><span class="line">    if (PrintReplacedMethods) printReplacements(cls, cats);</span><br><span class="line"></span><br><span class="line">    bool isMeta = cls-&gt;isMetaClass();</span><br><span class="line"></span><br><span class="line">    // fixme rearrange to remove these intermediate allocations</span><br><span class="line">    method_list_t **mlists = (method_list_t **)</span><br><span class="line">        malloc(cats-&gt;count * sizeof(*mlists));</span><br><span class="line">    property_list_t **proplists = (property_list_t **)</span><br><span class="line">        malloc(cats-&gt;count * sizeof(*proplists));</span><br><span class="line">    protocol_list_t **protolists = (protocol_list_t **)</span><br><span class="line">        malloc(cats-&gt;count * sizeof(*protolists));</span><br><span class="line"></span><br><span class="line">    // Count backwards through cats to get newest categories first</span><br><span class="line">    int mcount = 0;</span><br><span class="line">    int propcount = 0;</span><br><span class="line">    int protocount = 0;</span><br><span class="line">    int i = cats-&gt;count;</span><br><span class="line">    bool fromBundle = NO;</span><br><span class="line">    while (i--) &#123;</span><br><span class="line">        auto&amp; entry = cats-&gt;list[i];</span><br><span class="line"></span><br><span class="line">        method_list_t *mlist = entry.cat-&gt;methodsForMeta(isMeta);</span><br><span class="line">        if (mlist) &#123;</span><br><span class="line">            mlists[mcount++] = mlist;</span><br><span class="line">            fromBundle |= entry.hi-&gt;isBundle();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        property_list_t *proplist =</span><br><span class="line">            entry.cat-&gt;propertiesForMeta(isMeta, entry.hi);</span><br><span class="line">        if (proplist) &#123;</span><br><span class="line">            proplists[propcount++] = proplist;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        protocol_list_t *protolist = entry.cat-&gt;protocols;</span><br><span class="line">        if (protolist) &#123;</span><br><span class="line">            protolists[protocount++] = protolist;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    auto rw = cls-&gt;data();</span><br><span class="line"></span><br><span class="line">    prepareMethodLists(cls, mlists, mcount, NO, fromBundle);</span><br><span class="line">    rw-&gt;methods.attachLists(mlists, mcount);</span><br><span class="line">    free(mlists);</span><br><span class="line">    if (flush_caches  &amp;&amp;  mcount &gt; 0) flushCaches(cls);</span><br><span class="line"></span><br><span class="line">    rw-&gt;properties.attachLists(proplists, propcount);</span><br><span class="line">    free(proplists);</span><br><span class="line"></span><br><span class="line">    rw-&gt;protocols.attachLists(protolists, protocount);</span><br><span class="line">    free(protolists);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>关键在attachLists方法，将cls的rw对应的方法列表，属性列表，协议列表进行添加列表</p>
-<ul>
-<li>memmove<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">void attachLists(List* const * addedLists, uint32_t addedCount) &#123;</span><br><span class="line">       if (addedCount == 0) return;</span><br><span class="line"></span><br><span class="line">       if (hasArray()) &#123;</span><br><span class="line">           // many lists -&gt; many lists</span><br><span class="line">           uint32_t oldCount = array()-&gt;count;</span><br><span class="line">           uint32_t newCount = oldCount + addedCount;</span><br><span class="line">           setArray((array_t *)realloc(array(), array_t::byteSize(newCount)));</span><br><span class="line">           array()-&gt;count = newCount;</span><br><span class="line">           memmove(array()-&gt;lists + addedCount, array()-&gt;lists,</span><br><span class="line">                   oldCount * sizeof(array()-&gt;lists[0]));</span><br><span class="line">           memcpy(array()-&gt;lists, addedLists,</span><br><span class="line">                  addedCount * sizeof(array()-&gt;lists[0]));</span><br><span class="line">       &#125;</span><br><span class="line">       else if (!list  &amp;&amp;  addedCount == 1) &#123;</span><br><span class="line">           // 0 lists -&gt; 1 list</span><br><span class="line">           list = addedLists[0];</span><br><span class="line">       &#125;</span><br><span class="line">       else &#123;</span><br><span class="line">           // 1 list -&gt; many lists</span><br><span class="line">           List* oldList = list;</span><br><span class="line">           uint32_t oldCount = oldList ? 1 : 0;</span><br><span class="line">           uint32_t newCount = oldCount + addedCount;</span><br><span class="line">           setArray((array_t *)malloc(array_t::byteSize(newCount)));</span><br><span class="line">           array()-&gt;count = newCount;</span><br><span class="line">           if (oldList) array()-&gt;lists[addedCount] = oldList;</span><br><span class="line">           memcpy(array()-&gt;lists, addedLists,</span><br><span class="line">                  addedCount * sizeof(array()-&gt;lists[0]));</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>memmove和memcpy 两个C函数的操作，<br>将array先前的列表内容拷贝到新数组的末尾，然后将新添加的list插入到新数组的头部<br>解释了category的特性</p>
-<ul>
-<li>category的方法没有“完全替换掉”原来类已经有的方法，也就是说如果category和原来类都有methodA，那么category附加方法后，类的方法列表里会有两个methodA</li>
-<li>category的方法被放到了新方法列表的前面，而原来类的方法被放到了新方法列表的后面，也就是我们常说category的方法会“覆盖”掉原来类的同名方法，这是因为运行时在查找方法的时候是顺着方法列表的顺序查找的，它只要一找到对应名字的方法，就会停止查找，殊不知后面可能还有一样名字的方法。</li>
-<li>category关联对象特性在之前文章中，请自行翻阅</li>
-</ul>
-<h2 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h2><p>memmove(p2, p1, len) 内存拷贝<br>将p1的前面len长度的字符，拷贝到p2</p>
-<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><ul>
-<li>c函数 memmove和memcpy的区别 <a href="http://blog.jobbole.com/108842/" target="_blank" rel="noopener">http://blog.jobbole.com/108842/</a></li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2079,7 +2123,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-count">32</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2167,7 +2211,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共44.4k字</span>
+<span class="post-count"> 博客全站共46.5k字</span>
 </div>
 
 
