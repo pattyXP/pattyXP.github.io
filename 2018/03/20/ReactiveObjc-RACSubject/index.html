@@ -104,7 +104,7 @@
 <meta property="og:description" content="本文源码为 ReactiveObjc 3.1.0 版本 RACSubjectRACSubject 继承自 RACSignal，主要用于将非 RAC 的对象桥接到 RAC ，属于可变信号  A subject can be thought of as a signal that you can manually control by sending next, completed, and erro">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/RACSubject.png">
-<meta property="og:updated_time" content="2018-03-22T06:19:53.677Z">
+<meta property="og:updated_time" content="2018-03-26T02:15:27.650Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ReactiveObjc-RACSubject">
 <meta name="twitter:description" content="本文源码为 ReactiveObjc 3.1.0 版本 RACSubjectRACSubject 继承自 RACSignal，主要用于将非 RAC 的对象桥接到 RAC ，属于可变信号  A subject can be thought of as a signal that you can manually control by sending next, completed, and erro">
@@ -355,7 +355,8 @@
 </li>
 </ul>
 <p>当调用sendNext方法<br>内部遍历当前数组内的subscriber，发送消息，和父类的不同就是可以先订阅，再发送信息，能否接收到消息取决于订阅的时间<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)sendNext:(<span class="keyword">id</span>)value &#123;</span><br><span class="line">	[<span class="keyword">self</span> enumerateSubscribersUsingBlock:^(<span class="keyword">id</span>&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		[subscriber sendNext:value];</span><br><span class="line">	&#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="热信号-和-冷信号"><a href="#热信号-和-冷信号" class="headerlink" title="热信号 和 冷信号"></a>热信号 和 冷信号</h2><p>在RAC中，RACSignal 属于冷信号， 每个订阅者会收到所有的消息<br>RACSubject 属于热信号，消息的接收取决于订阅的时间</p>
+<h2 id="热信号-和-冷信号"><a href="#热信号-和-冷信号" class="headerlink" title="热信号 和 冷信号"></a>热信号 和 冷信号</h2><p>在 <a href="https://tech.meituan.com/talk-about-reactivecocoas-cold-signal-and-hot-signal-part-1.html" target="_blank" rel="noopener">细说ReactiveCocoa的冷信号与热信号（一）</a> 详细分析了冷热信号的特点：<br>&gt;<br>热信号是主动的，即使你没有订阅事件，它仍然会时刻推送。而冷信号是被动的，只有当你订阅的时候，它才会发送消息。<br>热信号可以有多个订阅者，是一对多，信号可以与订阅者共享信息。而冷信号只能一对一，当有不同的订阅者，消息会从新完整发送。</p>
+<p>在RAC中，RACSignal 属于冷信号， 每个订阅者会收到所有的消息<br>RACSubject 属于热信号，消息的接收取决于订阅的时间</p>
 <p>从上面的例子中，可以观察到，由于 subscribeNext 调用时机不同，收到的消息内容序列不一样</p>
 <ul>
 <li>调用 subscribeNext 方法, 产生 RACSubscriber</li>
@@ -684,7 +685,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共46.5k字</span>
+<span class="post-count"> 博客全站共46.9k字</span>
 </div>
 
 

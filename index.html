@@ -398,6 +398,20 @@
 </li>
 </ul>
 <p>借助bind方法，判断执行的次数，如果满足skipCount次数，则发送原信号，否则发送空信号</p>
+<p>skip方法和take方法是补全关系，take是取前几次，skip是跳过前面几次</p>
+<ul>
+<li>skipUntilBlock</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)skipUntilBlock:(<span class="built_in">BOOL</span> (^)(<span class="keyword">id</span> x))predicate &#123;</span><br><span class="line">	<span class="built_in">NSCParameterAssert</span>(predicate != <span class="literal">nil</span>);</span><br><span class="line"></span><br><span class="line">	Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> [[<span class="keyword">self</span> bind:^&#123;</span><br><span class="line">		__block <span class="built_in">BOOL</span> skipping = <span class="literal">YES</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> ^ <span class="keyword">id</span> (<span class="keyword">id</span> value, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">			<span class="keyword">if</span> (skipping) &#123;</span><br><span class="line">				<span class="keyword">if</span> (predicate(value)) &#123;</span><br><span class="line">					skipping = <span class="literal">NO</span>;</span><br><span class="line">				&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">					<span class="keyword">return</span> <span class="keyword">class</span>.empty;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">return</span> [<span class="keyword">class</span> <span class="keyword">return</span>:value];</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;] setNameWithFormat:<span class="string">@"[%@] -skipUntilBlock:"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>skipUntilBlock 和 takeUntilBlock 实现类似<br>以入参 predicate()闭包判断，如果满足条件，skipping = NO,原信号发送的每个值都原封不动的发送出去。<br>不满足条件的时候，即会一直skip原信号的值</p>
+<ul>
+<li>skipWhileBlock<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)skipWhileBlock:(BOOL (^)(id x))predicate &#123;</span><br><span class="line">	NSCParameterAssert(predicate != nil);</span><br><span class="line"></span><br><span class="line">	return [[self skipUntilBlock:^ BOOL (id x) &#123;</span><br><span class="line">		return !predicate(x);</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -skipWhileBlock:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>skipWhileBlock 方法底层调用skipUntilBlock ,只是判断条件是 不满足predicate()闭包</p>
+<ul>
+<li>zipWith 和 concat <a href="https://pattyxp.github.io/2018/03/12/ReactiveObjc%E5%85%A5%E9%97%A8/">请看这篇文章</a></li>
+</ul>
 
           
         
@@ -656,7 +670,8 @@
 </li>
 </ul>
 <p>当调用sendNext方法<br>内部遍历当前数组内的subscriber，发送消息，和父类的不同就是可以先订阅，再发送信息，能否接收到消息取决于订阅的时间<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)sendNext:(<span class="keyword">id</span>)value &#123;</span><br><span class="line">	[<span class="keyword">self</span> enumerateSubscribersUsingBlock:^(<span class="keyword">id</span>&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		[subscriber sendNext:value];</span><br><span class="line">	&#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="热信号-和-冷信号"><a href="#热信号-和-冷信号" class="headerlink" title="热信号 和 冷信号"></a>热信号 和 冷信号</h2><p>在RAC中，RACSignal 属于冷信号， 每个订阅者会收到所有的消息<br>RACSubject 属于热信号，消息的接收取决于订阅的时间</p>
+<h2 id="热信号-和-冷信号"><a href="#热信号-和-冷信号" class="headerlink" title="热信号 和 冷信号"></a>热信号 和 冷信号</h2><p>在 <a href="https://tech.meituan.com/talk-about-reactivecocoas-cold-signal-and-hot-signal-part-1.html" target="_blank" rel="noopener">细说ReactiveCocoa的冷信号与热信号（一）</a> 详细分析了冷热信号的特点：<br>&gt;<br>热信号是主动的，即使你没有订阅事件，它仍然会时刻推送。而冷信号是被动的，只有当你订阅的时候，它才会发送消息。<br>热信号可以有多个订阅者，是一对多，信号可以与订阅者共享信息。而冷信号只能一对一，当有不同的订阅者，消息会从新完整发送。</p>
+<p>在RAC中，RACSignal 属于冷信号， 每个订阅者会收到所有的消息<br>RACSubject 属于热信号，消息的接收取决于订阅的时间</p>
 <p>从上面的例子中，可以观察到，由于 subscribeNext 调用时机不同，收到的消息内容序列不一样</p>
 <ul>
 <li>调用 subscribeNext 方法, 产生 RACSubscriber</li>
@@ -2211,7 +2226,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共46.5k字</span>
+<span class="post-count"> 博客全站共46.9k字</span>
 </div>
 
 
