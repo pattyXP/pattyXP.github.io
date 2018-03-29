@@ -104,7 +104,7 @@
 <meta property="og:description" content="前言本文源码为 ReactiveObjc 3.1.0 版本 在ReactiveObjc 世界中，不仅仅存在RACSignal这样的信号，还存在一些绑定关系的操作集合，比如按钮的点击事件，按钮点击的时候，事物操作事先就定义好了，RACCommand 可以应用于此 RACCommand123456789@interface RACCommand&amp;lt;__contravariant InputTyp">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/ImmediateExecutingSignal.png">
-<meta property="og:updated_time" content="2018-03-29T02:27:36.800Z">
+<meta property="og:updated_time" content="2018-03-29T07:19:18.709Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ReactiveObjc-RACCommand">
 <meta name="twitter:description" content="前言本文源码为 ReactiveObjc 3.1.0 版本 在ReactiveObjc 世界中，不仅仅存在RACSignal这样的信号，还存在一些绑定关系的操作集合，比如按钮的点击事件，按钮点击的时候，事物操作事先就定义好了，RACCommand 可以应用于此 RACCommand123456789@interface RACCommand&amp;lt;__contravariant InputTyp">
@@ -420,7 +420,10 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)switchToLatest &#123;</span><br><span class="line">	// block4</span><br><span class="line">	return [[RACSignal createSignal:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		// block5</span><br><span class="line">		RACMulticastConnection *connection = [self publish]; //产生热信号</span><br><span class="line"></span><br><span class="line">		RACDisposable *subscriptionDisposable = [[connection.signal</span><br><span class="line">			flattenMap:^(RACSignal *x) &#123;  //对原信号进行变换</span><br><span class="line"></span><br><span class="line">				NSCAssert(x == nil || [x isKindOfClass:RACSignal.class], @&quot;-switchToLatest requires that the source signal (%@) send signals. Instead we got: %@&quot;, self, x);</span><br><span class="line"></span><br><span class="line">				return [x takeUntil:[connection.signal concat:[RACSignal never]]];</span><br><span class="line">			&#125;]</span><br><span class="line">			subscribe:subscriber];</span><br><span class="line"></span><br><span class="line">		RACDisposable *connectionDisposable = [connection connect];</span><br><span class="line">		return [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">			[subscriptionDisposable dispose];</span><br><span class="line">			[connectionDisposable dispose];</span><br><span class="line">		&#125;];</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -switchToLatest&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ol>
 <li>此处执行 block4,产生新的信号，将block进行copy</li>
-<li>对<code>[[command.executionSignals switchToLatest] subscribeNext]</code>执行subscribeNext操作，此处将 switchToLatest产生的信号执行订阅操作，调用信号的 didSubscriber闭包, 此处执行 block5<br> 通过<code>flattenMap</code>对热信号的signal进行变换操作产生新的信号signal’，执行<code>subscribe</code>方法是执行signal’的didsubscriber闭包<br> 然后执行<code>[connection connect];</code><br>5.执行<code>execute</code>方法，<code>RACSignal *signal = self.signalBlock(input);</code>调用初始化command时候保存的闭包,此处执行 block1<br> 执行<code>[self.addedExecutionSignalsSubject sendNext:connection.signal];</code><br> 接着执行<code>[connection connect];</code></li>
+<li><p>对<code>[[command.executionSignals switchToLatest] subscribeNext]</code><br>  执行subscribeNext操作，此处将 switchToLatest产生的信号执行订阅操作，调用信号的 didSubscriber闭包, 此处执行 block5<br> 通过<code>flattenMap</code>对热信号的signal进行变换操作产生新的信号signal1</p>
+<p> <code>[x takeUntil:[connection.signal concat:[RACSignal never]]];</code><br> 先执行<code>concat</code>方法产生新的信号signal2，<code>takeUntil</code>会一直订阅signal2，signal2如果没有收到新值会一直执行<code>sendNext</code>直到signal2有新值会取消订阅信号x，向订阅者发送<code>sendCompleted</code></p>
+<p> 执行<code>[connection connect];</code><br>5.执行<code>execute</code>方法，<code>RACSignal *signal = self.signalBlock(input);</code>调用初始化command时候保存的闭包,此处执行 block1<br> 执行<code>[self.addedExecutionSignalsSubject sendNext:connection.signal];</code><br> 接着执行<code>[connection connect];</code></p>
+</li>
 <li>执行block2</li>
 <li>执行block3</li>
 </ol>
@@ -657,7 +660,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共52.6k字</span>
+<span class="post-count"> 博客全站共52.9k字</span>
 </div>
 
 
