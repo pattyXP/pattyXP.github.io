@@ -106,7 +106,9 @@
 <meta property="og:image" content="https://pattyxp.github.io/images/autoreleasepool1.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/空AutoreleasePoolPage.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/对象release堆栈图.png">
-<meta property="og:updated_time" content="2018-05-08T03:11:39.562Z">
+<meta property="og:image" content="https://pattyxp.github.io/images/autoreleasepool_pig.png">
+<meta property="og:image" content="https://pattyxp.github.io/images/autoreleasepool_pig1.png">
+<meta property="og:updated_time" content="2018-05-08T09:45:05.152Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc-autoreleasePool">
 <meta name="twitter:description" content="本篇开始学习OC的内存管理，先来说说autoreleasepool相关的原理一般来说，线程和autoreleasepool是对应存在的，主线程，默认含有自动释放池 源码解析1234567891011int main(int argc, const char * argv[]) &amp;#123;    @autoreleasepool &amp;#123;        for (int i=0; i&amp;lt;1">
@@ -392,6 +394,21 @@
 <p>可以看到autorelease操作和push非常相似<br>push插入的是POOL_BOUNDARY 即nil<br>autorelease插入具体需要释放的对象</p>
 <h2 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h2><p><code>void *memset(void *s, int ch, size_t n);</code><br>函数解释：将s中当前位置后面的n个字节 （typedef unsigned int size_t ）用 ch 替换并返回 s 。<br><code>memset</code>：作用是在一段内存块中填充某个给定的值，它是对较大的结构体或数组进行清零操作的一种最快方法。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>看到这里，对autoreleasePool已经有了基本的认识原理，了解push和pop操作，对象的autorelease</p>
+<h2 id="顺便一提"><a href="#顺便一提" class="headerlink" title="顺便一提"></a>顺便一提</h2><p>接触了Hopper Disassembler之后，反编译二进制代码得到伪代码非常方便可以观察<br>前提是先获取到二进制可执行文件，可以通过xcode编译得到，也可以通过clang的命令获取</p>
+<ul>
+<li>通过xcode编译文件<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">"Pig.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">Pig</span>()</span></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Pig</span></span></span><br><span class="line">- (<span class="keyword">void</span>)getPig</span><br><span class="line">&#123;</span><br><span class="line">    Pig *pig = [[Pig alloc] init];</span><br><span class="line">&#125;</span><br><span class="line">- (Pig *)getPig1</span><br><span class="line">&#123;</span><br><span class="line">    Pig *pig = [[Pig alloc] init];</span><br><span class="line">    <span class="keyword">return</span> pig;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>将可执行文件拖进Hopper，得到Pig的两个方法的反编译代码<br><img src="/images/autoreleasepool_pig.png" alt="autoreleasepool_pig"><br><img src="/images/autoreleasepool_pig1.png" alt="autoreleasepool_pig1"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void -[Pig getPig](void * self, void * _cmd) &#123;</span><br><span class="line">    rdi = var_18;</span><br><span class="line">    [[Pig alloc] init];</span><br><span class="line">    objc_storeStrong(rdi, 0x0);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void * -[Pig getPig1](void * self, void * _cmd) &#123;</span><br><span class="line">    var_18 = [[Pig alloc] init];</span><br><span class="line">    var_28 = [var_18 retain];</span><br><span class="line">    objc_storeStrong(var_18, 0x0);</span><br><span class="line">    rax = [var_28 autorelease];</span><br><span class="line">    return rax;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是ARC下系统对autorelease的返回值优化策略</p>
+<ul>
+<li>objc_storeStrong源码<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">objc_storeStrong(<span class="keyword">id</span> *location, <span class="keyword">id</span> obj)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">id</span> prev = *location;</span><br><span class="line">    <span class="keyword">if</span> (obj == prev) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    objc_retain(obj);</span><br><span class="line">    *location = obj;</span><br><span class="line">    objc_release(prev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>赋值strong类型的属性的时候会调用<code>objc_storeStrong</code><br>copy,weak等都不会调用<br>第一个入参，有值的<br>第二个入参，赋值的时候有值，也有存在ox0的情况<br>1.当init方法时候给成员赋值，obj有值，当init方法return的时候，obj为ox0<br>2.当dealloc对象的时候，obj为ox0情况居多<br>总结:在__strong类型的变量的作用域结束时，自动添加release函数进行释放。</p>
+<p>打印类地址<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">p (objc_class *)[Pig class]</span><br></pre></td></tr></table></figure></p>
+<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="http://blog.sunnyxx.com/2014/10/15/behind-autorelease/" target="_blank" rel="noopener">http://blog.sunnyxx.com/2014/10/15/behind-autorelease/</a></p>
 
       
     </div>
@@ -517,7 +534,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">34</span>
+                <span class="site-state-item-count">35</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -572,7 +589,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#源码解析"><span class="nav-number">1.</span> <span class="nav-text">源码解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#push操作"><span class="nav-number">2.</span> <span class="nav-text">push操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AutoreleasePoolPage"><span class="nav-number">3.</span> <span class="nav-text">AutoreleasePoolPage</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pop操作"><span class="nav-number">4.</span> <span class="nav-text">Pop操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#autorelease操作"><span class="nav-number">5.</span> <span class="nav-text">autorelease操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解释"><span class="nav-number">6.</span> <span class="nav-text">解释</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#源码解析"><span class="nav-number">1.</span> <span class="nav-text">源码解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#push操作"><span class="nav-number">2.</span> <span class="nav-text">push操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AutoreleasePoolPage"><span class="nav-number">3.</span> <span class="nav-text">AutoreleasePoolPage</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pop操作"><span class="nav-number">4.</span> <span class="nav-text">Pop操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#autorelease操作"><span class="nav-number">5.</span> <span class="nav-text">autorelease操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解释"><span class="nav-number">6.</span> <span class="nav-text">解释</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#顺便一提"><span class="nav-number">8.</span> <span class="nav-text">顺便一提</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#链接"><span class="nav-number">9.</span> <span class="nav-text">链接</span></a></li></ol></div>
             
 
           </div>
@@ -621,7 +638,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共54.9k字</span>
+<span class="post-count"> 博客全站共56.7k字</span>
 </div>
 
 
