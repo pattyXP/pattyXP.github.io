@@ -388,7 +388,7 @@
 <li><p>为什么<strong>Block_byref_a_0结构体内使用指向其自身的指针</strong>forwarding<br>//通过访问 <strong>block 结构体 成员变量 </strong>forwarding 来访问源变量<br><strong>forwarding 相当于一个指向源变量的指针，当</strong>block修饰对象从栈拷贝到了堆，<strong>main_block_func_0方法里面使用的`</strong>Block_byref_a_0 *a = <strong>cself-&gt;a<code>取出的其实是结构体，后续访问都是通过</code>(a-&gt;</strong>forwarding-&gt;a)<code>，__forwarding指向的是自身结构体，通过它取出</code>a<code>，此处的</code>a`就是相当于原变量,做到了栈上和堆上都是拿到的同一个值<br>源码解析:<br>Block_byref_a_0 结构体实例的成员变量forwarding持有指向该实例自身的指针。通过成员变量__forwarding访问成员变量val。（成员变量a是该实例自身持有的变量，它相当于原自动变量）<br><img src="/images/forwarding.png" alt="forwarding"></p>
 </li>
 </ul>
-<h2 id="block-cpoy"><a href="#block-cpoy" class="headerlink" title="block_cpoy"></a>block_cpoy</h2><p>当block经过copy之后，系统会将block拷贝到malloc，此时block属于NSConcreteMallocBlock类型<br><a href="https://opensource.apple.com/source/clang/clang-137/src/projects/compiler-rt/BlocksRuntime/runtime.c" target="_blank" rel="noopener">具体源码在runtime.c</a></p>
+<h2 id="block-cpoy"><a href="#block-cpoy" class="headerlink" title="block_cpoy"></a>block_cpoy</h2><p>当block经过copy之后，系统会将block拷贝到堆上，此时block属于NSConcreteMallocBlock类型<br><a href="https://opensource.apple.com/source/clang/clang-137/src/projects/compiler-rt/BlocksRuntime/runtime.c" target="_blank" rel="noopener">具体源码在runtime.c</a></p>
 <h2 id="block-的自动拷贝和手动拷贝"><a href="#block-的自动拷贝和手动拷贝" class="headerlink" title="block 的自动拷贝和手动拷贝"></a>block 的自动拷贝和手动拷贝</h2><p>那么 block 何时会 copy 到堆上呢？是显式，还是隐式？</p>
 <ul>
 <li>显式</li>
