@@ -431,6 +431,7 @@
 </li>
 </ul>
 <h2 id="疑问"><a href="#疑问" class="headerlink" title="疑问"></a>疑问</h2><p>1.上面的普通版例子,block没有进行copy,理论上是处于栈上的，但是array是有值的，说明block确实进行了copy赋值到堆上，为什么呢<br>2.下面例子的blk结构体 存储了Person类的实例对象person, bound by copy ，但是一般来说bound by copy是代表的值引用，为什么在block内部对person的eat字段的改变可以改变到block外部的结果，感觉像是值引用<br>此处不知道怎么验证block内部的Person实例对象是和block外是一样的<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Person *person = [[Person alloc] init];</span><br><span class="line">person.eat = <span class="string">@"山珍海味"</span>;</span><br><span class="line">blk_t blk = [</span><br><span class="line">               ^(<span class="keyword">id</span> obj)&#123;</span><br><span class="line">                   person.eat = <span class="string">@"牛肉"</span>;</span><br><span class="line">               &#125;<span class="keyword">copy</span>];</span><br><span class="line">  </span><br><span class="line">blk(@<span class="number">1</span>);</span><br><span class="line">  </span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"%@"</span>,person.eat);</span><br></pre></td></tr></table></figure></p>
+<p>如有了解请底部留言</p>
 <h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://blog.devtang.com/2013/07/28/a-look-inside-blocks/" target="_blank" rel="noopener">https://blog.devtang.com/2013/07/28/a-look-inside-blocks/</a><br><a href="http://clang.llvm.org/docs/Block-ABI-Apple.html" target="_blank" rel="noopener">http://clang.llvm.org/docs/Block-ABI-Apple.html</a><br><a href="http://www.saitjr.com/ios/advance-block.html" target="_blank" rel="noopener">http://www.saitjr.com/ios/advance-block.html</a></p>
 
           
@@ -2469,7 +2470,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共58.1k字</span>
+<span class="post-count"> 博客全站共58.2k字</span>
 </div>
 
 
