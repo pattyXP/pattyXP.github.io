@@ -109,7 +109,7 @@
 <meta property="og:image" content="https://pattyxp.github.io/images/block_stackBlock.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/block的实现_外部变量.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/block的实现_外部变量2.png">
-<meta property="og:updated_time" content="2018-05-14T08:51:17.815Z">
+<meta property="og:updated_time" content="2018-05-14T08:52:05.205Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Block的实现">
 <meta name="twitter:description" content="在OC当中我们经常使用block，block的结构体如下摘自clang:12345678910111213141516struct Block_literal_1 &amp;#123;    void *isa; // initialized to &amp;amp;_NSConcreteStackBlock or &amp;amp;_NSConcreteGlobalBlock    int flags;    int">
@@ -389,7 +389,7 @@
 <li><p>为什么<strong>Block_byref_a_0结构体内使用指向其自身的指针</strong>forwarding<br>源码解析:<br><code>__main_block_func_0</code>使用的都是<code>(a-&gt;__forwarding-&gt;a)</code>，<br><strong>forwarding指针这里的作用就是针对堆的Block,原先栈上的`</strong>forwarding`指向自身结构体，当拷贝到堆上之后，换成指向_NSConcreteMallocBlock上复制之后的<strong>block,然后堆上的变量的</strong>forwarding再指向自己。这样不管<strong>block在堆上还是在栈上，都可以通过(a-&gt;</strong>forwarding-&gt;a)来访问到变量值。</p>
 <p><img src="/images/block_forwarding.png" alt="block_forwarding"></p>
 </li>
-<li><p>NSConcreteStackBlock的例子<br>大部分情况下，ARC下平时见到最多的是_NSConcreteMallocBlock，是因为我们会对Block有赋值操作<br>但是也存在<code>_NSConcreteStackBlock</code></p>
+<li><p>NSConcreteStackBlock的例子<br>ARC下见到最多的是_NSConcreteMallocBlock，是因为我们会对Block有赋值操作<br>但是也存在<code>_NSConcreteStackBlock</code></p>
 </li>
 </ul>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"> __block <span class="keyword">int</span> temp = <span class="number">10</span>;</span><br><span class="line">    </span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, ^&#123;<span class="built_in">NSLog</span>(<span class="string">@"*******%d %p"</span>,temp ++,&amp;temp);&#125;);</span><br></pre></td></tr></table></figure>
@@ -682,7 +682,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共59.4k字</span>
+<span class="post-count"> 博客全站共59.3k字</span>
 </div>
 
 
