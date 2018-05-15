@@ -1446,13 +1446,16 @@ __builtin_expect的作用
 <p>clang这样编译是不过的，将<strong>weak替换为</strong>unsafe_unretained，然后 clang -x objective-c -rewrite-objc -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer<br>/SDKs/iPhoneSimulator.sdk xx.m<br>clang之后源码，精简如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">struct __BlockViewController__viewDidLoad_block_impl_0 &#123;</span><br><span class="line">  struct __block_impl impl;</span><br><span class="line">  struct __BlockViewController__viewDidLoad_block_desc_0* Desc;</span><br><span class="line">  typeof(Person *) weakSelf;</span><br><span class="line">  __BlockViewController__viewDidLoad_block_impl_0(void *fp, struct __BlockViewController__viewDidLoad_block_desc_0 *desc, typeof(Person *) _weakSelf, int flags=0) : weakSelf(_weakSelf) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">static void __BlockViewController__viewDidLoad_block_func_0(struct __BlockViewController__viewDidLoad_block_impl_0 *__cself) &#123;</span><br><span class="line">  typeof(Person *) weakSelf = __cself-&gt;weakSelf; // bound by copy</span><br><span class="line"></span><br><span class="line">        NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_BlockViewController_7d49b7_mi_1,((NSString *(*)(id, SEL))(void *)objc_msgSend)((id)weakSelf, sel_registerName(&quot;eat&quot;)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">block持有的是typeof(Person *) weakSelf;</span><br><span class="line">底层实现objc_initWeak 和 objc_storeWeak</span><br></pre></td></tr></table></figure></p>
 <p>##总结:</p>
 <ul>
-<li>自动变量是以值传递方式传递到Block的构造函数里面去的<br>Block只捕获Block中会用到的变量。由于只捕获了自动变量的值，并非内存地址，所以Block内部不能改变自动变量的值</li>
-<li>Block捕获的外部变量可以改变值的是 静态变量，静态全局变量，全局变量<blockquote>
+<li>自动变量是以值传递方式传递到Block的构造函数里面去的<blockquote>
+<p>Block只捕获Block中会用到的变量。由于只捕获了自动变量的值，并非内存地址，所以Block内部不能改变自动变量的值<br>Objc对象，不同于基本类型，Block捕获会引起对象的引用计数变化</p>
+</blockquote>
+</li>
+<li>Block捕获的外部变量可以改变值的是 全局变量,静态变量,静态全局变量<blockquote>
 <p>因为全局变量，static变量在内存中的地址是固定的，Block在读取该变量值的时候是直接从其所在内存读出，获取到的是最新值，而不是在定义时copy的常量</p>
 </blockquote>
 </li>
-<li>Block变量，被__block修饰的变量称作Block变量<blockquote>
-<p>基本类型的Block变量等效于全局变量、或静态变量。<br>ObjC对象，不同于基本类型，Block会引起对象的引用计数变化。<br>非ObjC对象，如GCD队列dispatch_queue_t。Block copy时并不会自动增加他的引用计数，这点要非常小心。<br>下一篇将介绍__weak底层实现</p>
+<li>Block变量(被__block修饰的变量称作Block变量)<blockquote>
+<p>基本类型的Block变量等效于全局变量、或静态变量。<br>非ObjC对象，如GCD队列dispatch_queue_t。Block copy时并不会自动增加他的引用计数，这点要非常小心。<br>Objc对象，不会引起对象的引用计数变化，copy变量从栈上到堆上</p>
 </blockquote>
 </li>
 </ul>
@@ -1913,7 +1916,7 @@ __builtin_expect的作用
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共59.3k字</span>
+<span class="post-count"> 博客全站共59.4k字</span>
 </div>
 
 
