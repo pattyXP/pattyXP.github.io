@@ -96,21 +96,21 @@
 
 
 
-<meta name="description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，  分析先来看下源码，在main.m中添加代码如下123456789101112131415@interface XXObject: NSObject@end@implementation">
+<meta name="description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，  分析本系列文章，主要弄清楚以下问题  弄清楚什么是对象  理解什么是isa，理解isa的指向关系，superclass的指向关系 理解属性、方法的存取方式（怎么读取属性，怎么设置属性的，">
 <meta name="keywords" content="Objc">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Objc initialize的分析">
 <meta property="og:url" content="https://pattyxp.github.io/2018/01/13/Objc initialize的分析/index.html">
 <meta property="og:site_name" content="温暖的弦">
-<meta property="og:description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，  分析先来看下源码，在main.m中添加代码如下123456789101112131415@interface XXObject: NSObject@end@implementation">
+<meta property="og:description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，  分析本系列文章，主要弄清楚以下问题  弄清楚什么是对象  理解什么是isa，理解isa的指向关系，superclass的指向关系 理解属性、方法的存取方式（怎么读取属性，怎么设置属性的，">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/initialize的打印.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/initialize的打印2.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/initialize_lookupImg.png">
-<meta property="og:updated_time" content="2018-02-11T03:07:08.000Z">
+<meta property="og:updated_time" content="2018-05-18T03:30:03.657Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc initialize的分析">
-<meta name="twitter:description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，  分析先来看下源码，在main.m中添加代码如下123456789101112131415@interface XXObject: NSObject@end@implementation">
+<meta name="twitter:description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，  分析本系列文章，主要弄清楚以下问题  弄清楚什么是对象  理解什么是isa，理解isa的指向关系，superclass的指向关系 理解属性、方法的存取方式（怎么读取属性，怎么设置属性的，">
 <meta name="twitter:image" content="https://pattyxp.github.io/images/initialize的打印.png">
 
 
@@ -350,6 +350,41 @@
 <blockquote>
 <p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，</p>
 </blockquote>
+<p>分析本系列文章，主要弄清楚以下问题</p>
+<ul>
+<li>弄清楚什么是对象 <ul>
+<li>理解什么是isa，理解isa的指向关系，superclass的指向关系</li>
+<li>理解属性、方法的存取方式（怎么读取属性，怎么设置属性的，怎么查找方法的）</li>
+</ul>
+</li>
+<li>关联是怎么运作的<ul>
+<li>get</li>
+<li>set</li>
+<li>remove</li>
+</ul>
+</li>
+<li>源码层理解引用计数<ul>
+<li>Autorelease的本质交互操作</li>
+</ul>
+</li>
+<li>Load方法/Category/Extension/Protocol <ul>
+<li>普通类/Category,load方法执行逻辑。多个分类中有load方法是怎么处理的</li>
+<li>为什么load方法不存在方法缓存覆盖问题</li>
+<li>Category/Extension/Protocol的实现原理</li>
+</ul>
+</li>
+<li>Weak/MapTable <ul>
+<li>Weak的实现原理</li>
+<li>MapTable的实现原理</li>
+</ul>
+</li>
+<li>KVO/动态交换两个类原理 <ul>
+<li>KVO如何做到交换了父类，但是业务层却无感知</li>
+<li>如何进行方法交换，交换父类和派生类</li>
+</ul>
+</li>
+<li>TaggedPointer的实现原理/Main函数之前执行了什么 </li>
+</ul>
 <h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>先来看下源码，在main.m中添加代码如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@interface XXObject: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation XXObject</span><br><span class="line"></span><br><span class="line">+ (void)initialize</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;XXObject initialize&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>运行程序，发现没有任何打印log<br><img src="/images/initialize的打印.png" alt="initialize的打印"></p>
 <p>和load方法不同，load方法运行还是有打印的，这是为什么呢？？</p>
@@ -615,7 +650,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共59.4k字</span>
+<span class="post-count"> 博客全站共60.2k字</span>
 </div>
 
 
