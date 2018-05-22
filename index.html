@@ -275,6 +275,203 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/05/18/Objc-load调查/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/18/Objc-load调查/" itemprop="url">Objc-load调查</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T17:28:19+08:00">
+                2018-05-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本篇研究以下问题</p>
+<ul>
+<li>load方法调用时机和顺序问题</li>
+<li>多个分类中有load方法是怎么处理的</li>
+<li>为什么load方法不存在方法缓存覆盖问题</li>
+</ul>
+<p>先来看下load方法的加载时机<br>源码主要包含以下类:</p>
+<ul>
+<li>Pig类</li>
+<li>PigCate1</li>
+<li><p>PigCate2<br>每个类都包含<code>load</code>方法,打印当前<code>_cmd</code><br>在每个<code>load</code>处添加断点，函数调用栈如下<br>!(OC4-load)(/images/OC4-load.png)</p>
+</li>
+<li><p>load方法并不需要调用就会执行<br>从方法的调用栈可以知道，此时方法的调用顺序<br><code>load_images</code> 是镜像加载</p>
+<blockquote>
+<p>此处的镜像，一部分是系统准备的一些框架如CoreFoundation，还有很多的动态链接库</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="load-images"><a href="#load-images" class="headerlink" title="load_images"></a>load_images</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">load_images(<span class="keyword">const</span> <span class="keyword">char</span> *path __unused, <span class="keyword">const</span> <span class="keyword">struct</span> mach_header *mh)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// Return without taking locks if there are no +load methods here.</span></span><br><span class="line">    <span class="comment">//判断是否存在load方法</span></span><br><span class="line">    <span class="keyword">if</span> (!hasLoadMethods((<span class="keyword">const</span> headerType *)mh)) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    recursive_mutex_locker_t lock(loadMethodLock);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Discover load methods</span></span><br><span class="line">    &#123;</span><br><span class="line">        rwlock_writer_t lock2(runtimeLock);</span><br><span class="line">        prepare_load_methods((<span class="keyword">const</span> headerType *)mh);<span class="comment">//准备加载load方法的工作</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Call +load methods (without runtimeLock - re-entrant) //调用load方法</span></span><br><span class="line">    call_load_methods();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><h3 id="prepare-load-methods"><a href="#prepare-load-methods" class="headerlink" title="prepare_load_methods"></a>prepare_load_methods</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> prepare_load_methods(<span class="keyword">const</span> headerType *mhdr)</span><br><span class="line">&#123;</span><br><span class="line">    size_t count, i;</span><br><span class="line"></span><br><span class="line">    runtimeLock.assertWriting();</span><br><span class="line"></span><br><span class="line">    classref_t *classlist = </span><br><span class="line">        _getObjc2NonlazyClassList(mhdr, &amp;count);<span class="comment">//获取所有的类的列表</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">        schedule_class_load(remapClass(classlist[i]));</span><br><span class="line">        <span class="comment">//remapClass 获取类对应的指针</span></span><br><span class="line">        <span class="comment">//schedule_class_load 递归调用当前(没有调用过load方法的类及其父类)加入列表中，优先加入父类</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    category_t **categorylist = _getObjc2NonlazyCategoryList(mhdr, &amp;count);</span><br><span class="line">    <span class="comment">//将分类加入到列表中</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">        category_t *cat = categorylist[i];</span><br><span class="line">        Class cls = remapClass(cat-&gt;cls);</span><br><span class="line">        <span class="keyword">if</span> (!cls) <span class="keyword">continue</span>;  <span class="comment">// category for ignored weak-linked class</span></span><br><span class="line">        realizeClass(cls);</span><br><span class="line">        assert(cls-&gt;ISA()-&gt;isRealized());</span><br><span class="line">        add_category_to_loadable_list(cat);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="schedule-class-load"><a href="#schedule-class-load" class="headerlink" title="schedule_class_load"></a>schedule_class_load</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> schedule_class_load(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (!cls) <span class="keyword">return</span>;</span><br><span class="line">    assert(cls-&gt;isRealized());  <span class="comment">// _read_images should realize</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//保证当前类还没有调用load方法</span></span><br><span class="line">    <span class="keyword">if</span> (cls-&gt;data()-&gt;flags &amp; RW_LOADED) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Ensure superclass-first ordering</span></span><br><span class="line">    <span class="comment">//优先调用当前类的父类加入到列表中</span></span><br><span class="line">    schedule_class_load(cls-&gt;superclass);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//将当前cls加入到loadable_classes列表中</span></span><br><span class="line">    add_class_to_loadable_list(cls);</span><br><span class="line">    cls-&gt;setInfo(RW_LOADED); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>确保父类的load方法优先于子类调用</p>
+<h3 id="add-class-to-loadable-list"><a href="#add-class-to-loadable-list" class="headerlink" title="add_class_to_loadable_list"></a>add_class_to_loadable_list</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> add_class_to_loadable_list(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    IMP method;</span><br><span class="line"></span><br><span class="line">    loadMethodLock.assertLocked(); <span class="comment">//递归锁</span></span><br><span class="line"></span><br><span class="line">    method = cls-&gt;getLoadMethod(); <span class="comment">//获取cls的load方法</span></span><br><span class="line">    <span class="keyword">if</span> (!method) <span class="keyword">return</span>;  <span class="comment">// Don't bother if cls has no +load method</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (PrintLoading) &#123;</span><br><span class="line">        _objc_inform(<span class="string">"LOAD: class '%s' scheduled for +load"</span>, </span><br><span class="line">                     cls-&gt;nameForLogging());</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//如果当前数组已经存满，需要重新分配内存</span></span><br><span class="line">    <span class="keyword">if</span> (loadable_classes_used == loadable_classes_allocated) &#123;</span><br><span class="line">        loadable_classes_allocated = loadable_classes_allocated*<span class="number">2</span> + <span class="number">16</span>;</span><br><span class="line">        loadable_classes = (<span class="keyword">struct</span> loadable_class *)</span><br><span class="line">            realloc(loadable_classes,</span><br><span class="line">                              loadable_classes_allocated *</span><br><span class="line">                              <span class="keyword">sizeof</span>(<span class="keyword">struct</span> loadable_class));</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//赋值</span></span><br><span class="line">    loadable_classes[loadable_classes_used].cls = cls;</span><br><span class="line">    loadable_classes[loadable_classes_used].method = method;</span><br><span class="line">    loadable_classes_used++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="调用工作"><a href="#调用工作" class="headerlink" title="调用工作"></a>调用工作</h2><p>下次将重点分析下<code>call_load_methods()</code></p>
+<h3 id="call-load-methods"><a href="#call-load-methods" class="headerlink" title="call_load_methods"></a>call_load_methods</h3><p>当在<code>load_images</code>方法内只调用一次<code>call_load_methods</code>,保证将所有含有load方法的类或分类全部调用load方法，按顺序先执行类方法，然后执行分类方法<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> call_load_methods(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">bool</span> loading = <span class="literal">NO</span>;</span><br><span class="line">    <span class="keyword">bool</span> more_categories;</span><br><span class="line"></span><br><span class="line">    loadMethodLock.assertLocked();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Re-entrant calls do nothing; the outermost call will finish the job.</span></span><br><span class="line">    <span class="keyword">if</span> (loading) <span class="keyword">return</span>; <span class="comment">//保证在load_images方法期间只执行一次该方法</span></span><br><span class="line">    loading = <span class="literal">YES</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> *pool = objc_autoreleasePoolPush(); <span class="comment">//创建autoreleasePool</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="comment">// 1. Repeatedly call class +loads until there aren't any more</span></span><br><span class="line">        <span class="keyword">while</span> (loadable_classes_used &gt; <span class="number">0</span>) &#123; </span><br><span class="line">            <span class="comment">//loadable_classes_used是全局静态变量，存储需要调用load方法的类数量</span></span><br><span class="line">            call_class_loads();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. Call category +loads ONCE</span></span><br><span class="line">        more_categories = call_category_loads(); <span class="comment">//分类加载load方法</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 3. Run more +loads if there are classes OR more untried categories</span></span><br><span class="line">    &#125; <span class="keyword">while</span> (loadable_classes_used &gt; <span class="number">0</span>  ||  more_categories); </span><br><span class="line"> </span><br><span class="line">    objc_autoreleasePoolPop(pool);      <span class="comment">//释放autoreleasePool</span></span><br><span class="line"></span><br><span class="line">    loading = <span class="literal">NO</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="call-class-loads"><a href="#call-class-loads" class="headerlink" title="call_class_loads"></a>call_class_loads</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> call_class_loads(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Detach current loadable list.</span></span><br><span class="line">    <span class="keyword">struct</span> loadable_class *classes = loadable_classes;</span><br><span class="line">    <span class="keyword">int</span> used = loadable_classes_used;  <span class="comment">//取出loadable_classes_used</span></span><br><span class="line">    loadable_classes = <span class="literal">nil</span>;</span><br><span class="line">    loadable_classes_allocated = <span class="number">0</span>;</span><br><span class="line">    loadable_classes_used = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Call all +loads for the detached list.</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; used; i++) &#123;</span><br><span class="line">        Class cls = classes[i].cls;</span><br><span class="line">        load_method_t load_method = (load_method_t)classes[i].method;</span><br><span class="line">        <span class="keyword">if</span> (!cls) <span class="keyword">continue</span>; </span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (PrintLoading) &#123;</span><br><span class="line">            _objc_inform(<span class="string">"LOAD: +[%s load]\n"</span>, cls-&gt;nameForLogging());</span><br><span class="line">        &#125;</span><br><span class="line">        (*load_method)(cls, SEL_load);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Destroy the detached list.</span></span><br><span class="line">    <span class="keyword">if</span> (classes) free(classes);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过遍历<code>for循环</code>取出所有已加载的类，执行对应的<code>load</code>方法</p>
+<h3 id="call-category-loads"><a href="#call-category-loads" class="headerlink" title="call_category_loads"></a>call_category_loads</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">bool</span> call_category_loads(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> i, shift;</span><br><span class="line">    <span class="keyword">bool</span> new_categories_added = <span class="literal">NO</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Detach current loadable list.</span></span><br><span class="line">    <span class="keyword">struct</span> loadable_category *cats = loadable_categories;</span><br><span class="line">    <span class="keyword">int</span> used = loadable_categories_used;</span><br><span class="line">    <span class="keyword">int</span> allocated = loadable_categories_allocated;</span><br><span class="line">    loadable_categories = <span class="literal">nil</span>;</span><br><span class="line">    loadable_categories_allocated = <span class="number">0</span>;</span><br><span class="line">    loadable_categories_used = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Call all +loads for the detached list.</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; used; i++) &#123;</span><br><span class="line">        Category cat = cats[i].cat;</span><br><span class="line">        load_method_t load_method = (load_method_t)cats[i].method;</span><br><span class="line">        Class cls;</span><br><span class="line">        <span class="keyword">if</span> (!cat) <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">        cls = _category_getClass(cat);</span><br><span class="line">        <span class="keyword">if</span> (cls  &amp;&amp;  cls-&gt;isLoadable()) &#123; </span><br><span class="line">            <span class="comment">//一般情况下都是类方法先于分类方法调用，但是万一存在分类先调用，此处保证如果类存在且可以加载，先调用类的方法如下</span></span><br><span class="line">            <span class="keyword">if</span> (PrintLoading) &#123;</span><br><span class="line">                _objc_inform(<span class="string">"LOAD: +[%s(%s) load]\n"</span>, </span><br><span class="line">                             cls-&gt;nameForLogging(), </span><br><span class="line">                             _category_getName(cat));</span><br><span class="line">            &#125;</span><br><span class="line">            (*load_method)(cls, SEL_load);</span><br><span class="line">            cats[i].cat = <span class="literal">nil</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Compact detached list (order-preserving)</span></span><br><span class="line">    <span class="comment">//将已经执行完load方法的分类数量进行扣除</span></span><br><span class="line">    shift = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; used; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (cats[i].cat) &#123;</span><br><span class="line">            cats[i-shift] = cats[i];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            shift++; </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    used -= shift; <span class="comment">//减去相应加载完的分类数量</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Copy any new +load candidates from the new list to the detached list.</span></span><br><span class="line">    <span class="comment">//如果有新加载的类，则加入list中</span></span><br><span class="line">    new_categories_added = (loadable_categories_used &gt; <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; loadable_categories_used; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (used == allocated) &#123;</span><br><span class="line">            allocated = allocated*<span class="number">2</span> + <span class="number">16</span>;</span><br><span class="line">            cats = (<span class="keyword">struct</span> loadable_category *)</span><br><span class="line">                realloc(cats, allocated *</span><br><span class="line">                                  <span class="keyword">sizeof</span>(<span class="keyword">struct</span> loadable_category));</span><br><span class="line">        &#125;</span><br><span class="line">        cats[used++] = loadable_categories[i];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Destroy the new list.</span></span><br><span class="line">    <span class="comment">//将新加载的类进行释放</span></span><br><span class="line">    <span class="keyword">if</span> (loadable_categories) free(loadable_categories);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Reattach the (now augmented) detached list. </span></span><br><span class="line">    <span class="comment">// But if there's nothing left to load, destroy the list.</span></span><br><span class="line">    <span class="comment">//如果还有未加载完成的类，则赋值</span></span><br><span class="line">    <span class="comment">//如果都加载完，则清空列表</span></span><br><span class="line">    <span class="keyword">if</span> (used) &#123;</span><br><span class="line">        loadable_categories = cats;</span><br><span class="line">        loadable_categories_used = used;</span><br><span class="line">        loadable_categories_allocated = allocated;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (cats) free(cats);</span><br><span class="line">        loadable_categories = <span class="literal">nil</span>;</span><br><span class="line">        loadable_categories_used = <span class="number">0</span>;</span><br><span class="line">        loadable_categories_allocated = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (PrintLoading) &#123;</span><br><span class="line">        <span class="keyword">if</span> (loadable_categories_used != <span class="number">0</span>) &#123;</span><br><span class="line">            _objc_inform(<span class="string">"LOAD: %d categories still waiting for +load\n"</span>,</span><br><span class="line">                         loadable_categories_used);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> new_categories_added;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>方法调用栈如下<br>!(OC4_load_cate)(/images/OC4_load_cate.png)<br>流程上和加载类的<code>load</code>方法差不多，就不多说了</p>
+<p>至此<code>call_load_methods</code>方法分析的差不多了</p>
+<p>因此，<code>load</code>方法的调用时机可以总结如下</p>
+<blockquote>
+<p>父类优先子类调用<br>类优先分类</p>
+</blockquote>
+<h2 id="疑问"><a href="#疑问" class="headerlink" title="疑问"></a>疑问</h2><ul>
+<li>问题1<br>在调用分类的load方法源码中，存在部分理解问题<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将所有加载过的分类移除 `loadable_categories` 列表</span></span><br><span class="line">shift = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; used; i++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (cats[i].cat) &#123;</span><br><span class="line">        cats[i-shift] = cats[i];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        shift++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">used -= shift;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>在调用过程中，未进入过if条件，所以不知道是什么情况下进行移除操作的<br>假设cats列表存在4个分类<br>cats[0]、cats[1]、cats[2]、cats[3]<br>其中cats[0]、cats[2]的load方法已经加载过，所以相应的cat已经为nil<br>进行上面code执行结果</p>
+<table>
+<thead>
+<tr>
+<th>类</th>
+<th style="text-align:left">条件</th>
+<th style="text-align:center">结果赋值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cats[0]</td>
+<td style="text-align:left">加载过</td>
+<td style="text-align:center">shifts=1</td>
+</tr>
+<tr>
+<td>cats[1]</td>
+<td style="text-align:left">未加载过</td>
+<td style="text-align:center">cats[0]=cats[1]</td>
+</tr>
+<tr>
+<td>cats[2]</td>
+<td style="text-align:left">加载过</td>
+<td style="text-align:center">shifts=2</td>
+</tr>
+<tr>
+<td>cats[3]</td>
+<td style="text-align:left">未加载过</td>
+<td style="text-align:center">cats[0]=cats[2]</td>
+</tr>
+</tbody>
+</table>
+<p>不太明白此处结果是怎么做到的？？</p>
+<ul>
+<li>问题2<br>此处<code>loadable_categories_used</code>在最开始的时候已经取出赋值给<code>used</code>,然后重新赋为0<br>所以不明白为什么还会存在<code>loadable_categories_used &gt; 0</code>的情况<br>而且还重新开辟空间和赋值<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">new_categories_added = (loadable_categories_used &gt; <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; loadable_categories_used; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (used == allocated) &#123;</span><br><span class="line">            allocated = allocated*<span class="number">2</span> + <span class="number">16</span>;</span><br><span class="line">            cats = (<span class="keyword">struct</span> loadable_category *)</span><br><span class="line">                realloc(cats, allocated *</span><br><span class="line">                                  <span class="keyword">sizeof</span>(<span class="keyword">struct</span> loadable_category));</span><br><span class="line">        &#125;</span><br><span class="line">        cats[used++] = loadable_categories[i];</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/05/09/Block的实现/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2211,147 +2408,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/27/内存分配/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/02/27/内存分配/" itemprop="url">内存分配</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-27T15:07:05+08:00">
-                2018-02-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>本文分析内存使用Xcode自带的Instruments分析工具Alloctions<br>运行profile下的Alloctions，可以看到有一栏统计All Heap &amp; Anonymous VM使用的内存<br>All Heap:堆上分配的内存情况<br>Anonymous VM:虚拟内存分配</p>
-<h2 id="虚拟内存"><a href="#虚拟内存" class="headerlink" title="虚拟内存"></a>虚拟内存</h2><p>当应用向系统申请分配内存时，系统不会返回需要的物理内存地址，而是返回虚拟内存地址。当开始真正使用申请到的虚拟内存的时候，系统才将虚拟内存映射到具体的物理内存上。</p>
-<h2 id="内存页"><a href="#内存页" class="headerlink" title="内存页"></a>内存页</h2><p>系统将内存页分为三种状态。</p>
-<p>活跃内存页（active pages）- 这种内存页已经被映射到物理内存中，而且近期被访问过，处于活跃状态。<br>非活跃内存页（inactive pages）- 这种内存页已经被映射到物理内存中，但是近期没有被访问过。<br>可用的内存页（free pages）- 没有关联到虚拟内存页的物理内存页集合。</p>
-<p>当可用的内存页降低到一定的阀值时，系统就会采取低内存应对措施，在OSX中，系统会将非活跃内存页交换到硬盘上，而在iOS中，则会触发Memory Warning，如果你的App没有处理低内存警告并且还在后台占用太多内存，则有可能被杀掉。</p>
-<h2 id="VM-Region-Size"><a href="#VM-Region-Size" class="headerlink" title="VM Region Size"></a>VM Region Size</h2><p><img src="/images/内存分配-1.png" alt="内存分配"><br>上图是mac OS应用的 VM Tracker分析图，可以看到VM Tree Region有4种size</p>
-<ul>
-<li>Dirty Size</li>
-<li>Swapped Size:交换到硬盘上的大小 仅OSX系统适用</li>
-<li>Resident Size:实际使用物理内存的大小</li>
-<li>Virtual Size:虚拟内存大小</li>
-</ul>
-<h2 id="分配内存"><a href="#分配内存" class="headerlink" title="分配内存"></a>分配内存</h2><p>我们常使用以下几种方式来分配内存</p>
-<ul>
-<li>NSObject的 alloc 方法</li>
-<li>c函数的 malloc 方法<br>malloc有一个缺陷，必须配合memset将内存区中所有的值设置为0。这样就导致了一个问题:malloc出一块内存区域时，系统并没有分配物理内存。然而调用memset后，系统将会把malloc出的所有虚拟内存关联到物理内存上<br>因此系统建议使用calloc方法,calloc返回的内存区域会自动清零，而且只有使用时才会关联到物理内存并清零。</li>
-</ul>
-<p>以OC当中创建实例对象为例，最终调用方法_class_createInstanceFromZone<br>方法内部调用calloc来分配内存，下图显示调用栈的情况<br><img src="/images/内存分配-alloc.png" alt="内存分配-alloc"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line">_class_createInstanceFromZone(Class cls, size_t extraBytes, void *zone,</span><br><span class="line">                              bool cxxConstruct = true,</span><br><span class="line">                              size_t *outAllocatedSize = nil)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    size_t size = cls-&gt;instanceSize(extraBytes);</span><br><span class="line">    if (outAllocatedSize) *outAllocatedSize = size;</span><br><span class="line"></span><br><span class="line">    id obj;</span><br><span class="line">    if (!zone  &amp;&amp;  fast) &#123;</span><br><span class="line">        obj = (id)calloc(1, size);</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        if (zone) &#123;</span><br><span class="line">            obj = (id)malloc_zone_calloc ((malloc_zone_t *)zone, 1, size);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            obj = (id)calloc(1, size);</span><br><span class="line">        &#125;</span><br><span class="line">    ...</span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://juejin.im/post/5a5e13c45188257327399e19" target="_blank" rel="noopener">https://juejin.im/post/5a5e13c45188257327399e19</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2402,7 +2458,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">35</span>
+                <span class="site-state-item-count">36</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2490,7 +2546,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共60.2k字</span>
+<span class="post-count"> 博客全站共62.1k字</span>
 </div>
 
 

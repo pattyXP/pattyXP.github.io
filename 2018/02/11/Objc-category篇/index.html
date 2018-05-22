@@ -78,7 +78,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, Patty" />
+  <meta name="keywords" content="Objc," />
 
 
 
@@ -97,13 +97,14 @@
 
 
 <meta name="description" content="在之前的文章中，分析load有提到对category中的load方法进行存储调用现在我们来窥探一下category的作用 简介category主要用于动态的为类添加一些方法和属性在OC中，catefory是在运行期决议的。当编译完成,对象的内存布局已经确定，我们无法为类添加实例变量，通过category,可以设置关联对象，为类动态添加属性,也可以添加方法 注:extension它是在编译期，和类的">
+<meta name="keywords" content="Objc">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Objc category篇">
 <meta property="og:url" content="https://pattyxp.github.io/2018/02/11/Objc-category篇/index.html">
 <meta property="og:site_name" content="温暖的弦">
 <meta property="og:description" content="在之前的文章中，分析load有提到对category中的load方法进行存储调用现在我们来窥探一下category的作用 简介category主要用于动态的为类添加一些方法和属性在OC中，catefory是在运行期决议的。当编译完成,对象的内存布局已经确定，我们无法为类添加实例变量，通过category,可以设置关联对象，为类动态添加属性,也可以添加方法 注:extension它是在编译期，和类的">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-02-12T03:15:01.000Z">
+<meta property="og:updated_time" content="2018-05-18T09:29:16.496Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc category篇">
 <meta name="twitter:description" content="在之前的文章中，分析load有提到对category中的load方法进行存储调用现在我们来窥探一下category的作用 简介category主要用于动态的为类添加一些方法和属性在OC中，catefory是在运行期决议的。当编译完成,对象的内存布局已经确定，我们无法为类添加实例变量，通过category,可以设置关联对象，为类动态添加属性,也可以添加方法 注:extension它是在编译期，和类的">
@@ -362,7 +363,7 @@
 </li>
 </ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">static __NSConstantStringImpl __NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_main1_a5e2f0_mi_0 __attribute__ ((section (&quot;__DATA, __cfstring&quot;))) = &#123;__CFConstantStringClassReference,0x000007c8,&quot;CommonDog&quot;,9&#125;;</span><br><span class="line">static __NSConstantStringImpl __NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_main1_a5e2f0_mi_1 __attribute__ ((section (&quot;__DATA, __cfstring&quot;))) = &#123;__CFConstantStringClassReference,0x000007c8,&quot;PattyDog&quot;,8&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// @implementation Dog</span><br><span class="line"></span><br><span class="line">static void _I_Dog_printName(Dog * self, SEL _cmd) &#123;</span><br><span class="line">    NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_main1_a5e2f0_mi_0);</span><br><span class="line">&#125;</span><br><span class="line">// @end</span><br><span class="line">// @implementation Dog(Patty)</span><br><span class="line"></span><br><span class="line">static void _I_Dog_Patty_printName(Dog * self, SEL _cmd) &#123;</span><br><span class="line">    NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_main1_a5e2f0_mi_1);</span><br><span class="line">&#125;</span><br><span class="line">// @end</span><br><span class="line"></span><br><span class="line">static struct /*_method_list_t*/ &#123;</span><br><span class="line">	unsigned int entsize;  // sizeof(struct _objc_method)</span><br><span class="line">	unsigned int method_count;</span><br><span class="line">	struct _objc_method method_list[1];</span><br><span class="line">&#125; _OBJC_$_CATEGORY_INSTANCE_METHODS_Dog_$_Patty __attribute__ ((used, section (&quot;__DATA,__objc_const&quot;))) = &#123;</span><br><span class="line">	sizeof(_objc_method),</span><br><span class="line">	1,</span><br><span class="line">	&#123;&#123;(struct objc_selector *)&quot;printName&quot;, &quot;v16@0:8&quot;, (void *)_I_Dog_Patty_printName&#125;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">extern &quot;C&quot; __declspec(dllexport) struct _class_t OBJC_CLASS_$_Dog;</span><br><span class="line"></span><br><span class="line">static struct _category_t _OBJC_$_CATEGORY_Dog_$_Patty __attribute__ ((used, section (&quot;__DATA,__objc_const&quot;))) =</span><br><span class="line">&#123;</span><br><span class="line">	&quot;Dog&quot;,</span><br><span class="line">	0, // &amp;OBJC_CLASS_$_Dog,</span><br><span class="line">	(const struct _method_list_t *)&amp;_OBJC_$_CATEGORY_INSTANCE_METHODS_Dog_$_Patty,</span><br><span class="line">	0,</span><br><span class="line">	0,</span><br><span class="line">	0,</span><br><span class="line">&#125;;</span><br><span class="line">static void OBJC_CATEGORY_SETUP_$_Dog_$_Patty(void ) &#123;</span><br><span class="line">	_OBJC_$_CATEGORY_Dog_$_Patty.cls = &amp;OBJC_CLASS_$_Dog;</span><br><span class="line">&#125;</span><br><span class="line">#pragma section(&quot;.objc_inithooks$B&quot;, long, read, write)</span><br><span class="line">__declspec(allocate(&quot;.objc_inithooks$B&quot;)) static void *OBJC_CATEGORY_SETUP[] = &#123;</span><br><span class="line">	(void *)&amp;OBJC_CATEGORY_SETUP_$_Dog_$_Patty,</span><br><span class="line">&#125;;</span><br><span class="line">static struct _class_t *L_OBJC_LABEL_CLASS_$ [1] __attribute__((used, section (&quot;__DATA, __objc_classlist,regular,no_dead_strip&quot;)))= &#123;</span><br><span class="line">	&amp;OBJC_CLASS_$_Dog,</span><br><span class="line">&#125;;</span><br><span class="line">static struct _category_t *L_OBJC_LABEL_CATEGORY_$ [1] __attribute__((used, section (&quot;__DATA, __objc_catlist,regular,no_dead_strip&quot;)))= &#123;</span><br><span class="line">	&amp;_OBJC_$_CATEGORY_Dog_$_Patty,</span><br><span class="line">&#125;;</span><br><span class="line">static struct IMAGE_INFO &#123; unsigned version; unsigned flag; &#125; _OBJC_IMAGE_INFO = &#123; 0, 2 &#125;;</span><br></pre></td></tr></table></figure>
-<h2 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h2><p>category是由OC动态加载（runtime）,多个category的调用顺序是无法保证的，<br>一般来说category内的方法需要添加前缀可避免重复添加导致编译出错<br>OC的运行入口，在objc-os.mm内<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">void _objc_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    static bool initialized = false;</span><br><span class="line">    if (initialized) return;</span><br><span class="line">    initialized = true;</span><br><span class="line"></span><br><span class="line">    // fixme defer initialization until an objc-using image is found?</span><br><span class="line">    environ_init();</span><br><span class="line">    tls_init();</span><br><span class="line">    static_init();</span><br><span class="line">    lock_init();</span><br><span class="line">    exception_init();</span><br><span class="line"></span><br><span class="line">    _dyld_objc_notify_register(&amp;map_2_images, load_images, unmap_image);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h2><p>category是由OC动态加载（runtime）,多个category的调用顺序是无法保证的，<br>一般来说category内的方法需要添加前缀可避免重复添加导致编译出错<br>OC的运行入口，在objc-os.mm内<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">void _objc_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    static bool initialized = false;</span><br><span class="line">    if (initialized) return;</span><br><span class="line">    initialized = true;</span><br><span class="line"></span><br><span class="line">    // fixme defer initialization until an objc-using image is found?</span><br><span class="line">    environ_init();</span><br><span class="line">    tls_init();</span><br><span class="line">    static_init();</span><br><span class="line">    lock_init();</span><br><span class="line">    exception_init();</span><br><span class="line"></span><br><span class="line">    _dyld_objc_notify_register(&amp;map_2_images, load_images, unmap_image);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>通过上面的方法，在map_2_images函数里面进入加载images,最终调用到_read_images方法</p>
 <ul>
 <li>获取OC的category列表catlist</li>
@@ -414,6 +415,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Objc/" rel="tag"><i class="fa fa-tag"></i> Objc</a>
+          
+        </div>
       
 
       
@@ -515,7 +522,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">35</span>
+                <span class="site-state-item-count">36</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -619,7 +626,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共60.2k字</span>
+<span class="post-count"> 博客全站共62.1k字</span>
 </div>
 
 
