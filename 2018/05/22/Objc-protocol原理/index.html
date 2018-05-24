@@ -109,7 +109,7 @@
 <meta property="og:image" content="https://pattyxp.github.io/images/OC4-pigProtol断点.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/OC4-pigProtocol.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/OC4-pigProtocol查找调用.png">
-<meta property="og:updated_time" content="2018-05-24T03:26:16.170Z">
+<meta property="og:updated_time" content="2018-05-24T03:29:27.716Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc-protocol实现原理">
 <meta name="twitter:description" content="前言本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行 本篇研究以下问题  Protocol的实现原理  若要查看category实现原理，请自行查阅之前的博客 源码12345678910111213141516171819202122232425262728293031323334&amp;gt;pig.h@protocol pigProtocol-">
@@ -365,13 +365,13 @@
 <p>当协议存储在协议表之后，调用协议，其实就是方法查找的问题，可以看下之前的文章<em>消息的发送与查找</em><br><img src="/images/OC4-pigProtocol查找调用.png" alt="OC4-pigProtocol查找调用"></p>
 <p>此处关于<code>NXMapTable</code>将在下章进行分析</p>
 <h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><ul>
-<li>calloc<br><code>calloc()</code> 函数用来动态地分配内存空间并初始化为 0，其原型为：<br><code>void* calloc (size_t num, size_t size);</code></li>
-</ul>
-<p><code>calloc()</code> 在内存中动态地分配 num 个长度为 size 的连续空间，并将每一个字节都初始化为 0。所以它的结果是分配了 num*size 个字节长度的内存空间，并且每个字节的值都是0。</p>
-<p>【返回值】分配成功返回指向该内存的地址，失败则返回 NULL。</p>
-<p><code>calloc()</code> 与 <code>malloc()</code>的一个重要区别是：<code>calloc()</code> 在动态分配完内存后，自动初始化该内存空间为零，而 <code>malloc()</code> 不初始化，里边数据是未知的垃圾数据</p>
-<ul>
-<li>memcpy<br>函数原型<code>void *memcpy(void*dest, const void *src, size_t n);</code><br>由src指向地址为起始地址的连续n个字节的数据复制到以destin指向地址为起始地址的空间内。<br>【返回值】函数返回一个指向dest的指针</li>
+<li><p>calloc<br>  <code>calloc()</code> 函数用来动态地分配内存空间并初始化为 0，其原型为：<br>  <code>void* calloc (size_t num, size_t size);</code></p>
+<p>  <code>calloc()</code> 在内存中动态地分配 num 个长度为 size 的连续空间，并将每一个字节都初始化为 0。所以它的结果是分配了 num*size 个字节长度的内存空间，并且每个字节的值都是0。</p>
+<p>  【返回值】分配成功返回指向该内存的地址，失败则返回 NULL。</p>
+<p>  <code>calloc()</code> 与 <code>malloc()</code>的一个重要区别是：<code>calloc()</code> 在动态分配完内存后，自动初始化该内存空间为零，而 <code>malloc()</code> 不初始化，里边数据是未知的垃圾数据</p>
+</li>
+<li><p>memcpy<br>  函数原型<code>void *memcpy(void*dest, const void *src, size_t n);</code><br>  由src指向地址为起始地址的连续n个字节的数据复制到以destin指向地址为起始地址的空间内。<br>  【返回值】函数返回一个指向dest的指针</p>
+</li>
 </ul>
 
       
