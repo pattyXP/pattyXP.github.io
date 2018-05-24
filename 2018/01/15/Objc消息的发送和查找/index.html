@@ -106,7 +106,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/Objc消息缓存查找.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/Objc选择子地址.png">
-<meta property="og:updated_time" content="2018-05-18T09:29:50.740Z">
+<meta property="og:updated_time" content="2018-05-24T03:19:50.858Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc消息的发送和查找">
 <meta name="twitter:description" content="前言本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创  本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行  开始在main.m中实现如下代码，添加断点查看XXObject调用hello方法的执行流程1234567891011121314151617181920#import &amp;quot;objc">
@@ -358,7 +358,7 @@
 <p>在init方法执行前，打断点<br><img src="/images/Objc选择子地址.png" alt="Objc选择子地址"><br>打印选择子hello的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p SEL(0x0000000100000f8c)</span><br><span class="line">(SEL) $2 = &quot;hello&quot;</span><br></pre></td></tr></table></figure></p>
 <h2 id="msgSend"><a href="#msgSend" class="headerlink" title="msgSend"></a>msgSend</h2><p>具体方法 OBJC_EXPORT id objc_msgSend(id self, SEL op, …)没有实现方法，是汇编语言实现的具体实现</p>
 <p>当编译器遇到一个方法调用时，它会将方法的调用翻译成以下函数中的一个 objc_msgSend、objc_msgSend_stret、objc_msgSendSuper 和 objc_msgSendSuper_stret。<br>发送给对象的父类的消息会使用 objc_msgSendSuper 有数据结构作为返回值的方法会使用 objc_msgSendSuper_stret 或 objc_msgSend_stret 其它的消息都是使用 objc_msgSend 发送的</p>
-<p>现在看下整个的主流程，在调用hello方法的地方，打上断点之后，<br>整个流程中，没有找到方法缓存时，会通过调用lookUpImpOrForward查找方法的实现，打开这个函数的断点，<br>lookUpImpOrForward这个函数主要做的事情如下:</p>
+<p>现在看下整个的主流程，在调用hello方法的地方，打上断点之后，<br>整个流程中，没有找到方法缓存时，在 <code>objc-runtime-new.mm L:4568</code><br>会通过调用lookUpImpOrForward查找方法的实现，打开这个函数的断点，<br>lookUpImpOrForward这个函数主要做的事情如下:</p>
 <ul>
 <li>查找缓存中是否存在方法的实现</li>
 <li>如果类没有初始化完成，就会去分配正确的可读写结构体</li>
@@ -639,7 +639,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共63.2k字</span>
+<span class="post-count"> 博客全站共63.3k字</span>
 </div>
 
 
