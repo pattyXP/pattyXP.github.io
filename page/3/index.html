@@ -275,6 +275,141 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/26/由RACSwizzleClass引发的class思考/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/26/由RACSwizzleClass引发的class思考/" itemprop="url">由RACSwizzleClass引发的class思考</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-26T17:12:47+08:00">
+                2018-01-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>之前在看ReactiveCocoa的源码时候，看到交换类的class方法，存在些疑惑，记下来以免忘记</p>
+<p>下面是主要的code，两个类，存在继承关系<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#pragma mark -class</span><br><span class="line">@interface Cat: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation Cat</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface PattyCat: Cat</span><br><span class="line">@end</span><br><span class="line">@implementation PattyCat</span><br><span class="line">@end</span><br><span class="line">void RACSwizzleGetClass(Class class, Class statedClass) &#123;</span><br><span class="line">    SEL selector = @selector(class);</span><br><span class="line">    Method method = class_getInstanceMethod(class, selector);</span><br><span class="line">    IMP newIMP = imp_implementationWithBlock(^(id self) &#123;</span><br><span class="line">        return statedClass;</span><br><span class="line">    &#125;);</span><br><span class="line">    class_replaceMethod(class, selector, newIMP, method_getTypeEncoding(method));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[PattyCat class],[Cat class]);</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[[PattyCat new]class],[[Cat new]class]);</span><br><span class="line"></span><br><span class="line">        RACSwizzleGetClass([PattyCat class],[Cat class]);</span><br><span class="line"></span><br><span class="line">        NSLog(@&quot;%p \n %p&quot;,[PattyCat class],[Cat class]);</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[[PattyCat new]class],[[Cat new]class]);</span><br><span class="line"></span><br><span class="line">        /*</span><br><span class="line">        RACSwizzleGetClass 方法交换的class之后，</span><br><span class="line">        为什么打印的[PattyCat class]前后没有变化？</span><br><span class="line">        [[PattyCat new]class]变化了，怎么写才会有变化</span><br><span class="line">        */</span><br><span class="line">      &#125;</span><br><span class="line">      return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>实践<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[PattyCat class],[Cat class]);</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[[PattyCat new]class],[[Cat new]class]);</span><br><span class="line"></span><br><span class="line">        IMP pattyCat_Class_IMP_before = [[PattyCat class] methodForSelector:@selector(class)];</span><br><span class="line">        IMP pattyCat_Instance_IMP_before = [[PattyCat new] methodForSelector:@selector(class)];</span><br><span class="line">        IMP pattyCat_MetaClass_IMP_before = [object_getClass([PattyCat class]) methodForSelector:@selector(class)];</span><br><span class="line"></span><br><span class="line">        //第一种情况</span><br><span class="line">       // RACSwizzleGetClass([PattyCat class],[Cat class]);</span><br><span class="line"></span><br><span class="line">        //第二种情况</span><br><span class="line">        id metaClass = object_getClass([PattyCat class]);</span><br><span class="line">        RACSwizzleGetClass(metaClass,[Cat class]);</span><br><span class="line"></span><br><span class="line">        IMP pattyCat_Class_IMP_after = [[PattyCat class] methodForSelector:@selector(class)];</span><br><span class="line">        IMP pattyCat_Instance_IMP_after= [[PattyCat new] methodForSelector:@selector(class)];</span><br><span class="line">        IMP pattyCat_MetaClass_IMP_after = [object_getClass([PattyCat class]) methodForSelector:@selector(class)];</span><br><span class="line"></span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[PattyCat class],[Cat class]);</span><br><span class="line">        NSLog(@&quot;%p ---- %p&quot;,[[PattyCat new]class],[[Cat new]class]);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> 对于第一种情况 RACSwizzleGetClass([PattyCat class],[Cat class]);<br> 打印前后 NSLog(@”%p \n %p”,[PattyCat class],[Cat class]);值没有变化</p>
+<p> 在左侧的结果里，可以看到<br> pattyCat_Class_IMP_before 和 pattyCat_Class_IMP_after 都是一样的结果<br> 但是pattyCat_Instance_IMP_before 和 pattyCat_Instance_IMP_after不一样了</p>
+<p> 说明swizzle交换的是-class方法，<br> 打印[[PattyCat new]class] 和 [[Cat new]class] 结果是一样的</p>
+<p> 原因：<br> RACSwizzleGetClass 的第一个参数 如果是[PattyCat class]，那么<br> 根据 NSObject.mm<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+ (Class)class &#123;</span><br><span class="line">return self;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> [PattyCat class]返回的是PattyCat对象自身，所以<br> class_replaceMethod(class, selector, newIMP, method_getTypeEncoding(method));<br> 这句话是去PattyCat对象的methodList方法列表里去查找class方法，找到的当然是-class，替换为Cat对象</p>
+<p> 对于第二种情况<br> id metaClass = object_getClass([PattyCat class]);<br> RACSwizzleGetClass(metaClass,[Cat class]);<br> 在左侧的结果里，可以看到 imp在前后都是一样的实现<br> 说明交互的是+class</p>
+<p> 打印[PattyCat class]和[Cat class]是一样的了，也就是替换了[PattyCat class]指向<br> 因为第一个参数传递的是元类，也就是获取的是+class，所以打印的时候，[PattyCat class]从patty_meta_class查找方法，<br> 找不到就去super_meta_class查找，直到NSObject_meta_class，查找到替换方法的返回结果，所以获取[PattyCat class]取到的是替换后的结果，打印结果和之前有变化</p>
+<h2 id="引申"><a href="#引申" class="headerlink" title="引申"></a>引申</h2><p>-class 和 +class 取值的地方<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PattyCat *pcat = [[PattyCat alloc]init];</span><br></pre></td></tr></table></figure></p>
+<p>[pcat class] 实例对象的class方法，是去PattyCat类查找class,如果没有，就一直去父类找，找到NSObject的-class方法，然后copy缓存一份在PattyCat的类列表里,虽然打印结果是一样的，但是指针地址%p是不一样的。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/18/ReactiveCocoa-RACDelegateProxy/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1697,157 +1832,6 @@ __builtin_expect的作用
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/08/load了解/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/08/load了解/" itemprop="url">load了解</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-08T11:29:31+08:00">
-                2018-01-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
-<blockquote>
-<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，</p>
-</blockquote>
-<p>##程序启动加载的流程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//dyld(The Dynamic Link Editor)是 Apple 的动态链接库，系统内核做好启动程序的初始准备后，将其他事务交给 dyld 负责</span><br><span class="line">_dyld-start</span><br><span class="line">|</span><br><span class="line">_objc_init</span><br><span class="line">|</span><br><span class="line">_dyld_objc_notify_register</span><br><span class="line">|</span><br><span class="line">load_images</span><br></pre></td></tr></table></figure></p>
-<p><img src="/images/load_images.png" alt="线程图"></p>
-<p>类方法加载的流程</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">void</span><br><span class="line">load_images(const char *path __unused, const struct mach_header *mh)</span><br><span class="line">&#123;</span><br><span class="line">    // Return without taking locks if there are no +load methods here.</span><br><span class="line">    if (!hasLoadMethods((const headerType *)mh)) return;</span><br><span class="line"></span><br><span class="line">    recursive_mutex_locker_t lock(loadMethodLock);</span><br><span class="line"></span><br><span class="line">    // Discover load methods</span><br><span class="line">    &#123;</span><br><span class="line">        rwlock_writer_t lock2(runtimeLock);</span><br><span class="line">        prepare_load_methods((const headerType *)mh);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Call +load methods (without runtimeLock - re-entrant)</span><br><span class="line">    call_load_methods();</span><br><span class="line">&#125;</span><br><span class="line">通过load_images进行类的存储prepare_load_methods，包括类的load方法和category方法，存在数组中loadable_classes和loadable_categories</span><br><span class="line">然后调用call_load_methods去调用call_class_loads和call_category_loads</span><br></pre></td></tr></table></figure>
-<p>prepare_load_methods //将需要调用 load 方法的类添加到一个列表中</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">void prepare_load_methods(const headerType *mhdr)</span><br><span class="line">&#123;</span><br><span class="line">    size_t count, i;</span><br><span class="line"></span><br><span class="line">    runtimeLock.assertWriting();</span><br><span class="line"></span><br><span class="line">    classref_t *classlist =</span><br><span class="line">        _getObjc2NonlazyClassList(mhdr, &amp;count);</span><br><span class="line">    for (i = 0; i &lt; count; i++) &#123;</span><br><span class="line">        schedule_class_load(remapClass(classlist[i]));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    category_t **categorylist = _getObjc2NonlazyCategoryList(mhdr, &amp;count);</span><br><span class="line">    for (i = 0; i &lt; count; i++) &#123;</span><br><span class="line">        category_t *cat = categorylist[i];</span><br><span class="line">        Class cls = remapClass(cat-&gt;cls);</span><br><span class="line">        if (!cls) continue;  // category for ignored weak-linked class</span><br><span class="line">        realizeClass(cls);</span><br><span class="line">        assert(cls-&gt;ISA()-&gt;isRealized());</span><br><span class="line">        add_category_to_loadable_list(cat);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>通过_getObjc2NonlazyClassList 获取所有的类的列表之后，会通过 remapClass 获取类对应的指针，<br>然后调用 schedule_class_load 递归地安排当前类和没有调用 + load 父类进入列表。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">static void schedule_class_load(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    if (!cls) return;</span><br><span class="line">    assert(cls-&gt;isRealized());</span><br><span class="line"></span><br><span class="line">    if (cls-&gt;data()-&gt;flags &amp; RW_LOADED) return;</span><br><span class="line"></span><br><span class="line">    schedule_class_load(cls-&gt;superclass);</span><br><span class="line"></span><br><span class="line">    add_class_to_loadable_list(cls);</span><br><span class="line">    cls-&gt;setInfo(RW_LOADED);</span><br><span class="line">&#125;</span><br><span class="line">在执行 add_class_to_loadable_list(cls) 将当前类加入加载列表之前，会先把父类加入待加载的列表，保证父类在子类前调用 load 方法。</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">void add_class_to_loadable_list(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    IMP method;</span><br><span class="line"></span><br><span class="line">    loadMethodLock.assertLocked();</span><br><span class="line"></span><br><span class="line">    method = cls-&gt;getLoadMethod();</span><br><span class="line">    if (!method) return;  // Don&apos;t bother if cls has no +load method</span><br><span class="line"></span><br><span class="line">    if (PrintLoading) &#123;</span><br><span class="line">        _objc_inform(&quot;LOAD: class &apos;%s&apos; scheduled for +load&quot;,</span><br><span class="line">                     cls-&gt;nameForLogging());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (loadable_classes_used == loadable_classes_allocated) &#123;</span><br><span class="line">        loadable_classes_allocated = loadable_classes_allocated*2 + 16;</span><br><span class="line">        loadable_classes = (struct loadable_class *)</span><br><span class="line">            realloc(loadable_classes,</span><br><span class="line">                              loadable_classes_allocated *</span><br><span class="line">                              sizeof(struct loadable_class));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    loadable_classes[loadable_classes_used].cls = cls;</span><br><span class="line">    loadable_classes[loadable_classes_used].method = method;</span><br><span class="line">    loadable_classes_used++;</span><br><span class="line">&#125;</span><br><span class="line">判断当前loadable_classes是否被分配完，如果没有剩余空间，就会在当前数组的基础上扩大数组的大小：realloc，然后把传入的 class 以及对应的方法的实现加到列表中</span><br></pre></td></tr></table></figure>
-<h2 id="疑问"><a href="#疑问" class="headerlink" title="疑问"></a>疑问</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(*load_method)(cls, SEL_load); 这一句可以调用 load 方法？</span><br><span class="line">cls执行load_method指针指向的函数地址</span><br></pre></td></tr></table></figure>
-<p>其实这里是C函数指针的概念<br>举例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">void run() &#123;</span><br><span class="line">    printf(&quot;Hello World\n&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        void (*dy_run)() = run;</span><br><span class="line">        (*dy_run)();</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line">其结果会发现执行了 run 方法，并输出了 Hello World。这里，我们通过一个 void (*fptr)() 类型的函数指针，将 run 函数获取出，并运行函数。实际上其中的工作是抓取 run 函数的地址并存储在指针变量中。我们通过指针运行对应的地址部分，其效果为执行了 run 函数。</span><br></pre></td></tr></table></figure></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总结一下 Class 中 load 方法的全部流程，用流程图将其描述一下：<br><img src="/images/流程图.png" alt="流程图"></p>
-<ul>
-<li>Load Images: 通过 dyld 载入 image 文件，引入 Class。</li>
-<li>Prepare Load Methods: 准备 load 方法。过滤无效类、无效方法，将 load 方法指针和所属 Class 指针收集至全局 Class 存储线性表 loadable_classes 中，其中会涉及到自动扩展空间和父类优先的递归调用问题。</li>
-<li>Call Load Methods: 根据收集到的函数指针，对 load 方法进行动态调用。进一步过滤无效方法，并记录 log 日志。</li>
-</ul>
-<h2 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h2><p>什么是images?<br>images表示的是二进制文件（可执行文件或者动态链接库.so文件）编译后的符号、代码等。所以 load_images 的工作是传入处理过后的二进制文件并让 Runtime 进行处理，并且每一个文件对应一个抽象实例来负责加载，这里的实例是 ImageLoader。</p>
-<p>ImageLoader 处理二进制文件的时机是在 main 入口函数以前，它在加载文件时主要做两个工作：</p>
-<ul>
-<li>在程序运行时它先将动态链接的 image 递归加载 （也就是上面测试栈中一串的递归调用的时刻）</li>
-<li>再从可执行文件 image 递归加载所有符号</li>
-</ul>
-<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BD%A0%E7%9C%9F%E7%9A%84%E4%BA%86%E8%A7%A3%20load%20%E6%96%B9%E6%B3%95%E4%B9%88%EF%BC%9F.md" target="_blank" rel="noopener">https://github.com/Draveness/analyze/blob/master/contents/objc/%E4%BD%A0%E7%9C%9F%E7%9A%84%E4%BA%86%E8%A7%A3%20load%20%E6%96%B9%E6%B3%95%E4%B9%88%EF%BC%9F.md</a></p>
-<p><a href="https://xiaozhuanlan.com/topic/3175268940" target="_blank" rel="noopener">https://xiaozhuanlan.com/topic/3175268940</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1898,7 +1882,7 @@ __builtin_expect的作用
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">36</span>
+                <span class="site-state-item-count">37</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1986,7 +1970,7 @@ __builtin_expect的作用
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共62.1k字</span>
+<span class="post-count"> 博客全站共63.2k字</span>
 </div>
 
 

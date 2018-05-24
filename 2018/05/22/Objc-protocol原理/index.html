@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Objc," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="温暖的弦" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="前言本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行 本篇研究以下问题  Protocol的实现原理  若要查看category实现原理，请自行查阅之前的博客 源码12345678910111213141516171819202122232425262728293031323334&amp;gt;pig.h@protocol pigProtocol-">
+<meta name="keywords" content="Objc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Objc-protocol实现原理">
+<meta property="og:url" content="https://pattyxp.github.io/2018/05/22/Objc-protocol原理/index.html">
+<meta property="og:site_name" content="温暖的弦">
+<meta property="og:description" content="前言本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行 本篇研究以下问题  Protocol的实现原理  若要查看category实现原理，请自行查阅之前的博客 源码12345678910111213141516171819202122232425262728293031323334&amp;gt;pig.h@protocol pigProtocol-">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://pattyxp.github.io/images/OC4-init.png">
+<meta property="og:image" content="https://pattyxp.github.io/images/OC4-protocol.png">
+<meta property="og:image" content="https://pattyxp.github.io/images/OC4-pigProtol断点.png">
+<meta property="og:image" content="https://pattyxp.github.io/images/OC4-pigProtocol.png">
+<meta property="og:updated_time" content="2018-05-24T03:15:13.063Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Objc-protocol实现原理">
+<meta name="twitter:description" content="前言本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行 本篇研究以下问题  Protocol的实现原理  若要查看category实现原理，请自行查阅之前的博客 源码12345678910111213141516171819202122232425262728293031323334&amp;gt;pig.h@protocol pigProtocol-">
+<meta name="twitter:image" content="https://pattyxp.github.io/images/OC4-init.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://pattyxp.github.io/2018/05/22/Objc-protocol原理/"/>
+
+
+
+
+
+  <title>Objc-protocol实现原理 | 温暖的弦</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">温暖的弦</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/05/22/Objc-protocol原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Objc-protocol实现原理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-22T17:24:40+08:00">
+                2018-05-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行</p>
+<p>本篇研究以下问题</p>
+<ul>
+<li>Protocol的实现原理</li>
+</ul>
+<p>若要查看category实现原理，请自行查阅之前的<a href="https://pattyxp.github.io/2018/02/11/Objc-category%E7%AF%87/">博客</a></p>
+<p>源码<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">&gt;pig.h</span><br><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">pigProtocol</span></span></span><br><span class="line">- (<span class="keyword">void</span>)updateAge;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">Pig</span> : <span class="title">NSObject</span>&lt;<span class="title">pigProtocol</span>&gt;</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) <span class="built_in">NSString</span> *name;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>) <span class="built_in">NSInteger</span> age;</span><br><span class="line">+ (<span class="keyword">id</span>)createPig;</span><br><span class="line">- (<span class="keyword">void</span>)updateAge;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line">&gt;pig.m</span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Pig</span></span></span><br><span class="line"></span><br><span class="line">+ (<span class="keyword">id</span>)createPig</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> new];</span><br><span class="line">&#125;</span><br><span class="line">- (<span class="keyword">void</span>)updateAge</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">self</span>.age = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"对象age:%@"</span>,<span class="keyword">self</span>.name);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line">&gt;main.m</span><br><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[]) &#123;</span><br><span class="line">    <span class="keyword">@autoreleasepool</span> &#123;</span><br><span class="line">        </span><br><span class="line">        Pig *pigObject = [Pig createPig];</span><br><span class="line">        [pigObject updateAge];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>首先在整个应用中，在main函数打上断点，可以观察到最初函数调用栈如图<br><img src="/images/OC4-init.png" alt="OC4-init"></p>
+<p>在<code>objc-runtime-new.mm</code>文件 L:2284 方法<code>_read_images</code>内有对<code>protocol</code>、<code>category</code>等的赋值操作<br><code>_read_images</code>方法是从当前镜像内加载相应的类及其属性</p>
+<p>在方法内部<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (EACH_HEADER) &#123;</span><br><span class="line">        <span class="keyword">extern</span> objc_class OBJC_CLASS_$_Protocol;</span><br><span class="line">        Class cls = (Class)&amp;OBJC_CLASS_$_Protocol;</span><br><span class="line">        assert(cls);</span><br><span class="line">        NXMapTable *protocol_map = protocols(); <span class="comment">//创建表</span></span><br><span class="line">        <span class="keyword">bool</span> isPreoptimized = hi-&gt;isPreoptimized();</span><br><span class="line">        <span class="keyword">bool</span> isBundle = hi-&gt;isBundle();</span><br><span class="line"></span><br><span class="line">        protocol_t **protolist = _getObjc2ProtocolList(hi, &amp;count);</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            readProtocol(protolist[i], cls, protocol_map, </span><br><span class="line">                         isPreoptimized, isBundle);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>protocols()</code>内部实现是有个静态变量，判断是否存在表，不存在就创建<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> NXMapTable *protocols(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">static</span> NXMapTable *protocol_map = <span class="literal">nil</span>;</span><br><span class="line">    </span><br><span class="line">    runtimeLock.assertLocked();</span><br><span class="line"></span><br><span class="line">    INIT_ONCE_PTR(protocol_map, </span><br><span class="line">                  NXCreateMapTable(NXStrValueMapPrototype, <span class="number">16</span>), </span><br><span class="line">                  NXFreeMapTable(v) );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> protocol_map;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过<code>_getObjc2ProtocolList</code>获取该路径下的协议列表，此处没有源码<br>下面还有个重要的方法<code>readProtocol</code><br>可以先看下里面的一些变量，这里很多协议都会走这里，如<code>NSCopying</code>、<code>NSCoding</code><br><img src="/images/OC4-protocol.png" alt="OC4-protocol"></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">void</span></span><br><span class="line">readProtocol(protocol_t *newproto, Class protocol_class,</span><br><span class="line">             NXMapTable *protocol_map, </span><br><span class="line">             <span class="keyword">bool</span> headerIsPreoptimized, <span class="keyword">bool</span> headerIsBundle)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// This is not enough to make protocols in unloaded bundles safe, </span></span><br><span class="line">    <span class="comment">// but it does prevent crashes when looking up unrelated protocols.</span></span><br><span class="line">    auto insertFn = headerIsBundle ? NXMapKeyCopyingInsert : NXMapInsert;</span><br><span class="line"></span><br><span class="line">    protocol_t *oldproto = (protocol_t *)getProtocol(newproto-&gt;mangledName);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (oldproto) &#123;  <span class="comment">//如果存在oldproto 结束</span></span><br><span class="line">        <span class="comment">// Some other definition already won.</span></span><br><span class="line">        <span class="keyword">if</span> (PrintProtocols) &#123;</span><br><span class="line">            _objc_inform(<span class="string">"PROTOCOLS: protocol at %p is %s  "</span></span><br><span class="line">                         <span class="string">"(duplicate of %p)"</span>,</span><br><span class="line">                         newproto, oldproto-&gt;nameForLogging(), oldproto);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (headerIsPreoptimized) &#123;</span><br><span class="line">        <span class="comment">// Shared cache initialized the protocol object itself, </span></span><br><span class="line">        <span class="comment">// but in order to allow out-of-cache replacement we need </span></span><br><span class="line">        <span class="comment">// to add it to the protocol table now.</span></span><br><span class="line"></span><br><span class="line">        protocol_t *cacheproto = (protocol_t *)</span><br><span class="line">            getPreoptimizedProtocol(newproto-&gt;mangledName);</span><br><span class="line">        protocol_t *installedproto;</span><br><span class="line">        <span class="keyword">if</span> (cacheproto  &amp;&amp;  cacheproto != newproto) &#123;</span><br><span class="line">            <span class="comment">// Another definition in the shared cache wins (because </span></span><br><span class="line">            <span class="comment">// everything in the cache was fixed up to point to it).</span></span><br><span class="line">            installedproto = cacheproto;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// This definition wins.</span></span><br><span class="line">            installedproto = newproto;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        assert(installedproto-&gt;getIsa() == protocol_class);</span><br><span class="line">        assert(installedproto-&gt;size &gt;= <span class="keyword">sizeof</span>(protocol_t));</span><br><span class="line">        insertFn(protocol_map, installedproto-&gt;mangledName, </span><br><span class="line">                 installedproto);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (PrintProtocols) &#123;</span><br><span class="line">            _objc_inform(<span class="string">"PROTOCOLS: protocol at %p is %s"</span>, </span><br><span class="line">                         installedproto, installedproto-&gt;nameForLogging());</span><br><span class="line">            <span class="keyword">if</span> (newproto != installedproto) &#123;</span><br><span class="line">                _objc_inform(<span class="string">"PROTOCOLS: protocol at %p is %s  "</span></span><br><span class="line">                             <span class="string">"(duplicate of %p)"</span>, </span><br><span class="line">                             newproto, installedproto-&gt;nameForLogging(), </span><br><span class="line">                             installedproto);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (newproto-&gt;size &gt;= <span class="keyword">sizeof</span>(protocol_t)) &#123; <span class="comment">//如果新协议size大于96 sizeof(protocol_t)=96</span></span><br><span class="line">        <span class="comment">// New protocol from an un-preoptimized image</span></span><br><span class="line">        <span class="comment">// with sufficient storage. Fix it up in place.</span></span><br><span class="line">        <span class="comment">// fixme duplicate protocols from unloadable bundle</span></span><br><span class="line">        newproto-&gt;initIsa(protocol_class);  <span class="comment">// fixme pinned  //初始化isa</span></span><br><span class="line">        insertFn(protocol_map, newproto-&gt;mangledName, newproto);<span class="comment">// 插入协议到指定的protocol_map</span></span><br><span class="line">        <span class="keyword">if</span> (PrintProtocols) &#123;</span><br><span class="line">            _objc_inform(<span class="string">"PROTOCOLS: protocol at %p is %s"</span>,</span><br><span class="line">                         newproto, newproto-&gt;nameForLogging());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// New protocol from an un-preoptimized image </span></span><br><span class="line">        <span class="comment">// with insufficient storage. Reallocate it.</span></span><br><span class="line">        <span class="comment">// fixme duplicate protocols from unloadable bundle</span></span><br><span class="line">        size_t size = max(<span class="keyword">sizeof</span>(protocol_t), (size_t)newproto-&gt;size);</span><br><span class="line">        protocol_t *installedproto = (protocol_t *)calloc(size, <span class="number">1</span>);</span><br><span class="line">        memcpy(installedproto, newproto, newproto-&gt;size);</span><br><span class="line">        installedproto-&gt;size = (<span class="keyword">typeof</span>(installedproto-&gt;size))size;</span><br><span class="line">        </span><br><span class="line">        installedproto-&gt;initIsa(protocol_class);  <span class="comment">// fixme pinned</span></span><br><span class="line">        insertFn(protocol_map, installedproto-&gt;mangledName, installedproto);</span><br><span class="line">        <span class="keyword">if</span> (PrintProtocols) &#123;</span><br><span class="line">            _objc_inform(<span class="string">"PROTOCOLS: protocol at %p is %s  "</span>, </span><br><span class="line">                         installedproto, installedproto-&gt;nameForLogging());</span><br><span class="line">            _objc_inform(<span class="string">"PROTOCOLS: protocol at %p is %s  "</span></span><br><span class="line">                         <span class="string">"(reallocated to %p)"</span>, </span><br><span class="line">                         newproto, installedproto-&gt;nameForLogging(), </span><br><span class="line">                         installedproto);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果想要监听自己需要的协议如<code>pigProtocol</code>，可以打断点<br><img src="/images/OC4-pigProtol断点.png" alt="OC4-pigProtol断点"><br><img src="/images/OC4-pigProtocol.png" alt="OC4-pigProtocol"></p>
+<p>此处关于<code>NXMapTable</code>将在下章进行分析</p>
+<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><ul>
+<li>calloc<br><code>calloc()</code> 函数用来动态地分配内存空间并初始化为 0，其原型为：<br><code>void* calloc (size_t num, size_t size);</code></li>
+</ul>
+<p><code>calloc()</code> 在内存中动态地分配 num 个长度为 size 的连续空间，并将每一个字节都初始化为 0。所以它的结果是分配了 num*size 个字节长度的内存空间，并且每个字节的值都是0。</p>
+<p>【返回值】分配成功返回指向该内存的地址，失败则返回 NULL。</p>
+<p><code>calloc()</code> 与 <code>malloc()</code>的一个重要区别是：<code>calloc()</code> 在动态分配完内存后，自动初始化该内存空间为零，而 <code>malloc()</code> 不初始化，里边数据是未知的垃圾数据</p>
+<ul>
+<li>memcpy<br>函数原型<code>void *memcpy(void*dest, const void *src, size_t n);</code><br>由src指向地址为起始地址的连续n个字节的数据复制到以destin指向地址为起始地址的空间内。<br>【返回值】函数返回一个指向dest的指针</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+      <div>
+      <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+      </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Objc/" rel="tag"><i class="fa fa-tag"></i> Objc</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/18/Objc-load调查/" rel="next" title="Objc-load调查">
+                <i class="fa fa-chevron-left"></i> Objc-load调查
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8zNjQyMC8xMjk1NQ=="></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/flower.jpg"
+               alt="Patty" />
+          <p class="site-author-name" itemprop="name">Patty</p>
+           
+              <p class="site-description motion-element" itemprop="description">Life's like a movie, write your own ending, keep believing, keep pretending.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">37</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补充"><span class="nav-number">2.</span> <span class="nav-text">补充</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Patty</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i>
+<span id="busuanzi_container_site_uv">
+  本站总访问量<span id="busuanzi_value_site_uv"></span>次
+</span>
+<span class="post-count"> 博客全站共63.2k字</span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  <!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>

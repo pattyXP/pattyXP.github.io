@@ -104,7 +104,7 @@
 <meta property="og:site_name" content="温暖的弦">
 <meta property="og:description" content="前言本篇研究以下问题  load方法调用时机和顺序问题 多个分类中有load方法是怎么处理的 为什么load方法不存在方法缓存覆盖问题  先来看下load方法的加载时机源码主要包含以下类:  Pig类 PigCate1 PigCate2每个类都包含load方法,打印当前_cmd在每个load处添加断点，函数调用栈如下!(OC4-load)(/images/OC4-load.png)  load方法">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-05-22T06:54:59.452Z">
+<meta property="og:updated_time" content="2018-05-22T07:54:36.225Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objc-load调查">
 <meta name="twitter:description" content="前言本篇研究以下问题  load方法调用时机和顺序问题 多个分类中有load方法是怎么处理的 为什么load方法不存在方法缓存覆盖问题  先来看下load方法的加载时机源码主要包含以下类:  Pig类 PigCate1 PigCate2每个类都包含load方法,打印当前_cmd在每个load处添加断点，函数调用栈如下!(OC4-load)(/images/OC4-load.png)  load方法">
@@ -374,7 +374,7 @@
 <p>至此<code>call_load_methods</code>方法分析的差不多了</p>
 <p>因此，<code>load</code>方法的调用时机可以总结如下</p>
 <blockquote>
-<p>父类优先子类调用<br>类优先分类</p>
+<p>在main方法调用之前，程序调用期间调用一次<br>父类优先子类调用<br>类优先分类</p>
 </blockquote>
 <h2 id="疑问"><a href="#疑问" class="headerlink" title="疑问"></a>疑问</h2><ul>
 <li>问题1<br>在调用分类的load方法源码中，存在部分理解问题<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将所有加载过的分类移除 `loadable_categories` 列表</span></span><br><span class="line">shift = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; used; i++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (cats[i].cat) &#123;</span><br><span class="line">        cats[i-shift] = cats[i];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        shift++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">used -= shift;</span><br></pre></td></tr></table></figure>
@@ -469,6 +469,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2018/05/22/Objc-protocol原理/" rel="prev" title="Objc-protocol实现原理">
+                Objc-protocol实现原理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -546,7 +550,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">36</span>
+                <span class="site-state-item-count">37</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -650,7 +654,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共62.1k字</span>
+<span class="post-count"> 博客全站共63.2k字</span>
 </div>
 
 
