@@ -96,19 +96,19 @@
 
 
 
-<meta name="description" content="本篇研究以下问题  weak的原理 MapTable的原理  weak的原理本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject.m">
+<meta name="description" content="本篇研究以下问题  weak的原理 NXMapTable的原理  weak的原理本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject">
 <meta name="keywords" content="Objc">
 <meta property="og:type" content="article">
-<meta property="og:title" content="weak底层">
-<meta property="og:url" content="https://pattyxp.github.io/2018/01/09/Objc-weak底层/index.html">
+<meta property="og:title" content="weak底层 &amp; NXMapTable">
+<meta property="og:url" content="https://pattyxp.github.io/2018/01/09/Objc-weak&MapTable/index.html">
 <meta property="og:site_name" content="温暖的弦">
-<meta property="og:description" content="本篇研究以下问题  weak的原理 MapTable的原理  weak的原理本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject.m">
+<meta property="og:description" content="本篇研究以下问题  weak的原理 NXMapTable的原理  weak的原理本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/Objc-mapTable.png">
-<meta property="og:updated_time" content="2018-05-30T01:55:33.215Z">
+<meta property="og:updated_time" content="2018-05-30T01:58:37.577Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="weak底层">
-<meta name="twitter:description" content="本篇研究以下问题  weak的原理 MapTable的原理  weak的原理本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject.m">
+<meta name="twitter:title" content="weak底层 &amp; NXMapTable">
+<meta name="twitter:description" content="本篇研究以下问题  weak的原理 NXMapTable的原理  weak的原理本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject">
 <meta name="twitter:image" content="https://pattyxp.github.io/images/Objc-mapTable.png">
 
 
@@ -138,13 +138,13 @@
 
 
 
-  <link rel="canonical" href="https://pattyxp.github.io/2018/01/09/Objc-weak底层/"/>
+  <link rel="canonical" href="https://pattyxp.github.io/2018/01/09/Objc-weak&MapTable/"/>
 
 
 
 
 
-  <title>weak底层 | 温暖的弦</title>
+  <title>weak底层 & NXMapTable | 温暖的弦</title>
   
 
 
@@ -277,7 +277,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/09/Objc-weak底层/">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/09/Objc-weak&MapTable/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Patty">
@@ -294,7 +294,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">weak底层</h1>
+          <h1 class="post-title" itemprop="name headline">weak底层 & NXMapTable</h1>
         
 
         <div class="post-meta">
@@ -347,7 +347,7 @@
         <p>本篇研究以下问题</p>
 <ul>
 <li>weak的原理</li>
-<li>MapTable的原理</li>
+<li>NXMapTable的原理</li>
 </ul>
 <h2 id="weak的原理"><a href="#weak的原理" class="headerlink" title="weak的原理"></a>weak的原理</h2><p>本文分析是runtime源码 <a href="https://github.com/isaacselement/objc4-706" target="_blank" rel="noopener">objc4-706版本</a><br>OC code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// NSObject *obj = ...;</span><br><span class="line">__weak id weakPtr = obj;</span><br></pre></td></tr></table></figure></p>
 <p>底层转为源码为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// NSObject *obj = ...;</span><br><span class="line">objc_initWeak(&amp;weakPtr, obj);</span><br></pre></td></tr></table></figure></p>

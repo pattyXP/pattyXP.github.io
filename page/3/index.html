@@ -1562,7 +1562,7 @@ __builtin_expect的作用
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/09/Objc-weak底层/">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/09/Objc-weak&MapTable/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Patty">
@@ -1581,7 +1581,7 @@ __builtin_expect的作用
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/01/09/Objc-weak底层/" itemprop="url">weak底层</a></h1>
+                <a class="post-title-link" href="/2018/01/09/Objc-weak&MapTable/" itemprop="url">weak底层 & NXMapTable</a></h1>
         
 
         <div class="post-meta">
@@ -1636,7 +1636,7 @@ __builtin_expect的作用
             <p>本篇研究以下问题</p>
 <ul>
 <li>weak的原理</li>
-<li>MapTable的原理</li>
+<li>NXMapTable的原理</li>
 </ul>
 <h2 id="weak的原理"><a href="#weak的原理" class="headerlink" title="weak的原理"></a>weak的原理</h2><p>本文分析是runtime源码 <a href="https://github.com/isaacselement/objc4-706" target="_blank" rel="noopener">objc4-706版本</a><br>OC code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// NSObject *obj = ...;</span><br><span class="line">__weak id weakPtr = obj;</span><br></pre></td></tr></table></figure></p>
 <p>底层转为源码为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// NSObject *obj = ...;</span><br><span class="line">objc_initWeak(&amp;weakPtr, obj);</span><br></pre></td></tr></table></figure></p>
