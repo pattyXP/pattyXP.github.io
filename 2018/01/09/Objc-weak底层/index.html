@@ -105,7 +105,7 @@
 <meta property="og:description" content="本篇研究以下问题  weak的原理 MapTable的原理  weak的原理本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject.m">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/Objc-mapTable.png">
-<meta property="og:updated_time" content="2018-05-30T01:42:23.590Z">
+<meta property="og:updated_time" content="2018-05-30T01:55:33.215Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="weak底层">
 <meta name="twitter:description" content="本篇研究以下问题  weak的原理 MapTable的原理  weak的原理本文分析是runtime源码 objc4-706版本OC code12// NSObject *obj = ...;__weak id weakPtr = obj; 底层转为源码为12// NSObject *obj = ...;objc_initWeak(&amp;amp;weakPtr, obj); 来看下NSObject.m">
@@ -385,7 +385,41 @@
 </li>
 </ul>
 <blockquote>
-<p>说明<br><code>malloc_zone_malloc</code>初始化开辟对应的空间<br><code>exp2u(log2u(capacity)+1)</code> 每次返回当前位数下的二进制最大值<br>capacity   binary  result<br>1           1       1<br>2           10      3(0b11)<br>6           110     7(0b111)<br>100         1100100 127(0b111 1111)<br>capacity是入参，result是结果,binary是当前二进制数</p>
+<p>说明<br><code>malloc_zone_malloc</code>初始化开辟对应的空间<br><code>exp2u(log2u(capacity)+1)</code> 每次返回当前位数下的二进制最大值</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>capacity</th>
+<th style="text-align:right">binary</th>
+<th style="text-align:center">result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align:right">1</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align:right">10</td>
+<td style="text-align:center">3(0b11)</td>
+</tr>
+<tr>
+<td>6</td>
+<td style="text-align:right">110</td>
+<td style="text-align:center">7(0b111)</td>
+</tr>
+<tr>
+<td>100</td>
+<td style="text-align:right">1100100</td>
+<td style="text-align:center">127(0b111 1111)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>capacity是入参，result是结果,binary是当前二进制数</p>
 </blockquote>
 <ul>
 <li><p>NXCountMapTable<br>最简单的方法，返回table的<code>count</code>属性</p>
