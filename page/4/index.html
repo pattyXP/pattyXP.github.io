@@ -275,6 +275,153 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/08/Block浅析持有对象/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/08/Block浅析持有对象/" itemprop="url">Block浅析持有对象</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-08T15:33:52+08:00">
+                2018-01-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="第一段"><a href="#第一段" class="headerlink" title="第一段"></a>第一段</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@interface TestObject ()</span><br><span class="line">@property (nonatomic, strong) NSString *name;</span><br><span class="line">@end</span><br><span class="line">@implementation TestObject</span><br><span class="line">- (void)test&#123;</span><br><span class="line">    ^&#123;</span><br><span class="line">        NSLog(@&quot;%@&quot;,self.name);</span><br><span class="line">    &#125;();</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>经过clang -rewrite-objc xx.m 之后得到 TestObject.cpp ，精简之后得到如下源码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"> // @interface TestObject ()</span><br><span class="line"> // @property (nonatomic, strong) NSString *name;</span><br><span class="line"> /* @end */</span><br><span class="line"></span><br><span class="line">// @implementation TestObject</span><br><span class="line"></span><br><span class="line">struct __TestObject__test_block_impl_0 &#123;</span><br><span class="line">    struct __block_impl impl;</span><br><span class="line">    struct __TestObject__test_block_desc_0* Desc;</span><br><span class="line">    TestObject *self;</span><br><span class="line">    __TestObject__test_block_impl_0(void *fp, struct __TestObject__test_block_desc_0 *desc, TestObject *_self, int flags=0) : self(_self) &#123;</span><br><span class="line">        impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">        impl.Flags = flags;</span><br><span class="line">        impl.FuncPtr = fp;</span><br><span class="line">        Desc = desc;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">static void __TestObject__test_block_func_0(struct __TestObject__test_block_impl_0 *__cself) &#123;</span><br><span class="line">    TestObject *self = __cself-&gt;self; // bound by copy</span><br><span class="line"></span><br><span class="line">    NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_TestObject_b2287f_mi_0,((NSString *(*)(id, SEL))(void *)objc_msgSend)((id)self, sel_registerName(&quot;name&quot;)));</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">  //这里可以观察到，在test_block_impl中，block持有了对象TestObject *self;</span><br><span class="line">  通过持有self,获取到self.name，block内部如果对self.name作修改会影响外部的self.name的值</span><br></pre></td></tr></table></figure>
+<h2 id="第二段"><a href="#第二段" class="headerlink" title="第二段"></a>第二段</h2><p> OC源码<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">@interface TestObject ()</span><br><span class="line">@end</span><br><span class="line">@implementation TestObject</span><br><span class="line"></span><br><span class="line">int global_i = 1;</span><br><span class="line">static int static_global_j = 2;</span><br><span class="line"></span><br><span class="line">- (void)test</span><br><span class="line">&#123;</span><br><span class="line">    static int static_global_k = 3;</span><br><span class="line">    __block int value = 4;</span><br><span class="line"></span><br><span class="line">    void(^pig)()= ^()&#123;</span><br><span class="line">        global_i++;</span><br><span class="line">        static_global_j++;</span><br><span class="line">        static_global_k++;</span><br><span class="line">        value++;</span><br><span class="line">         NSLog(@&quot;Block中 变量 = %d  %d %d %d&quot;, global_i,static_global_j,static_global_k,value);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    global_i++;</span><br><span class="line">    static_global_j++;</span><br><span class="line">    static_global_k++;</span><br><span class="line">    value++;</span><br><span class="line">    NSLog(@&quot;Block中 变量 = %d  %d %d %d&quot;, global_i,static_global_j,static_global_k,value);</span><br><span class="line"></span><br><span class="line">    pig();</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p>经过编译之后，得到大致的源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">可见block里引用局部静态变量和外部变量</span><br><span class="line"></span><br><span class="line">//新增结构体__Block_byref_value_0，内部持有变量value，此处修改会同时修改外部变量</span><br><span class="line">struct __Block_byref_value_0 &#123;</span><br><span class="line">  void *__isa;</span><br><span class="line">__Block_byref_value_0 *__forwarding;</span><br><span class="line"> int __flags;</span><br><span class="line"> int __size;</span><br><span class="line"> int value;  </span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">struct __TestObject__test_block_impl_0 &#123;</span><br><span class="line">  struct __block_impl impl;</span><br><span class="line">  struct __TestObject__test_block_desc_0* Desc;</span><br><span class="line">  int *static_global_k;   </span><br><span class="line">  __Block_byref_value_0 *value; // by ref</span><br><span class="line">  __TestObject__test_block_impl_0(void *fp, struct __TestObject__test_block_desc_0 *desc, int *_static_global_k, __Block_byref_value_0 *_value, int flags=0) : static_global_k(_static_global_k), value(_value-&gt;__forwarding) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">在__TestObject__test_block_impl_0中</span><br><span class="line">static_global_k和__Block_byref_value_0 *value</span><br><span class="line">被Block从外面捕获进来，成为__TestObject__test_block_impl_0这个结构体的成员变量了。</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">static void __TestObject__test_block_func_0(struct __TestObject__test_block_impl_0 *__cself) &#123;</span><br><span class="line">  __Block_byref_value_0 *value = __cself-&gt;value; // bound by ref  捕获引用地址</span><br><span class="line">  int *static_global_k = __cself-&gt;static_global_k; // bound by copy</span><br><span class="line"></span><br><span class="line">        global_i++;</span><br><span class="line">        static_global_j++;</span><br><span class="line">        (*static_global_k)++;</span><br><span class="line">        (value-&gt;__forwarding-&gt;value)++;</span><br><span class="line">         NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_TestObject_fb5e34_mi_0, global_i,static_global_j,(*static_global_k),(value-&gt;__forwarding-&gt;value));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>block捕获了自动变量value的地址，所以可以改变value在block外的值</p>
+<h2 id="循环引用"><a href="#循环引用" class="headerlink" title="循环引用"></a>循环引用</h2><p>OC代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">typedef void (^drink)();</span><br><span class="line"></span><br><span class="line">@interface Person : NSObject</span><br><span class="line">@property (nonatomic, strong) drink doDrink;</span><br><span class="line">@property (nonatomic, strong) NSString *eat;</span><br><span class="line">@end</span><br><span class="line">@implementation Person</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@interface BlockViewController ()</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation BlockViewController</span><br><span class="line"></span><br><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line"></span><br><span class="line">    Person *person = [[Person alloc] init];</span><br><span class="line">    person.eat = @&quot;山珍海味&quot;;</span><br><span class="line">    __weak typeof(Person*) weakSelf = person;</span><br><span class="line">    person.doDrink = ^&#123;</span><br><span class="line">        NSLog(@&quot;person eat = %@&quot;,weakSelf.eat);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>clang这样编译是不过的，将<strong>weak替换为</strong>unsafe_unretained，然后 clang -x objective-c -rewrite-objc -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer<br>/SDKs/iPhoneSimulator.sdk xx.m<br>clang之后源码，精简如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">struct __BlockViewController__viewDidLoad_block_impl_0 &#123;</span><br><span class="line">  struct __block_impl impl;</span><br><span class="line">  struct __BlockViewController__viewDidLoad_block_desc_0* Desc;</span><br><span class="line">  typeof(Person *) weakSelf;</span><br><span class="line">  __BlockViewController__viewDidLoad_block_impl_0(void *fp, struct __BlockViewController__viewDidLoad_block_desc_0 *desc, typeof(Person *) _weakSelf, int flags=0) : weakSelf(_weakSelf) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">static void __BlockViewController__viewDidLoad_block_func_0(struct __BlockViewController__viewDidLoad_block_impl_0 *__cself) &#123;</span><br><span class="line">  typeof(Person *) weakSelf = __cself-&gt;weakSelf; // bound by copy</span><br><span class="line"></span><br><span class="line">        NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_BlockViewController_7d49b7_mi_1,((NSString *(*)(id, SEL))(void *)objc_msgSend)((id)weakSelf, sel_registerName(&quot;eat&quot;)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">block持有的是typeof(Person *) weakSelf;</span><br><span class="line">底层实现objc_initWeak 和 objc_storeWeak</span><br></pre></td></tr></table></figure></p>
+<p>##总结:</p>
+<ul>
+<li>自动变量是以值传递方式传递到Block的构造函数里面去的<blockquote>
+<p>Block只捕获Block中会用到的变量。由于只捕获了自动变量的值，并非内存地址，所以Block内部不能改变自动变量的值<br>Objc对象，不同于基本类型，Block捕获会引起对象的引用计数变化</p>
+</blockquote>
+</li>
+<li>Block捕获的外部变量可以改变值的是 全局变量,静态变量,静态全局变量<blockquote>
+<p>因为全局变量，static变量在内存中的地址是固定的，Block在读取该变量值的时候是直接从其所在内存读出，获取到的是最新值，而不是在定义时copy的常量</p>
+</blockquote>
+</li>
+<li>Block变量(被__block修饰的变量称作Block变量)<blockquote>
+<p>基本类型的Block变量等效于全局变量、或静态变量。<br>非ObjC对象，如GCD队列dispatch_queue_t。Block copy时并不会自动增加他的引用计数，这点要非常小心。<br>Objc对象，不会引起对象的引用计数变化，copy变量从栈上到堆上</p>
+</blockquote>
+</li>
+</ul>
+<p>##<br><a href="http://nsoio.github.io/2015/06/28/ARC%E4%B8%ADweak%E5%AE%9E%E7%8E%B0/" target="_blank" rel="noopener">http://nsoio.github.io/2015/06/28/ARC%E4%B8%ADweak%E5%AE%9E%E7%8E%B0/</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/08/load了解/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1387,7 +1534,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">37</span>
+                <span class="site-state-item-count">38</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1400,7 +1547,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
