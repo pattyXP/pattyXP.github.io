@@ -275,6 +275,199 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/15/ReactiveObjc-RACSequence/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/15/ReactiveObjc-RACSequence/" itemprop="url">ReactiveObjc-RACSequence</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-15T15:12:30+08:00">
+                2018-03-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>本文源码为 ReactiveObjc 3.1.0 版本</p>
+<h2 id="RACSequence"><a href="#RACSequence" class="headerlink" title="RACSequence"></a>RACSequence</h2><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RACSequence</span>&lt;<span class="title">__covariant</span> <span class="title">ValueType</span>&gt; : <span class="title">RACStream</span> &lt;<span class="title">NSCoding</span>, <span class="title">NSCopying</span>, <span class="title">NSFastEnumeration</span>&gt;</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>, <span class="keyword">nullable</span>) ValueType head;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>, <span class="keyword">nullable</span>) RACSequence&lt;ValueType&gt; *tail;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">copy</span>, <span class="keyword">readonly</span>) <span class="built_in">NSArray</span>&lt;ValueType&gt; *array;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">copy</span>, <span class="keyword">readonly</span>) <span class="built_in">NSEnumerator</span>&lt;ValueType&gt; *objectEnumerator;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">copy</span>, <span class="keyword">readonly</span>) RACSequence&lt;ValueType&gt; *eagerSequence;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">copy</span>, <span class="keyword">readonly</span>) RACSequence&lt;ValueType&gt; *lazySequence;</span><br></pre></td></tr></table></figure>
+<p>RACSequence 主要由两部分组成， head 和 tail, head是一个 数字， tail 是 流RACSequence 的形式</p>
+<p>先来了解下 RACSequence 相关的子类<br><img src="RACSequence子类结构图.png" alt="RACSequence子类结构图"></p>
+<blockquote>
+<p>此图来自 <img src="https://github.com/Draveness/analyze/blob/43d828b6f516a57e12eeff69913ff49cc94a0f36/contents/ReactiveObjC/RACSequence.md" alt="Draveness博客"></p>
+</blockquote>
+<p>这里，和RACSignal类似，获取 head 和 tail 的方法需要被子类重写<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)head &#123;</span><br><span class="line">	<span class="built_in">NSCAssert</span>(<span class="literal">NO</span>, <span class="string">@"%s must be overridden by subclasses"</span>, __func__);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (RACSequence *)tail &#123;</span><br><span class="line">	<span class="built_in">NSCAssert</span>(<span class="literal">NO</span>, <span class="string">@"%s must be overridden by subclasses"</span>, __func__);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><p>empty<br>返回 RACEmptySequence 实例</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSequence *)empty &#123;</span><br><span class="line">	<span class="keyword">return</span> RACEmptySequence.empty;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>return<br>返回 RACUnarySequence 实例，将传入的参数作为 head，tail 返回 nil</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSequence *)<span class="keyword">return</span>:(<span class="keyword">id</span>)value &#123;</span><br><span class="line">	<span class="keyword">return</span> [RACUnarySequence <span class="keyword">return</span>:value];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (RACUnarySequence *)<span class="keyword">return</span>:(<span class="keyword">id</span>)value &#123;</span><br><span class="line">	RACUnarySequence *sequence = [[<span class="keyword">self</span> alloc] init];</span><br><span class="line">	sequence.head = value;</span><br><span class="line">	<span class="keyword">return</span> [sequence setNameWithFormat:<span class="string">@"+return: %@"</span>, RACDescription(value)];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#pragma mark RACSequence</span></span><br><span class="line"></span><br><span class="line">- (RACSequence *)tail &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>bind</p>
+</li>
+</ul>
+<p>调用内部 bind:passingThroughValuesFromSequence:方法<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">- (RACSequence *)bind:(RACSequenceBindBlock (^)(<span class="keyword">void</span>))block &#123;</span><br><span class="line">	RACSequenceBindBlock bindBlock = block();</span><br><span class="line">	<span class="keyword">return</span> [[<span class="keyword">self</span> bind:bindBlock passingThroughValuesFromSequence:<span class="literal">nil</span>] setNameWithFormat:<span class="string">@"[%@] -bind:"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (RACSequence *)bind:(RACSequenceBindBlock)bindBlock passingThroughValuesFromSequence:(RACSequence *)passthroughSequence &#123;</span><br><span class="line"></span><br><span class="line">	__block RACSequence *valuesSeq = <span class="keyword">self</span>;</span><br><span class="line">	__block RACSequence *current = passthroughSequence;</span><br><span class="line">	__block <span class="built_in">BOOL</span> stop = <span class="literal">NO</span>;</span><br><span class="line"></span><br><span class="line">	RACSequence *sequence = [RACDynamicSequence sequenceWithLazyDependency:^ <span class="keyword">id</span> &#123;</span><br><span class="line">		<span class="keyword">while</span> (current.head == <span class="literal">nil</span>) &#123;</span><br><span class="line">			<span class="keyword">if</span> (stop) <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">id</span> value = valuesSeq.head;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (value == <span class="literal">nil</span>) &#123;</span><br><span class="line">				stop = <span class="literal">YES</span>;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			current = (<span class="keyword">id</span>)bindBlock(value, &amp;stop);</span><br><span class="line">			<span class="keyword">if</span> (current == <span class="literal">nil</span>) &#123;</span><br><span class="line">				stop = <span class="literal">YES</span>;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			valuesSeq = valuesSeq.tail;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="built_in">NSCAssert</span>([current isKindOfClass:RACSequence.class], <span class="string">@"-bind: block returned an object that is not a sequence: %@"</span>, current);</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">	&#125; headBlock:^(<span class="keyword">id</span> _) &#123;</span><br><span class="line">		<span class="keyword">return</span> current.head;</span><br><span class="line">	&#125; tailBlock:^ <span class="keyword">id</span> (<span class="keyword">id</span> _) &#123;</span><br><span class="line">		<span class="keyword">if</span> (stop) <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> [valuesSeq bind:bindBlock passingThroughValuesFromSequence:current.tail];</span><br><span class="line">	&#125;];</span><br><span class="line"></span><br><span class="line">	sequence.name = <span class="keyword">self</span>.name;</span><br><span class="line">	<span class="keyword">return</span> sequence;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>内部创建 RACDynamicSequence 实例返回</p>
+<p>创建RACDynamicSequence</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSequence *)sequenceWithLazyDependency:(<span class="keyword">id</span> (^)(<span class="keyword">void</span>))dependencyBlock headBlock:(<span class="keyword">id</span> (^)(<span class="keyword">id</span> dependency))headBlock tailBlock:(RACSequence *(^)(<span class="keyword">id</span> dependency))tailBlock &#123;</span><br><span class="line">  ...</span><br><span class="line">	RACDynamicSequence *seq = [[RACDynamicSequence alloc] init];</span><br><span class="line">	seq.headBlock = [headBlock <span class="keyword">copy</span>];</span><br><span class="line">	seq.tailBlock = [tailBlock <span class="keyword">copy</span>];</span><br><span class="line">	seq.dependencyBlock = [dependencyBlock <span class="keyword">copy</span>];</span><br><span class="line">	seq.hasDependency = <span class="literal">YES</span>;</span><br><span class="line">	<span class="keyword">return</span> seq;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建好 RACDynamicSequence 之后，获取 head</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)head &#123;</span><br><span class="line">	<span class="keyword">@synchronized</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">		<span class="keyword">id</span> untypedHeadBlock = <span class="keyword">self</span>.headBlock;</span><br><span class="line">		<span class="keyword">if</span> (untypedHeadBlock == <span class="literal">nil</span>) <span class="keyword">return</span> _head;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">self</span>.hasDependency) &#123;</span><br><span class="line">			<span class="keyword">if</span> (<span class="keyword">self</span>.dependencyBlock != <span class="literal">nil</span>) &#123;</span><br><span class="line">				_dependency = <span class="keyword">self</span>.dependencyBlock();</span><br><span class="line">				<span class="keyword">self</span>.dependencyBlock = <span class="literal">nil</span>;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">id</span> (^headBlock)(<span class="keyword">id</span>) = untypedHeadBlock;</span><br><span class="line">			_head = headBlock(_dependency);</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">id</span> (^headBlock)(<span class="keyword">void</span>) = untypedHeadBlock;</span><br><span class="line">			_head = headBlock();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">self</span>.headBlock = <span class="literal">nil</span>;</span><br><span class="line">		<span class="keyword">return</span> _head;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>为什么这里获取head之后，将headBlock 、dependencyBlock 均清空了下次怎么办<br>解惑:<br>第一次获取head时候，如果已经获取到，headBlock 、dependencyBlock  清空<br>第二次获取head时候，headBlock 已经为空，所以直接返回第一次获取的结果，不需要再次赋值</p>
+</blockquote>
+<p>获取tail,和 head 获取方法同理<br>获取的 tail 依赖 tailBlock 和 dependencyBlock, 最后返回的tail 执行返回 RACSequence对象<br><code>return [valuesSeq bind:bindBlock passingThroughValuesFromSequence:current.tail];</code></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">- (RACSequence *)tail &#123;</span><br><span class="line">	<span class="keyword">@synchronized</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">		<span class="keyword">id</span> untypedTailBlock = <span class="keyword">self</span>.tailBlock;</span><br><span class="line">		<span class="keyword">if</span> (untypedTailBlock == <span class="literal">nil</span>) <span class="keyword">return</span> _tail;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">self</span>.hasDependency) &#123;</span><br><span class="line">			<span class="keyword">if</span> (<span class="keyword">self</span>.dependencyBlock != <span class="literal">nil</span>) &#123;</span><br><span class="line">				_dependency = <span class="keyword">self</span>.dependencyBlock();</span><br><span class="line">				<span class="keyword">self</span>.dependencyBlock = <span class="literal">nil</span>;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			RACSequence * (^tailBlock)(<span class="keyword">id</span>) = untypedTailBlock;</span><br><span class="line">			_tail = tailBlock(_dependency);</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			RACSequence * (^tailBlock)(<span class="keyword">void</span>) = untypedTailBlock;</span><br><span class="line">			_tail = tailBlock();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (_tail.name == <span class="literal">nil</span>) _tail.name = <span class="keyword">self</span>.name;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">self</span>.tailBlock = <span class="literal">nil</span>;</span><br><span class="line">		<span class="keyword">return</span> _tail;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面通过更具体的代码来了解bind方法使用<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">RACSequence *sequence = [RACSequence sequenceWithHeadBlock:^<span class="keyword">id</span> _Nullable&#123;</span><br><span class="line">    <span class="keyword">return</span> @<span class="number">1</span>;</span><br><span class="line">&#125; tailBlock:^RACSequence * _Nonnull&#123;</span><br><span class="line">    <span class="keyword">return</span>  [RACSequence sequenceWithHeadBlock:^<span class="keyword">id</span> _Nullable&#123;</span><br><span class="line">        <span class="keyword">return</span> @<span class="number">2</span>;</span><br><span class="line">    &#125; tailBlock:^RACSequence * _Nonnull&#123;</span><br><span class="line">        <span class="keyword">return</span> [RACSequence <span class="keyword">return</span>:@<span class="number">3</span>];</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">RACSequence *bindSequence = [sequence bind:^RACSequenceBindBlock _Nonnull&#123;</span><br><span class="line">    <span class="keyword">return</span> ^(<span class="built_in">NSNumber</span> *value, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"RACSequenceBindBlock: %@"</span>, value);</span><br><span class="line">        value = @(value.integerValue * <span class="number">2</span>);</span><br><span class="line">        <span class="keyword">return</span> [RACSequence <span class="keyword">return</span>:value];</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"BindSequence:  head=(%@) tail=(%@)"</span>, bindSequence.head, bindSequence.tail);</span><br></pre></td></tr></table></figure></p>
+<p>log 获取的 head 有值，获取的 tail 是 RACSequence对象，值暂时都是unresolved<br><code>BindSequence:  head=(2) tail=(&lt;RACDynamicSequence: 0x600000098560&gt;{ name = , head = (unresolved), tail = (unresolved) })</code></p>
+<p>上面的流程中，执行bind方法的block是惰性的， 只有在获取 RACSequence 对象的head以及tail的时候才会执行 LazyDependency,在 LazyDependency内部将value 执行bindBlock(value, &amp;stop),返回 RACUnarySequence 对象 最后通过head属性取出值</p>
+<blockquote>
+<p>注意:<br>在整个 ReactiveCocoa 中，所有的 RACSequence 对象在默认情况下都是惰性的，序列中的值只有在真正需要使用时才会被展开，在其他时间都是 unresolved。</p>
+</blockquote>
+<ul>
+<li>lazySequence 和 eagerSequence</li>
+</ul>
+<p>打印下上面例子的这两个属性值<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">RACSequence *sequence = [RACSequence sequenceWithHeadBlock:^<span class="keyword">id</span> _Nullable&#123;</span><br><span class="line">       <span class="keyword">return</span> @<span class="number">1</span>;</span><br><span class="line">   &#125; tailBlock:^RACSequence * _Nonnull&#123;</span><br><span class="line">       <span class="keyword">return</span>  [RACSequence sequenceWithHeadBlock:^<span class="keyword">id</span> _Nullable&#123;</span><br><span class="line">           <span class="keyword">return</span> @<span class="number">2</span>;</span><br><span class="line">       &#125; tailBlock:^RACSequence * _Nonnull&#123;</span><br><span class="line">           <span class="keyword">return</span> [RACSequence <span class="keyword">return</span>:@<span class="number">3</span>];</span><br><span class="line">       &#125;];</span><br><span class="line">   &#125;];</span><br><span class="line"></span><br><span class="line">   RACSequence *bindSequence = [sequence bind:^RACSequenceBindBlock _Nonnull&#123;</span><br><span class="line">       <span class="keyword">return</span> ^(<span class="built_in">NSNumber</span> *value, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">           <span class="built_in">NSLog</span>(<span class="string">@"RACSequenceBindBlock: %@"</span>, value);</span><br><span class="line">           value = @(value.integerValue * <span class="number">2</span>);</span><br><span class="line">           <span class="keyword">return</span> [RACSequence <span class="keyword">return</span>:value];</span><br><span class="line">       &#125;;</span><br><span class="line">   &#125;];</span><br><span class="line"></span><br><span class="line">   <span class="built_in">NSLog</span>(<span class="string">@"BindSequence: lazySequence=(%@)"</span>, bindSequence.lazySequence);</span><br><span class="line">   <span class="built_in">NSLog</span>(<span class="string">@"BindSequence: eagerSequence=(%@)"</span>, bindSequence.eagerSequence);</span><br><span class="line">   <span class="built_in">NSLog</span>(<span class="string">@"BindSequence: lazySequence=(%@)"</span>, bindSequence.lazySequence);</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">BindSequence: lazySequence=(&lt;RACDynamicSequence: 0x6000000971b0&gt;&#123; name = , head = (unresolved), tail = (unresolved) &#125;)</span><br><span class="line">BindSequence: eagerSequence=(&lt;RACEagerSequence: 0x600000223ec0&gt;&#123; name = , array = (</span><br><span class="line">    2,</span><br><span class="line">    4,</span><br><span class="line">    6</span><br><span class="line">) &#125;)</span><br><span class="line">BindSequence: lazySequence=(&lt;RACDynamicSequence: 0x6000000971b0&gt;&#123; name = , head = 2, tail = &lt;RACDynamicSequence: 0x600000095040&gt;&#123; name = , head = 4, tail = &lt;RACDynamicSequence: 0x6040000939c0&gt;&#123; name = , head = 6, tail = (null) &#125; &#125; &#125;)</span><br></pre></td></tr></table></figure>
+<p>可以看到 lazySequence 一开始还是unresolved ，调用 eagerSequence 之后，lazySequence 就不再是 unresolved</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (RACSequence *)lazySequence &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (RACSequence *)eagerSequence &#123;</span><br><span class="line">	<span class="keyword">return</span> [RACEagerSequence sequenceWithArray:<span class="keyword">self</span>.array offset:<span class="number">0</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//RACArraySequence.m</span></span><br><span class="line">+ (RACSequence *)sequenceWithArray:(<span class="built_in">NSArray</span> *)array offset:(<span class="built_in">NSUInteger</span>)offset &#123;</span><br><span class="line">	<span class="built_in">NSCParameterAssert</span>(offset &lt;= array.count);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (offset == array.count) <span class="keyword">return</span> <span class="keyword">self</span>.empty;</span><br><span class="line"></span><br><span class="line">	RACArraySequence *seq = [[<span class="keyword">self</span> alloc] init];</span><br><span class="line">	seq-&gt;_backingArray = [array <span class="keyword">copy</span>];</span><br><span class="line">	seq-&gt;_offset = offset;</span><br><span class="line">	<span class="keyword">return</span> seq;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>eager从字面上也可以了解到，就是提前获取所有的数据</p>
+<p>获取eagerSequence方法里面，有个参数<code>self.array</code><br>调用的是RACSequence的方法<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span> *)array &#123;</span><br><span class="line">	<span class="built_in">NSMutableArray</span> *array = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">id</span> obj <span class="keyword">in</span> <span class="keyword">self</span>) &#123;</span><br><span class="line">		[array addObject:obj];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> [array <span class="keyword">copy</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>打印self<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">po self</span><br><span class="line">&lt;RACDynamicSequence: 0x604000095cc0&gt;&#123; name = , head = 2, tail =</span><br><span class="line">&lt;RACDynamicSequence: 0x600000282ee0&gt;&#123; name = , head = 4, tail =</span><br><span class="line">&lt;RACDynamicSequence: 0x600000282ad0&gt;&#123; name = , head = 6, tail = (null) &#125; &#125; &#125;</span><br></pre></td></tr></table></figure></p>
+<p>好奇 array的obj是怎么来的，查看调用栈<br>RACSequence 有属性array，遵循协议 NSFastEnumeration ，因此执行forin的时候调用以下方法<br><code>- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id *)stackbuf count:(NSUInteger)len</code><br>该方法遍历获取 self ，通过<br><code>RACSequence *(^getSequence)(void) = ^{
+        return (__bridge RACSequence *)(void *)state-&gt;state;
+    };</code> 将当前对象内部的每一项state转化为sequence,然后获取head</p>
+<ul>
+<li>RACSequence 和 RACSignal</li>
+</ul>
+<p>两者存在区别，但是也可以相互转化</p>
+<ul>
+<li><p>RACSequence 转化为 RACSignal</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">RACSequence *sequence = @[@1,@2,@3].rac_sequence;</span><br><span class="line">RACSignal *signal = sequence.signal;</span><br><span class="line"></span><br><span class="line">[signal subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;signal: %@&quot;,x);</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> signal: 1</span><br><span class="line"> signal: 2</span><br><span class="line"> signal: 3</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+<p>下面看下具体实现源码</p>
+<p>内部是重新创建返回 RACSignal 通过递归调用 RACScheduler block方法，向 RACSubscriber 发送sendNext 直到结束</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">  - (RACSignal *)signal &#123;</span><br><span class="line"><span class="keyword">return</span> [[<span class="keyword">self</span> signalWithScheduler:[RACScheduler scheduler]] setNameWithFormat:<span class="string">@"[%@] -signal"</span>, <span class="keyword">self</span>.name];</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> - (RACSignal *)signalWithScheduler:(RACScheduler *)scheduler &#123;</span><br><span class="line"> 	<span class="keyword">return</span> [[RACSignal createSignal:^(<span class="keyword">id</span>&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line"> 		__block RACSequence *sequence = <span class="keyword">self</span>;</span><br><span class="line"></span><br><span class="line"> 		<span class="keyword">return</span> [scheduler scheduleRecursiveBlock:^(<span class="keyword">void</span> (^reschedule)(<span class="keyword">void</span>)) &#123;</span><br><span class="line"> 			<span class="keyword">if</span> (sequence.head == <span class="literal">nil</span>) &#123;</span><br><span class="line"> 				[subscriber sendCompleted];</span><br><span class="line"> 				<span class="keyword">return</span>;</span><br><span class="line"> 			&#125;</span><br><span class="line"></span><br><span class="line"> 			[subscriber sendNext:sequence.head];</span><br><span class="line"> 			sequence = sequence.tail;</span><br><span class="line"> 			reschedule();</span><br><span class="line"> 		&#125;];</span><br><span class="line"> 	&#125;] setNameWithFormat:<span class="string">@"[%@] -signalWithScheduler: %@"</span>, <span class="keyword">self</span>.name, scheduler];</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>RACSignal 转化为 RACSequence</p>
+</li>
+</ul>
+<p>内部创建 RACArraySequence ，收集到发出的所有信号<br>  <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal = [RACSignal createSignal:^RACDisposable * _Nullable(<span class="keyword">id</span>&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">      [subscriber sendNext:@<span class="number">1</span>];</span><br><span class="line">      [subscriber sendNext:@<span class="number">2</span>];</span><br><span class="line">      [subscriber sendNext:@<span class="number">3</span>];</span><br><span class="line">      [subscriber sendCompleted];</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">  &#125;];</span><br><span class="line">  <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, signal.toArray.rac_sequence);</span><br><span class="line">  <span class="comment">/*</span></span><br><span class="line"><span class="comment">   &lt;RACArraySequence: 0x600000222ca0&gt;&#123; name = , array = (</span></span><br><span class="line"><span class="comment">   1,</span></span><br><span class="line"><span class="comment">   2,</span></span><br><span class="line"><span class="comment">   3</span></span><br><span class="line"><span class="comment">   ) &#125;</span></span><br><span class="line"><span class="comment">   */</span></span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>Map 、 Filter 、 flattenMap</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSArray</span> *array=@[@(<span class="number">2</span>),@(<span class="number">5</span>),@(<span class="number">7</span>),@(<span class="number">15</span>)];</span><br><span class="line">  RACSequence *sequences = [array rac_sequence];</span><br><span class="line">  <span class="keyword">id</span> mapData = [sequences map:^<span class="keyword">id</span>(<span class="keyword">id</span> value) &#123;</span><br><span class="line">      <span class="keyword">return</span> @([value integerValue] * <span class="number">2</span>);</span><br><span class="line">  &#125;];</span><br><span class="line">  <span class="built_in">NSLog</span>(<span class="string">@"序列Map之后的数据:%@"</span>,[mapData array]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">id</span> filterData = [sequences filter:^<span class="built_in">BOOL</span>(<span class="keyword">id</span> value) &#123;</span><br><span class="line">      <span class="keyword">return</span> [value integerValue]%<span class="number">2</span> == <span class="number">0</span>;</span><br><span class="line">  &#125;];</span><br><span class="line">  <span class="built_in">NSLog</span>(<span class="string">@"序列Filter之后的数据:%@"</span>,[filterData array]);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  RACSequence *flatmapData = [sequences flattenMap:^__kindof RACSequence * _Nullable(<span class="keyword">id</span>  _Nullable value) &#123;</span><br><span class="line">       <span class="keyword">if</span> ([value integerValue]%<span class="number">2</span> == <span class="number">0</span>) &#123;</span><br><span class="line">           <span class="keyword">return</span> [RACSequence sequenceWithHeadBlock:^<span class="keyword">id</span> _Nullable&#123;</span><br><span class="line">               <span class="keyword">return</span> value;</span><br><span class="line">           &#125; tailBlock:^RACSequence * _Nonnull&#123;</span><br><span class="line">               <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">           &#125;];</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> [RACSequence empty];</span><br><span class="line">   &#125;];</span><br><span class="line">   <span class="built_in">NSLog</span>(<span class="string">@"先map再filter之后的数据:%@"</span>, flatmapData.eagerSequence);</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">序列Map之后的数据:(</span></span><br><span class="line"><span class="comment">    4,</span></span><br><span class="line"><span class="comment">    10,</span></span><br><span class="line"><span class="comment">    14,</span></span><br><span class="line"><span class="comment">    30</span></span><br><span class="line"><span class="comment">)</span></span><br><span class="line"><span class="comment">序列Filter之后的数据:(</span></span><br><span class="line"><span class="comment">    2</span></span><br><span class="line"><span class="comment">)</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> &lt;RACEagerSequence: 0x6040002241c0&gt;&#123; name = , array = (</span></span><br><span class="line"><span class="comment"> 2</span></span><br><span class="line"><span class="comment"> ) &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">*/</span><br></pre></td></tr></table></figure>
+<ul>
+<li>初始化<br>内部实际返回 RACDynamicSequence 对象<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSequence *)sequenceWithHeadBlock:(id (^)(void))headBlock tailBlock:(RACSequence&lt;id&gt; *(^)(void))tailBlock &#123;</span><br><span class="line">	return [[RACDynamicSequence sequenceWithHeadBlock:headBlock tailBlock:tailBlock] setNameWithFormat:@&quot;+sequenceWithHeadBlock:tailBlock:&quot;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/12/ReactiveObjc入门/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1862,158 +2055,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/31/Objc中的属性/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/31/Objc中的属性/" itemprop="url">Objc中的属性</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-31T14:58:14+08:00">
-                2018-01-31
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="基础OC源码与clang编译"><a href="#基础OC源码与clang编译" class="headerlink" title="基础OC源码与clang编译"></a>基础OC源码与clang编译</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">@interface Dog: NSObject</span><br><span class="line">@property (nonatomic, copy) NSString *sex;</span><br><span class="line">@property (nonatomic, copy) NSString *address;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>经过clang重写为cpp之后，文件主要的内容截取查看<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">#ifndef _REWRITER_typedef_Dog</span><br><span class="line">#define _REWRITER_typedef_Dog</span><br><span class="line">typedef struct objc_object Dog;</span><br><span class="line">typedef struct &#123;&#125; _objc_exc_Dog;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_sex;</span><br><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_address;</span><br><span class="line">struct Dog_IMPL &#123;</span><br><span class="line">	struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">	NSString *_name;</span><br><span class="line">	NSString *_sex;</span><br><span class="line">	NSString *_address;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// @property (nonatomic, copy) NSString *sex;</span><br><span class="line">// @property (nonatomic, copy) NSString *address;</span><br><span class="line">/* @end */</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/** implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">**/</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line">extern &quot;C&quot; __declspec(dllimport) void objc_setProperty (id, SEL, long, id, bool, bool);</span><br><span class="line"></span><br><span class="line">static void _I_Dog_setSex_(Dog * self, SEL _cmd, NSString *sex) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _sex), (id)sex, 0, 1); &#125;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_address)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _address), (id)address, 0, 1); &#125;</span><br><span class="line">// @end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    /* @autoreleasepool */ &#123; __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>Dog_IMPL 结构体含有三个实例变量，其中两个是系统为property生成的，一个是自身的ivar<br>Dog实现 系统自动生成property对应的set和get方法</p>
-<p>对源码修改，添加如下code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@synthesize address = _name;</span><br></pre></td></tr></table></figure></p>
-<p>clang编译之后，两份.cpp文件对比</p>
-<p><img src="/images/cpp对比图.png" alt="cpp对比图"></p>
-<p>以下是两份对比内容的源码</p>
-<ul>
-<li><p>当前添加code之后的文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_name;</span><br><span class="line">// @synthesize address = _name;</span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_name)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _name), (id)address, 0, 1); &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line">	struct _ivar_t ivar_list[2];</span><br><span class="line">	2,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_sex, &quot;_sex&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;&#125;</span><br><span class="line">	&#123;&#123;(struct objc_selector *)&quot;address&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_address&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setAddress:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setAddress_&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;sex&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_sex&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setSex:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setSex_&#125;&#125;</span><br><span class="line">	&#123;&quot;address&quot;,&quot;T@\&quot;NSString\&quot;,C,N,V_name&quot;&#125;&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>未修改内容的cpp</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_address;</span><br><span class="line">	NSString *_address;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_address)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _address), (id)address, 0, 1); &#125;</span><br><span class="line">extern &quot;C&quot; unsigned long int OBJC_IVAR_$_Dog$_address __attribute__ ((used, section (&quot;__DATA,__objc_ivar&quot;))) = __OFFSETOFIVAR__(struct Dog, _address);</span><br><span class="line">	struct _ivar_t ivar_list[3];</span><br><span class="line">	3,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_sex, &quot;_sex&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_address, &quot;_address&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;&#125;</span><br><span class="line">	&#123;&#123;(struct objc_selector *)&quot;sex&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_sex&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setSex:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setSex_&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;address&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_address&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setAddress:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setAddress_&#125;&#125;</span><br><span class="line">	&#123;&quot;address&quot;,&quot;T@\&quot;NSString\&quot;,C,N,V_address&quot;&#125;&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>对比之后可以发现，当重写@synthesize方法, 自定义绑定属性<br>将属性和已经存在的成员变量进行绑定，编译器没有自动生成_address，在类中找不到这个变量的存在<br>所以当我们使用_address的时候，就会报错</p>
-<p>有了getter和setter，方便获取属性，从某个意义上 属性更加面向对象</p>
-<h3 id="查看系统为Dog类生成的实例变量"><a href="#查看系统为Dog类生成的实例变量" class="headerlink" title="查看系统为Dog类生成的实例变量"></a>查看系统为Dog类生成的实例变量</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">@interface Dog: NSObject</span><br><span class="line">@property (nonatomic, copy) NSString *sex;</span><br><span class="line">@property (nonatomic, copy) NSString *address;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        unsigned int ivarCount = 0;</span><br><span class="line">        Ivar * ivars =  class_copyIvarList([Dog class], &amp;ivarCount);</span><br><span class="line">        NSLog(@&quot;=======&quot;);</span><br><span class="line">        for (unsigned int idx = 0; idx &lt; ivarCount; idx++) &#123;</span><br><span class="line">            Ivar ivar = ivars[idx];</span><br><span class="line">            NSLog(@&quot;%s&quot;, ivar_getName(ivar));</span><br><span class="line">        &#125;</span><br><span class="line">        free(ivars);</span><br><span class="line"></span><br><span class="line">        unsigned int propertyCount;</span><br><span class="line">        objc_property_t * properties = class_copyPropertyList([Dog class], &amp;propertyCount);</span><br><span class="line">        NSLog(@&quot;=======&quot;);</span><br><span class="line">        for (unsigned int idx = 0; idx &lt; ivarCount; idx++) &#123;</span><br><span class="line">            objc_property_t property = properties[idx];</span><br><span class="line">            NSLog(@&quot;attribute:%s&quot;,property_getAttributes(property));</span><br><span class="line">        &#125;</span><br><span class="line">        free(properties);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">打印输出:</span><br><span class="line">_name _sex _address</span><br><span class="line"> attribute:T@&quot;NSString&quot;,C,N,V_sex</span><br><span class="line"> attribute:T@&quot;NSString&quot;,C,N,V_name</span><br></pre></td></tr></table></figure>
-<ul>
-<li>属性说明<br>使用property_getAttributes获得的描述是property_copyAttributeList<br>能获取到的所有的name和value的总体描述，<br>如 T@”NSDictionary”,C,N,V_dict1</li>
-</ul>
-<p>常用的属性如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">属性类型  name值：T  value：变化</span><br><span class="line">编码类型  name值：C(copy) &amp;(strong) W(weak) 空(assign) 等 value：无</span><br><span class="line">非/原子性 name值：空(atomic) N(Nonatomic)  value：无</span><br><span class="line">变量名称  name值：V  value：变化</span><br></pre></td></tr></table></figure></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>OC 属性和实例变量是存在区别的</p>
-<p>实例变量，不会自动生成对应的getter和setter方法<br>属性，系统自动生成对应的getter和setter方法</p>
-<p>相比起变量，在编译期间，编译器做了很多工作，包括这些：</p>
-<ul>
-<li>使用@synthesize生成属性对应的ivar，通常ivar命名为下划线+属性名</li>
-<li>生成setter方法来设置ivar</li>
-<li>生成getter方法来获取ivar</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2064,7 +2105,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">38</span>
+                <span class="site-state-item-count">39</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2152,7 +2193,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共65.6k字</span>
+<span class="post-count"> 博客全站共68.3k字</span>
 </div>
 
 

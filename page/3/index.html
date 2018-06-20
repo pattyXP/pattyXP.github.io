@@ -275,6 +275,158 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/31/Objc中的属性/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/31/Objc中的属性/" itemprop="url">Objc中的属性</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-31T14:58:14+08:00">
+                2018-01-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="基础OC源码与clang编译"><a href="#基础OC源码与clang编译" class="headerlink" title="基础OC源码与clang编译"></a>基础OC源码与clang编译</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">@interface Dog: NSObject</span><br><span class="line">@property (nonatomic, copy) NSString *sex;</span><br><span class="line">@property (nonatomic, copy) NSString *address;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>经过clang重写为cpp之后，文件主要的内容截取查看<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">#ifndef _REWRITER_typedef_Dog</span><br><span class="line">#define _REWRITER_typedef_Dog</span><br><span class="line">typedef struct objc_object Dog;</span><br><span class="line">typedef struct &#123;&#125; _objc_exc_Dog;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_sex;</span><br><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_address;</span><br><span class="line">struct Dog_IMPL &#123;</span><br><span class="line">	struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">	NSString *_name;</span><br><span class="line">	NSString *_sex;</span><br><span class="line">	NSString *_address;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// @property (nonatomic, copy) NSString *sex;</span><br><span class="line">// @property (nonatomic, copy) NSString *address;</span><br><span class="line">/* @end */</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/** implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">**/</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line">extern &quot;C&quot; __declspec(dllimport) void objc_setProperty (id, SEL, long, id, bool, bool);</span><br><span class="line"></span><br><span class="line">static void _I_Dog_setSex_(Dog * self, SEL _cmd, NSString *sex) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _sex), (id)sex, 0, 1); &#125;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_address)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _address), (id)address, 0, 1); &#125;</span><br><span class="line">// @end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    /* @autoreleasepool */ &#123; __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Dog_IMPL 结构体含有三个实例变量，其中两个是系统为property生成的，一个是自身的ivar<br>Dog实现 系统自动生成property对应的set和get方法</p>
+<p>对源码修改，添加如下code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@synthesize address = _name;</span><br></pre></td></tr></table></figure></p>
+<p>clang编译之后，两份.cpp文件对比</p>
+<p><img src="/images/cpp对比图.png" alt="cpp对比图"></p>
+<p>以下是两份对比内容的源码</p>
+<ul>
+<li><p>当前添加code之后的文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_name;</span><br><span class="line">// @synthesize address = _name;</span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_name)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _name), (id)address, 0, 1); &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line">	struct _ivar_t ivar_list[2];</span><br><span class="line">	2,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_sex, &quot;_sex&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;&#125;</span><br><span class="line">	&#123;&#123;(struct objc_selector *)&quot;address&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_address&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setAddress:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setAddress_&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;sex&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_sex&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setSex:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setSex_&#125;&#125;</span><br><span class="line">	&#123;&quot;address&quot;,&quot;T@\&quot;NSString\&quot;,C,N,V_name&quot;&#125;&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>未修改内容的cpp</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">extern &quot;C&quot; unsigned long OBJC_IVAR_$_Dog$_address;</span><br><span class="line">	NSString *_address;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_sex(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_sex)); &#125;</span><br><span class="line"></span><br><span class="line">static NSString * _I_Dog_address(Dog * self, SEL _cmd) &#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Dog$_address)); &#125;</span><br><span class="line">static void _I_Dog_setAddress_(Dog * self, SEL _cmd, NSString *address) &#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Dog, _address), (id)address, 0, 1); &#125;</span><br><span class="line">extern &quot;C&quot; unsigned long int OBJC_IVAR_$_Dog$_address __attribute__ ((used, section (&quot;__DATA,__objc_ivar&quot;))) = __OFFSETOFIVAR__(struct Dog, _address);</span><br><span class="line">	struct _ivar_t ivar_list[3];</span><br><span class="line">	3,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_sex, &quot;_sex&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;,</span><br><span class="line">	 &#123;(unsigned long int *)&amp;OBJC_IVAR_$_Dog$_address, &quot;_address&quot;, &quot;@\&quot;NSString\&quot;&quot;, 3, 8&#125;&#125;</span><br><span class="line">	&#123;&#123;(struct objc_selector *)&quot;sex&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_sex&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setSex:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setSex_&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;address&quot;, &quot;@16@0:8&quot;, (void *)_I_Dog_address&#125;,</span><br><span class="line">	&#123;(struct objc_selector *)&quot;setAddress:&quot;, &quot;v24@0:8@16&quot;, (void *)_I_Dog_setAddress_&#125;&#125;</span><br><span class="line">	&#123;&quot;address&quot;,&quot;T@\&quot;NSString\&quot;,C,N,V_address&quot;&#125;&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>对比之后可以发现，当重写@synthesize方法, 自定义绑定属性<br>将属性和已经存在的成员变量进行绑定，编译器没有自动生成_address，在类中找不到这个变量的存在<br>所以当我们使用_address的时候，就会报错</p>
+<p>有了getter和setter，方便获取属性，从某个意义上 属性更加面向对象</p>
+<h3 id="查看系统为Dog类生成的实例变量"><a href="#查看系统为Dog类生成的实例变量" class="headerlink" title="查看系统为Dog类生成的实例变量"></a>查看系统为Dog类生成的实例变量</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">@interface Dog: NSObject</span><br><span class="line">@property (nonatomic, copy) NSString *sex;</span><br><span class="line">@property (nonatomic, copy) NSString *address;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Dog</span><br><span class="line">&#123;</span><br><span class="line">    NSString * _name;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        unsigned int ivarCount = 0;</span><br><span class="line">        Ivar * ivars =  class_copyIvarList([Dog class], &amp;ivarCount);</span><br><span class="line">        NSLog(@&quot;=======&quot;);</span><br><span class="line">        for (unsigned int idx = 0; idx &lt; ivarCount; idx++) &#123;</span><br><span class="line">            Ivar ivar = ivars[idx];</span><br><span class="line">            NSLog(@&quot;%s&quot;, ivar_getName(ivar));</span><br><span class="line">        &#125;</span><br><span class="line">        free(ivars);</span><br><span class="line"></span><br><span class="line">        unsigned int propertyCount;</span><br><span class="line">        objc_property_t * properties = class_copyPropertyList([Dog class], &amp;propertyCount);</span><br><span class="line">        NSLog(@&quot;=======&quot;);</span><br><span class="line">        for (unsigned int idx = 0; idx &lt; ivarCount; idx++) &#123;</span><br><span class="line">            objc_property_t property = properties[idx];</span><br><span class="line">            NSLog(@&quot;attribute:%s&quot;,property_getAttributes(property));</span><br><span class="line">        &#125;</span><br><span class="line">        free(properties);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">打印输出:</span><br><span class="line">_name _sex _address</span><br><span class="line"> attribute:T@&quot;NSString&quot;,C,N,V_sex</span><br><span class="line"> attribute:T@&quot;NSString&quot;,C,N,V_name</span><br></pre></td></tr></table></figure>
+<ul>
+<li>属性说明<br>使用property_getAttributes获得的描述是property_copyAttributeList<br>能获取到的所有的name和value的总体描述，<br>如 T@”NSDictionary”,C,N,V_dict1</li>
+</ul>
+<p>常用的属性如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">属性类型  name值：T  value：变化</span><br><span class="line">编码类型  name值：C(copy) &amp;(strong) W(weak) 空(assign) 等 value：无</span><br><span class="line">非/原子性 name值：空(atomic) N(Nonatomic)  value：无</span><br><span class="line">变量名称  name值：V  value：变化</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>OC 属性和实例变量是存在区别的</p>
+<p>实例变量，不会自动生成对应的getter和setter方法<br>属性，系统自动生成对应的getter和setter方法</p>
+<p>相比起变量，在编译期间，编译器做了很多工作，包括这些：</p>
+<ul>
+<li>使用@synthesize生成属性对应的ivar，通常ivar命名为下划线+属性名</li>
+<li>生成setter方法来设置ivar</li>
+<li>生成getter方法来获取ivar</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/30/Objc消息的缓存/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1693,232 +1845,6 @@ __builtin_expect的作用
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/09/Objc-weak&MapTable/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/09/Objc-weak&MapTable/" itemprop="url">weak底层 & NXMapTable</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-09T14:20:56+08:00">
-                2018-01-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>本篇研究以下问题</p>
-<ul>
-<li>weak的原理</li>
-<li>NXMapTable的原理</li>
-</ul>
-<h2 id="weak的原理"><a href="#weak的原理" class="headerlink" title="weak的原理"></a>weak的原理</h2><p>本文分析是runtime源码 <a href="https://github.com/isaacselement/objc4-706" target="_blank" rel="noopener">objc4-706版本</a><br>OC code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// NSObject *obj = ...;</span><br><span class="line">__weak id weakPtr = obj;</span><br></pre></td></tr></table></figure></p>
-<p>底层转为源码为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// NSObject *obj = ...;</span><br><span class="line">objc_initWeak(&amp;weakPtr, obj);</span><br></pre></td></tr></table></figure></p>
-<p>来看下NSObject.mm<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line">objc_initWeak(id *location, id newObj)</span><br><span class="line">&#123;</span><br><span class="line">    if (!newObj) &#123;</span><br><span class="line">        *location = nil;</span><br><span class="line">        return nil;</span><br><span class="line">    &#125;</span><br><span class="line">    // 这里传递了三个 bool 数值</span><br><span class="line">    // 使用 template 进行常量参数传递是为了优化性能</span><br><span class="line">    return storeWeak&lt;false/*old*/, true/*new*/, true/*crash*/&gt;</span><br><span class="line">        (location, (objc_object*)newObj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>继续阅读 storeWeak() 的实现：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line">// HaveOld:	 true - 变量有值</span><br><span class="line">// 			false - 需要被及时清理，当前值可能为 nil</span><br><span class="line">// HaveNew:	 true - 需要被分配的新值，当前值可能为 nil</span><br><span class="line">// 			false - 不需要分配新值</span><br><span class="line">// CrashIfDeallocating: true - 说明 newObj 已经释放或者 newObj 不支持弱引用，该过程需要暂停</span><br><span class="line">// 			false - 用 nil 替代存储</span><br><span class="line"></span><br><span class="line">template &lt;bool HaveOld, bool HaveNew, bool CrashIfDeallocating&gt;</span><br><span class="line">static id</span><br><span class="line">storeWeak(id *location, objc_object *newObj)</span><br><span class="line">&#123;</span><br><span class="line">    assert(HaveOld  ||  HaveNew);</span><br><span class="line">    if (!HaveNew) assert(newObj == nil);</span><br><span class="line">    // 用于标记已经初始化的类</span><br><span class="line">    Class previouslyInitializedClass = nil;</span><br><span class="line">    id oldObj;</span><br><span class="line">     // 声明新旧辅助表</span><br><span class="line">    SideTable *oldTable;</span><br><span class="line">    SideTable *newTable;</span><br><span class="line"></span><br><span class="line">    // 获取新旧值（存在的话）的辅助表，并且加锁，</span><br><span class="line">    // 如果新旧值辅助表同时存在时，以锁的地址大小排序，防止锁的顺序问题</span><br><span class="line"> retry:</span><br><span class="line">    if (HaveOld) &#123;</span><br><span class="line">        // 如果有旧值的话，通过指针获取目标对象，  Q： 旧值的情况是不是指这个地址*location之前存的值？？？</span><br><span class="line">        // 再以目标对象的地址为索引，取得旧值对应的辅助表</span><br><span class="line">        oldObj = *location;</span><br><span class="line">        oldTable = &amp;SideTables()[oldObj];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        oldTable = nil;</span><br><span class="line">    &#125;</span><br><span class="line">    if (HaveNew) &#123;</span><br><span class="line">        // 如果有新值，以新值的地址为索引，取得新值对应的辅助表</span><br><span class="line">        newTable = &amp;SideTables()[newObj];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        newTable = nil;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    SideTable::lockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line"></span><br><span class="line">    if (HaveOld  &amp;&amp;  *location != oldObj) &#123;</span><br><span class="line">        // 线程冲突处理，</span><br><span class="line">        // 如果有旧值，但 location 指向的对象不为 oldObj，那很可能被其它线程修改过，</span><br><span class="line">        // 解锁并重试</span><br><span class="line">        SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line">        goto retry;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    if (HaveNew  &amp;&amp;  newObj) &#123;</span><br><span class="line">        Class cls = newObj-&gt;getIsa();</span><br><span class="line">        if (cls != previouslyInitializedClass  &amp;&amp;  </span><br><span class="line">            !((objc_class *)cls)-&gt;isInitialized())</span><br><span class="line">        &#123;</span><br><span class="line">            SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line">            _class_initialize(_class_getNonMetaClass(cls, (id)newObj));</span><br><span class="line"></span><br><span class="line">            previouslyInitializedClass = cls;</span><br><span class="line"></span><br><span class="line">            goto retry;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Clean up old value, if any.</span><br><span class="line">    // 从 oldObj 的弱引用条目删除弱引用的地址</span><br><span class="line">    if (HaveOld) &#123;</span><br><span class="line">        weak_unregister_no_lock(&amp;oldTable-&gt;weak_table, oldObj, location);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Assign new value, if any.</span><br><span class="line">    // 把弱引用的地址注册到 newObj 的弱引用条目</span><br><span class="line">    if (HaveNew) &#123;</span><br><span class="line">        newObj = (objc_object *)weak_register_no_lock(&amp;newTable-&gt;weak_table,</span><br><span class="line">                                                      (id)newObj, location,</span><br><span class="line">                                                      CrashIfDeallocating);</span><br><span class="line">        // weak_register_no_lock returns nil if weak store should be rejected</span><br><span class="line"></span><br><span class="line">        // Set is-weakly-referenced bit in refcount table.</span><br><span class="line">        if (newObj  &amp;&amp;  !newObj-&gt;isTaggedPointer()) &#123;</span><br><span class="line">            newObj-&gt;setWeaklyReferenced_nolock();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // Do not set *location anywhere else. That would introduce a race.</span><br><span class="line">        *location = (id)newObj;</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // No new value. The storage is not changed.</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    SideTable::unlockTwo&lt;HaveOld, HaveNew&gt;(oldTable, newTable);</span><br><span class="line"></span><br><span class="line">    return (id)newObj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h2><ul>
-<li>SideTable 这个结构体 : 主要用于管理对象的引用计数和 weak 表</li>
-<li>&amp;SideTables()[oldObj] : 根据对象的地址在缓存中取出对应的 SideTable 实例<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">static StripedMap&lt;SideTable&gt;&amp; SideTables() &#123;</span><br><span class="line">    return *reinterpret_cast&lt;StripedMap&lt;SideTable&gt;*&gt;(SideTableBuf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>在取出实例方法的实现中，使用了 C++ 标准转换运算符 reinterpret_cast ，其表达方式为</p>
-<blockquote>
-<p>reinterpret_cast <new_type> (expression)<br>用来处理无关类型之间的转换。该关键字会产生一个新值，并保证与原参数（expression）拥有完全相同的比特位。</new_type></p>
-</blockquote>
-<h2 id="MapTable的原理"><a href="#MapTable的原理" class="headerlink" title="MapTable的原理"></a>MapTable的原理</h2><h3 id="由来"><a href="#由来" class="headerlink" title="由来"></a>由来</h3><p>在Foundation框架中，通常使用<code>NSSet</code>、<code>NSArray</code>、<code>NSDictionary</code>等集合类型满足大部分的需求，但其底层实现没有公开，在不满足这部分使用预期的时候，需要去探索其他的路径，对于 <code>NSSet</code> 和 <code>NSDictionary</code> 来说，不符合预期的部分通常在于它们存储对象时在内存中的表现。<br>对于 <code>NSSet</code>，对象在存储时会被强引用，<code>NSDictionary</code> 中值的存储也是一样。对键来说，在 NSDictionary 中会被拷贝。<br>如果开发者想存储弱引用的值，或者使用一个没有遵守 <nscopying> 的对象作为键，他可以选择聪明的办法，使用 <code>NSValue</code> <code>+valueWithNonretainedObject</code><br>在 iOS 6（以及 OS X Leopard）上，可以使用 <code>NSHashTable</code> 或 <code>NSMapTable</code>，分别对应着 NSSet 和 NSDictionary，是它们更加通用的版本。</nscopying></p>
-<h3 id="NSMapTable"><a href="#NSMapTable" class="headerlink" title="NSMapTable"></a>NSMapTable</h3><p><code>NSMapTable</code>是NSDictionary的通用版本,和 <code>NSDictionary</code> / <code>NSMutableDictionary</code> 不同的是，NSMapTable 具有下面这些特性：</p>
-<ul>
-<li>NSDictionary / NSMutableDictionary 对键进行拷贝，对值持有强引用。</li>
-<li>NSMapTable 是可变的，没有不可变的对应版本。</li>
-<li>NSMapTable 可以持有键和值的弱引用，当键或者值当中的一个被释放时，整个这一项就会被移除掉。</li>
-<li>NSMapTable 可以在加入成员时进行 copy 操作。</li>
-<li>NSMapTable 可以存储任意的指针，通过指针来进行相等性和散列检查。<blockquote>
-<p>注意： NSMapTable 专注于强引用和弱引用，意外着 Swift 中流行的值类型是不适用的，只能用于引用类型。</p>
-</blockquote>
-</li>
-</ul>
-<h3 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">id</span> delegate = ...;</span><br><span class="line"><span class="built_in">NSMapTable</span> *mapTable = [<span class="built_in">NSMapTable</span> mapTableWithKeyOptions:<span class="built_in">NSMapTableStrongMemory</span></span><br><span class="line">                                             valueOptions:<span class="built_in">NSMapTableWeakMemory</span>];</span><br><span class="line">[mapTable setObject:delegate forKey:<span class="string">@"foo"</span>];</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"Keys: %@"</span>, [[mapTable keyEnumerator] allObjects]);</span><br></pre></td></tr></table></figure>
-<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>下面是<code>NXMapTable</code>结构体<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> _NXMapTable &#123;</span><br><span class="line">    <span class="comment">/* private data structure; may change */</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">struct</span> _NXMapTablePrototype	*prototype;</span><br><span class="line">    <span class="keyword">unsigned</span>	count;</span><br><span class="line">    <span class="keyword">unsigned</span>	nbBucketsMinusOne;</span><br><span class="line">    <span class="keyword">void</span>	*buckets; <span class="comment">//buckets 是真正用来存储数据的数组。</span></span><br><span class="line">&#125; NXMapTable OBJC_MAP_AVAILABILITY;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> _NXMapTablePrototype &#123;</span><br><span class="line">    <span class="keyword">unsigned</span>	(*hash)(NXMapTable *, <span class="keyword">const</span> <span class="keyword">void</span> *key);</span><br><span class="line">    <span class="keyword">int</span>		(*isEqual)(NXMapTable *, <span class="keyword">const</span> <span class="keyword">void</span> *key1, <span class="keyword">const</span> <span class="keyword">void</span> *key2);</span><br><span class="line">    <span class="keyword">void</span>	(*free)(NXMapTable *, <span class="keyword">void</span> *key, <span class="keyword">void</span> *value);</span><br><span class="line">    <span class="keyword">int</span>		style; <span class="comment">/* reserved for future expansion; currently 0 */</span></span><br><span class="line">&#125; NXMapTablePrototype OBJC_MAP_AVAILABILITY;</span><br></pre></td></tr></table></figure></p>
-<p>_NXMapTablePrototype 存储了<code>hash</code>、<code>isEqual</code>、<code>free</code>函数指针,分别用于获取数据的哈希，数据是否相等以及释放数据</p>
-<blockquote>
-<p>数据在存入表前对数据执行 hash，然后找到对应的 buckets，如果与 buckets 中的数据相同（使用 isEqual 判断），就替换原数据，否则将数据添加到链表中。</p>
-</blockquote>
-<ul>
-<li>初始化方法<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">NXMapTable *NXCreateMapTable(NXMapTablePrototype prototype, <span class="keyword">unsigned</span> capacity) &#123;</span><br><span class="line">    <span class="keyword">return</span> NXCreateMapTableFromZone(prototype, capacity, malloc_default_zone());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">NXMapTable *NXCreateMapTableFromZone(NXMapTablePrototype prototype, <span class="keyword">unsigned</span> capacity, <span class="keyword">void</span> *z) &#123;</span><br><span class="line">    NXMapTable			*table = (NXMapTable *)malloc_zone_malloc((malloc_zone_t *)z, <span class="keyword">sizeof</span>(NXMapTable)); <span class="comment">// sizeof(NXMapTable)= 24</span></span><br><span class="line">    NXMapTablePrototype		*proto;</span><br><span class="line">    <span class="keyword">if</span> (! prototypes) prototypes = NXCreateHashTable(protoPrototype, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (! prototype.hash || ! prototype.isEqual || ! prototype.free || prototype.style) &#123;</span><br><span class="line">	_objc_inform(<span class="string">"*** NXCreateMapTable: invalid creation parameters\n"</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    proto = (NXMapTablePrototype *)NXHashGet(prototypes, &amp;prototype); </span><br><span class="line">    <span class="keyword">if</span> (! proto) &#123;</span><br><span class="line">	proto = (NXMapTablePrototype *)malloc(<span class="keyword">sizeof</span>(NXMapTablePrototype));</span><br><span class="line">	*proto = prototype;</span><br><span class="line">    	(<span class="keyword">void</span>)NXHashInsert(prototypes, proto);</span><br><span class="line">    &#125;</span><br><span class="line">    table-&gt;prototype = proto; table-&gt;count = <span class="number">0</span>;</span><br><span class="line">    table-&gt;nbBucketsMinusOne = exp2u(log2u(capacity)+<span class="number">1</span>) - <span class="number">1</span>;</span><br><span class="line">    table-&gt;buckets = allocBuckets(z, table-&gt;nbBucketsMinusOne + <span class="number">1</span>);<span class="comment">//初始化内存空间</span></span><br><span class="line">    <span class="keyword">return</span> table;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<blockquote>
-<p>说明<br><code>malloc_zone_malloc</code>初始化开辟对应的空间<br><code>exp2u(log2u(capacity)+1)</code> 每次返回当前位数下的二进制最大值</p>
-</blockquote>
-<table>
-<thead>
-<tr>
-<th>capacity</th>
-<th style="text-align:right">binary</th>
-<th style="text-align:center">result</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td style="text-align:right">1</td>
-<td style="text-align:center">1</td>
-</tr>
-<tr>
-<td>2</td>
-<td style="text-align:right">10</td>
-<td style="text-align:center">3(0b11)</td>
-</tr>
-<tr>
-<td>6</td>
-<td style="text-align:right">110</td>
-<td style="text-align:center">7(0b111)</td>
-</tr>
-<tr>
-<td>100</td>
-<td style="text-align:right">1100100</td>
-<td style="text-align:center">127(0b111 1111)</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p>capacity是入参，result是结果,binary是当前二进制数</p>
-</blockquote>
-<ul>
-<li><p>NXCountMapTable<br>最简单的方法，返回table的<code>count</code>属性</p>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> NXCountMapTable(NXMapTable *table) &#123; <span class="keyword">return</span> table-&gt;count; &#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>NXMapMember<br>查询表中是否存在数据</p>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> INLINE <span class="keyword">void</span> *_NXMapMember(NXMapTable *table, <span class="keyword">const</span> <span class="keyword">void</span> *key, <span class="keyword">void</span> **value) &#123;</span><br><span class="line">    MapPair	*pairs = (MapPair *)table-&gt;buckets;</span><br><span class="line">    <span class="keyword">unsigned</span>	index = bucketOf(table, key); <span class="comment">//对key进行hash</span></span><br><span class="line">    </span><br><span class="line"><span class="comment">//找到buckets的首地址，并通过index下标计算对应位置，获取到index对应的MapPair</span></span><br><span class="line">    MapPair	*pair = pairs + index;</span><br><span class="line">    </span><br><span class="line"><span class="comment">//如果key为空，则返回</span></span><br><span class="line">    <span class="keyword">if</span> (pair-&gt;key == NX_MAPNOTAKEY) <span class="keyword">return</span> NX_MAPNOTAKEY;</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 如果key相等，则直接对pair赋值，返回key地址</span></span><br><span class="line">    <span class="keyword">if</span> (isEqual(table, pair-&gt;key, key)) &#123;</span><br><span class="line">	*value = (<span class="keyword">void</span> *)pair-&gt;value;</span><br><span class="line">	<span class="keyword">return</span> (<span class="keyword">void</span> *)pair-&gt;key;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="comment">/* 到这一步，则表示hash表冲突了 */</span></span><br><span class="line">	<span class="keyword">unsigned</span>	index2 = index;</span><br><span class="line"><span class="comment">// 继续往下比较，找到则返回，如果为空就返回</span></span><br><span class="line">	<span class="keyword">while</span> ((index2 = nextIndex(table, index2)) != index) &#123;</span><br><span class="line">	    pair = pairs + index2;</span><br><span class="line">	    <span class="keyword">if</span> (pair-&gt;key == NX_MAPNOTAKEY) <span class="keyword">return</span> NX_MAPNOTAKEY;</span><br><span class="line">	    <span class="keyword">if</span> (isEqual(table, pair-&gt;key, key)) &#123;</span><br><span class="line">	    	*value = (<span class="keyword">void</span> *)pair-&gt;value;</span><br><span class="line">		<span class="keyword">return</span> (<span class="keyword">void</span> *)pair-&gt;key;</span><br><span class="line">	    &#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> NX_MAPNOTAKEY;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>NXMapInsert 重要的方法</p>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> *NXMapInsert(NXMapTable *table, <span class="keyword">const</span> <span class="keyword">void</span> *key, <span class="keyword">const</span> <span class="keyword">void</span> *value) &#123;</span><br><span class="line">    MapPair	*pairs = (MapPair *)table-&gt;buckets;</span><br><span class="line">    <span class="comment">//计算key在当前hash表中的下标，hash下标不一定是最后</span></span><br><span class="line">    <span class="keyword">unsigned</span>	index = bucketOf(table, key);</span><br><span class="line">    <span class="comment">//找到buckets的首地址，并通过index下标计算对应位置，获取到index对应的MapPair</span></span><br><span class="line">    MapPair	*pair = pairs + index;</span><br><span class="line">    <span class="comment">// 如果key为空，则返回</span></span><br><span class="line">    <span class="keyword">if</span> (key == NX_MAPNOTAKEY) &#123;</span><br><span class="line">	_objc_inform(<span class="string">"*** NXMapInsert: invalid key: -1\n"</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">unsigned</span> numBuckets = table-&gt;nbBucketsMinusOne + <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// 如果当前地址未冲突，则直接对pair赋值</span></span><br><span class="line">    <span class="keyword">if</span> (pair-&gt;key == NX_MAPNOTAKEY) &#123;</span><br><span class="line">	pair-&gt;key = key; pair-&gt;value = value;</span><br><span class="line">	table-&gt;count++;</span><br><span class="line">	<span class="keyword">if</span> (table-&gt;count * <span class="number">4</span> &gt; numBuckets * <span class="number">3</span>) _NXMapRehash(table);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* 到这一步，则表示hash表冲突了 */</span></span><br><span class="line">    <span class="comment">// 如果同名，则将旧类换为新类</span></span><br><span class="line">    <span class="keyword">if</span> (isEqual(table, pair-&gt;key, key)) &#123;</span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">void</span>	*old = pair-&gt;value;</span><br><span class="line">	<span class="keyword">if</span> (old != value) pair-&gt;value = value;<span class="comment">/* avoid writing unless needed! */</span></span><br><span class="line">	<span class="keyword">return</span> (<span class="keyword">void</span> *)old;</span><br><span class="line">    </span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (table-&gt;count == numBuckets) &#123;</span><br><span class="line">    <span class="comment">// hash表满了，对hash表做重哈希，然后再次执行这个函数</span></span><br><span class="line">	<span class="comment">/* no room: rehash and retry */</span></span><br><span class="line">	_NXMapRehash(table);</span><br><span class="line">	<span class="keyword">return</span> NXMapInsert(table, key, value);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// hash表冲突了</span></span><br><span class="line">	<span class="keyword">unsigned</span>	index2 = index;</span><br><span class="line">    <span class="comment">// 解决hash表冲突，这里采用的是线性探测法，解决哈希表冲突</span></span><br><span class="line">	<span class="keyword">while</span> ((index2 = nextIndex(table, index2)) != index) &#123;</span><br><span class="line">	    pair = pairs + index2;</span><br><span class="line">	    <span class="keyword">if</span> (pair-&gt;key == NX_MAPNOTAKEY) &#123;</span><br><span class="line">              pair-&gt;key = key; pair-&gt;value = value;</span><br><span class="line">		table-&gt;count++;</span><br><span class="line">        <span class="comment">// 在查找过程中，发现哈希表不够用了，则进行重哈希</span></span><br><span class="line">		<span class="keyword">if</span> (table-&gt;count * <span class="number">4</span> &gt; numBuckets * <span class="number">3</span>) _NXMapRehash(table);</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">	    &#125;</span><br><span class="line">        <span class="comment">// 找到同名类，则用新类替换旧类，并返回</span></span><br><span class="line">	    <span class="keyword">if</span> (isEqual(table, pair-&gt;key, key)) &#123;</span><br><span class="line">		<span class="keyword">const</span> <span class="keyword">void</span>	*old = pair-&gt;value;</span><br><span class="line">		<span class="keyword">if</span> (old != value) pair-&gt;value = value;<span class="comment">/* avoid writing unless needed! */</span></span><br><span class="line">		<span class="keyword">return</span> (<span class="keyword">void</span> *)old;</span><br><span class="line">	    &#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/* no room: can't happen! */</span></span><br><span class="line">	_objc_inform(<span class="string">"**** NXMapInsert: bug\n"</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<blockquote>
-<pre><code>if (table-&gt;count * 4 &gt; numBuckets * 3) _NXMapRehash(table);
-</code></pre><p>在每次插入完数据之后，都会进行判断表是否快满了，然后重新hash<br>保证哈希表中的元素数据小于等于表中的 bucket 数量</p>
-</blockquote>
-<ul>
-<li>NXMapRehash<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> _NXMapRehash(NXMapTable *table) &#123;</span><br><span class="line">    MapPair	*pairs = (MapPair *)table-&gt;buckets;<span class="comment">//取出首地址数据</span></span><br><span class="line">    MapPair	*pair = pairs;</span><br><span class="line">    <span class="keyword">unsigned</span>	numBuckets = table-&gt;nbBucketsMinusOne + <span class="number">1</span>; </span><br><span class="line">    <span class="keyword">unsigned</span>	index = numBuckets; </span><br><span class="line">    <span class="keyword">unsigned</span>	oldCount = table-&gt;count; </span><br><span class="line">    </span><br><span class="line">    table-&gt;nbBucketsMinusOne = <span class="number">2</span> * numBuckets - <span class="number">1</span>; </span><br><span class="line">    table-&gt;count = <span class="number">0</span>; </span><br><span class="line">    table-&gt;buckets = allocBuckets(malloc_zone_from_ptr(table), table-&gt;nbBucketsMinusOne + <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">while</span> (index--) &#123; <span class="comment">//10-1</span></span><br><span class="line">	<span class="keyword">if</span> (pair-&gt;key != NX_MAPNOTAKEY) &#123;</span><br><span class="line">	    (<span class="keyword">void</span>)NXMapInsert(table, pair-&gt;key, pair-&gt;value);</span><br><span class="line">	&#125;</span><br><span class="line">	pair++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (oldCount != table-&gt;count)</span><br><span class="line">	_objc_inform(<span class="string">"*** maptable: count differs after rehashing; probably indicates a broken invariant: there are x and y such as isEqual(x, y) is TRUE but hash(x) != hash (y)\n"</span>);</span><br><span class="line">    freeBuckets(pairs);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>调用<code>allocBuckets</code>扩大哈希表的容量<br>调用<code>NXMapInsert</code>将元素重新插入哈希表<br>调用<code>freeBuckets</code>释放旧表</p>
-<ul>
-<li>NXMapRemove<br>可以看做是<code>NXMapInsert</code>的逆向操作，这里不做解释<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> *NXMapRemove(NXMapTable *table, <span class="keyword">const</span> <span class="keyword">void</span> *key) &#123;</span><br><span class="line">    MapPair	*pairs = (MapPair *)table-&gt;buckets;</span><br><span class="line">    <span class="keyword">unsigned</span>	index = bucketOf(table, key);</span><br><span class="line">    MapPair	*pair = pairs + index;</span><br><span class="line">    <span class="keyword">unsigned</span>	chain = <span class="number">1</span>; <span class="comment">/* number of non-nil pairs in a row */</span></span><br><span class="line">    <span class="keyword">int</span>		found = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">void</span>	*old = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">if</span> (pair-&gt;key == NX_MAPNOTAKEY) <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    mapRemove ++;</span><br><span class="line">    <span class="comment">/* compute chain */</span></span><br><span class="line">    &#123;</span><br><span class="line">	<span class="keyword">unsigned</span>	index2 = index;</span><br><span class="line">	<span class="keyword">if</span> (isEqual(table, pair-&gt;key, key)) &#123;found ++; old = pair-&gt;value; &#125;</span><br><span class="line">	<span class="keyword">while</span> ((index2 = nextIndex(table, index2)) != index) &#123;</span><br><span class="line">	    pair = pairs + index2;</span><br><span class="line">	    <span class="keyword">if</span> (pair-&gt;key == NX_MAPNOTAKEY) <span class="keyword">break</span>;</span><br><span class="line">	    <span class="keyword">if</span> (isEqual(table, pair-&gt;key, key)) &#123;found ++; old = pair-&gt;value; &#125;</span><br><span class="line">	    chain++;</span><br><span class="line">	&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (! found) <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">if</span> (found != <span class="number">1</span>) _objc_inform(<span class="string">"**** NXMapRemove: incorrect table\n"</span>);</span><br><span class="line">    <span class="comment">/* remove then reinsert */</span></span><br><span class="line">    &#123;</span><br><span class="line">	MapPair	buffer[<span class="number">16</span>];</span><br><span class="line">	MapPair	*aux = (chain &gt; <span class="number">16</span>) ? (MapPair *)malloc(<span class="keyword">sizeof</span>(MapPair)*(chain<span class="number">-1</span>)) : buffer;</span><br><span class="line">	<span class="keyword">unsigned</span>	auxnb = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span>	nb = chain;</span><br><span class="line">	<span class="keyword">unsigned</span>	index2 = index;</span><br><span class="line">	<span class="keyword">while</span> (nb--) &#123;</span><br><span class="line">	    pair = pairs + index2;</span><br><span class="line">	    <span class="keyword">if</span> (! isEqual(table, pair-&gt;key, key)) aux[auxnb++] = *pair;</span><br><span class="line">	    pair-&gt;key = NX_MAPNOTAKEY; pair-&gt;value = <span class="literal">NULL</span>;</span><br><span class="line">	    index2 = nextIndex(table, index2);</span><br><span class="line">	&#125;</span><br><span class="line">	table-&gt;count -= chain;</span><br><span class="line">	<span class="keyword">if</span> (auxnb != chain<span class="number">-1</span>) _objc_inform(<span class="string">"**** NXMapRemove: bug\n"</span>);</span><br><span class="line">	<span class="keyword">while</span> (auxnb--) NXMapInsert(table, aux[auxnb].key, aux[auxnb].value);</span><br><span class="line">	<span class="keyword">if</span> (chain &gt; <span class="number">16</span>) free(aux);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span> *)old;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="哈希表的性能"><a href="#哈希表的性能" class="headerlink" title="哈希表的性能"></a>哈希表的性能</h2><p>在哈希表初始化方法中，有入参<code>capacity</code>，代表初始化创建的数量,通常在初始化数组、字典等集合的时候也有对应的入参，可以对比看下不同数量级的数量下性能的对比</p>
-<h2 id="哈希表的使用"><a href="#哈希表的使用" class="headerlink" title="哈希表的使用"></a>哈希表的使用</h2><p>在objc/runtime 中，直接使用了它的就是存储所有类或者元类的哈希表<br>借用一张图表示<br><img src="/images/Objc-mapTable.png" alt="Objc-mapTable"></p>
-<h2 id="阅读链接"><a href="#阅读链接" class="headerlink" title="阅读链接"></a>阅读链接</h2><p><a href="http://www.desgard.com/weak/" target="_blank" rel="noopener">http://www.desgard.com/weak/</a><br><a href="http://nshipster.cn/nshashtable-and-nsmaptable/" target="_blank" rel="noopener">http://nshipster.cn/nshashtable-and-nsmaptable/</a><br><a href="http://t.cn/R1JMXNt" target="_blank" rel="noopener">http://t.cn/R1JMXNt</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1969,7 +1895,7 @@ __builtin_expect的作用
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">38</span>
+                <span class="site-state-item-count">39</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2057,7 +1983,7 @@ __builtin_expect的作用
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共65.6k字</span>
+<span class="post-count"> 博客全站共68.3k字</span>
 </div>
 
 
