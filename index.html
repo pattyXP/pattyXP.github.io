@@ -363,6 +363,19 @@
 <li>线程标识 （Thread identifier） <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//本地通知</span></span><br><span class="line">let content = UNMutableNotificationContent()</span><br><span class="line">content.title = <span class="string">"New Photo"</span></span><br><span class="line">content.body = <span class="string">"Jane Doe posted a new photo"</span></span><br><span class="line">content.threadIdentifier = <span class="string">"thread-identifier"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 远程通知</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">"aps"</span> : &#123;</span><br><span class="line">        <span class="string">"alert"</span> : &#123;</span><br><span class="line">            <span class="string">"title"</span> : <span class="string">"New Photo"</span>,</span><br><span class="line">            <span class="string">"body"</span> : <span class="string">"Jane Doe posted a new photo"</span>,</span><br><span class="line">            <span class="string">"thread-id"</span> : <span class="string">"thread-identifier"</span>,</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
+<p><img src="/images/WWDC-group3.png" alt="WWDC-group3"></p>
+<p>用户可以在设置里控制管理方式<br><img src="/images/WWDC-group4.png" alt="WWDC-group4"><br><img src="/images/WWDC-group5.png" alt="WWDC-group5"></p>
+<h3 id="Notification-content-extensions"><a href="#Notification-content-extensions" class="headerlink" title="Notification content extensions"></a>Notification content extensions</h3><p>此特性在iOS 10就出现了,用于自定义通知视图的样式,在iOS 12上针对此做了提升</p>
+<p><img src="/images/WWDC-group12.png" alt="WWDC-group12"></p>
+<ul>
+<li>在plist中设置属性，会影响通知界面的交互功能</li>
+</ul>
+<p><img src="/images/WWDC-group13.png" alt="WWDC-group13"></p>
+<p><img src="/images/WWDC-group14.png" alt="WWDC-group14"></p>
+<ul>
+<li>默认中间部分交互是没有的，需要在plist表中增加属性<code>UNNotificationExtensionUserInteractionEnabled</code>为<code>YES</code></li>
+</ul>
+<p><img src="/images/WWDC-group15.png" alt="WWDC-group15"></p>
 
           
         
@@ -2172,7 +2185,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共68.6k字</span>
+<span class="post-count"> 博客全站共68.7k字</span>
 </div>
 
 
