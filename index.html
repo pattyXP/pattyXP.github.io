@@ -376,6 +376,10 @@
 <li>默认中间部分交互是没有的，需要在plist表中增加属性<code>UNNotificationExtensionUserInteractionEnabled</code>为<code>YES</code></li>
 </ul>
 <p><img src="/images/WWDC-group15.png" alt="WWDC-group15"></p>
+<ul>
+<li>notificationActions<br><code>notificationActions</code>允许获取用户当前的操作，更新新的操作</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">extension <span class="built_in">NSExtensionContext</span> &#123;</span><br><span class="line"></span><br><span class="line">    @available(iOS <span class="number">12.0</span>, *)</span><br><span class="line">    var notificationActions: [UNNotificationAction]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Notification Content Extensions</span></span><br><span class="line"><span class="keyword">class</span> NotificationViewController: <span class="built_in">UIViewController</span>, UNNotificationContentExtension &#123;</span><br><span class="line">    func didReceive(_ response: UNNotificationResponse, completionHandler completion:</span><br><span class="line">        (UNNotificationContentExtensionResponseOption) -&gt; Void) &#123;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> response.actionIdentifier == <span class="string">"like-action"</span> &#123;</span><br><span class="line">            <span class="comment">// Update state...</span></span><br><span class="line"></span><br><span class="line">                let unlikeAction = UNNotificationAction(identifier: <span class="string">"unlike-action"</span>,</span><br><span class="line">                                                             title: <span class="string">"Unlike"</span>, options: [])</span><br><span class="line">                let currentActions = extensionContext?.notificationActions</span><br><span class="line">                let commentAction = currentActions![<span class="number">1</span>]</span><br><span class="line">                let newActions = [ unlikeAction, commentAction ]</span><br><span class="line">                extensionContext?.notificationActions = newActions</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
           
         
@@ -2185,7 +2189,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共68.7k字</span>
+<span class="post-count"> 博客全站共68.8k字</span>
 </div>
 
 
