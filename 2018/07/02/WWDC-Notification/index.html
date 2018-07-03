@@ -103,10 +103,13 @@
 <meta property="og:site_name" content="温暖的弦">
 <meta property="og:description" content="前言2018年WWDC召开至今， 围绕User Notification相关的iOS12特性介绍非常多此次主要是针对用户体验带来的分组通知特性及相关的交互，下面围绕以下几点展开说明  Grouped Notifications Notification content extensions Notification management Provisional authorization Crit">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-07-03T14:32:51.713Z">
+<meta property="og:image" content="https://pattyxp.github.io/images/WWDC-group1.png">
+<meta property="og:image" content="https://pattyxp.github.io/images/WWDC-group2.png">
+<meta property="og:updated_time" content="2018-07-03T14:40:43.012Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="WWDC-Notification">
 <meta name="twitter:description" content="前言2018年WWDC召开至今， 围绕User Notification相关的iOS12特性介绍非常多此次主要是针对用户体验带来的分组通知特性及相关的交互，下面围绕以下几点展开说明  Grouped Notifications Notification content extensions Notification management Provisional authorization Crit">
+<meta name="twitter:image" content="https://pattyxp.github.io/images/WWDC-group1.png">
 
 
 
@@ -349,6 +352,15 @@
 <li>Provisional authorization</li>
 <li>Critical alerts</li>
 </ul>
+<h3 id="Grouped-Notifications"><a href="#Grouped-Notifications" class="headerlink" title="Grouped Notifications"></a>Grouped Notifications</h3><p><img src="/images/WWDC-group1.png" alt="WWDC-group1"></p>
+<p>iOS12 之后</p>
+<p><img src="/images/WWDC-group2.png" alt="WWDC-group2"></p>
+<p>同一APP的通知可被合成一个通知组，点击可以展开组里的通知<br>通知的分组可以采用两种方式实现:</p>
+<ul>
+<li>自动实现 （Automatic grouping）系统根据APP的bundle id 分组，开发者不需要进行额外操作</li>
+<li>线程标识 （Thread identifier） <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//本地通知</span></span><br><span class="line">let content = UNMutableNotificationContent()</span><br><span class="line">content.title = <span class="string">"New Photo"</span></span><br><span class="line">content.body = <span class="string">"Jane Doe posted a new photo"</span></span><br><span class="line">content.threadIdentifier = <span class="string">"thread-identifier"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 远程通知</span></span><br><span class="line">&lt;!-- &#123;</span><br><span class="line">    <span class="string">"aps"</span> : &#123;</span><br><span class="line">        <span class="string">"alert"</span> : &#123;</span><br><span class="line">            <span class="string">"title"</span> : <span class="string">"New Photo"</span>,</span><br><span class="line">            <span class="string">"body"</span> : <span class="string">"Jane Doe posted a new photo"</span>,</span><br><span class="line">            <span class="string">"thread-id"</span> : <span class="string">"thread-identifier"</span>,</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; --&gt;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
 
       
     </div>
@@ -527,7 +539,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Grouped-Notifications"><span class="nav-number">1.1.</span> <span class="nav-text">Grouped Notifications</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -576,7 +588,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共68.5k字</span>
+<span class="post-count"> 博客全站共68.6k字</span>
 </div>
 
 
