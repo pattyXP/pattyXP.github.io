@@ -411,7 +411,7 @@
 <p>当然，在新的通知管理页面，iOS12 提供了新的方法可以根据需要自定义，当点击页面的按钮操作<br>可以通过以下方法获取该行为<br><img src="/images/WWDC-group10.png" alt="WWDC-group10"></p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import <span class="built_in">UIKit</span></span><br><span class="line">import UserNotifications</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> AppDelegate: <span class="built_in">UIApplicationDelegate</span>, UNUserNotificationCenterDelegate &#123;</span><br><span class="line"></span><br><span class="line">    func userNotificationCenter(_ center: UNUserNotificationCenter, openSettingsFor notification: UNNotification? ) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="Provisional-authorization"><a href="#Provisional-authorization" class="headerlink" title="Provisional authorization"></a>Provisional authorization</h3><p>ios 12 提供了一种新的授权机制:临时授权<br>给用户推送的消息不需要通过用户授权弹窗，不过只能隐式推送给用户，不带系统声音和角标<br>在代码中只需要设置参数<code>provisional</code>即可</p>
-
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Requesting Provisional Authorization</span></span><br><span class="line">let notificationCenter = UNUserNotificationCenter.current()</span><br><span class="line">    </span><br><span class="line">    notificationCenter.requestAuthorization(</span><br><span class="line">        options:[.badge, .sound, .alert, .provisional]) &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
           
         
       
@@ -2220,7 +2220,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共69.3k字</span>
+<span class="post-count"> 博客全站共69.4k字</span>
 </div>
 
 
