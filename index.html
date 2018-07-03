@@ -396,6 +396,20 @@
 </li>
 </ul>
 <p>需要注意的是，调用这个 API 并不会移除那条通知，如果需要移除通知可以调用下面的 API<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> UNUserNotificationCenter &#123;</span><br><span class="line"></span><br><span class="line">    func removeDeliveredNotifications(withIdentifiers identifiers: [String])</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Notification-management"><a href="#Notification-management" class="headerlink" title="Notification management"></a>Notification management</h3><p>为方便用户操作应用的设置通知页面，在推送页面上加入了全新的管理页面方便操作</p>
+<p><img src="/images/WWDC-group6.png" alt="WWDC-group6"></p>
+<ul>
+<li>隐式通知 (Deliver Quietly )    只会显示在通知中心，不会带有声音提醒，应用角标</li>
+<li>显式推送（Deliver Prominently） 显示推送会开启所有的通知选项。</li>
+</ul>
+<p>管理页面的入口有三种方式进入</p>
+<ul>
+<li>系统根据用户操作自动给出<br><img src="/images/WWDC-group7.png" alt="WWDC-group7"></li>
+<li>左滑通知<br><img src="/images/WWDC-group8.png" alt="WWDC-group8"></li>
+<li>点击通知详情<br><img src="/images/WWDC-group9.png" alt="WWDC-group9"></li>
+</ul>
+<p>当然，在新的通知管理页面，iOS12 提供了新的方法可以根据需要自定义，当点击页面的按钮操作<br>可以通过以下方法获取该行为<br><img src="/images/WWDC-group10.png" alt="WWDC-group10"></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import <span class="built_in">UIKit</span></span><br><span class="line">import UserNotifications</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> AppDelegate: <span class="built_in">UIApplicationDelegate</span>, UNUserNotificationCenterDelegate &#123;</span><br><span class="line"></span><br><span class="line">    func userNotificationCenter(_ center: UNUserNotificationCenter, openSettingsFor notification: UNNotification? ) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
           
         
@@ -2205,7 +2219,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共69.1k字</span>
+<span class="post-count"> 博客全站共69.3k字</span>
 </div>
 
 
