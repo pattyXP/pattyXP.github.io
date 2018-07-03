@@ -117,7 +117,7 @@
 <meta property="og:image" content="https://pattyxp.github.io/images/WWDC-group8.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/WWDC-group9.png">
 <meta property="og:image" content="https://pattyxp.github.io/images/WWDC-group10.png">
-<meta property="og:updated_time" content="2018-07-03T14:47:15.720Z">
+<meta property="og:updated_time" content="2018-07-03T14:49:54.417Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="WWDC-Notification">
 <meta name="twitter:description" content="前言2018年WWDC召开至今， 围绕User Notification相关的iOS12特性介绍非常多此次主要是针对用户体验带来的分组通知特性及相关的交互，下面围绕以下几点展开说明  Grouped Notifications Notification content extensions Notification management Provisional authorization Crit">
@@ -420,6 +420,7 @@
 </ul>
 <p>当然，在新的通知管理页面，iOS12 提供了新的方法可以根据需要自定义，当点击页面的按钮操作<br>可以通过以下方法获取该行为<br><img src="/images/WWDC-group10.png" alt="WWDC-group10"></p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import <span class="built_in">UIKit</span></span><br><span class="line">import UserNotifications</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> AppDelegate: <span class="built_in">UIApplicationDelegate</span>, UNUserNotificationCenterDelegate &#123;</span><br><span class="line"></span><br><span class="line">    func userNotificationCenter(_ center: UNUserNotificationCenter, openSettingsFor notification: UNNotification? ) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Provisional-authorization"><a href="#Provisional-authorization" class="headerlink" title="Provisional authorization"></a>Provisional authorization</h3><p>ios 12 提供了一种新的授权机制:临时授权<br>给用户推送的消息不需要通过用户授权弹窗，不过只能隐式推送给用户，不带系统声音和角标<br>在代码中只需要设置参数<code>provisional</code>即可</p>
 
       
     </div>
@@ -598,7 +599,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Grouped-Notifications"><span class="nav-number">1.1.</span> <span class="nav-text">Grouped Notifications</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Notification-content-extensions"><span class="nav-number">1.2.</span> <span class="nav-text">Notification content extensions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Notification-management"><span class="nav-number">1.3.</span> <span class="nav-text">Notification management</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Grouped-Notifications"><span class="nav-number">1.1.</span> <span class="nav-text">Grouped Notifications</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Notification-content-extensions"><span class="nav-number">1.2.</span> <span class="nav-text">Notification content extensions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Notification-management"><span class="nav-number">1.3.</span> <span class="nav-text">Notification management</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Provisional-authorization"><span class="nav-number">1.4.</span> <span class="nav-text">Provisional authorization</span></a></li></ol></li></ol></div>
             
 
           </div>
