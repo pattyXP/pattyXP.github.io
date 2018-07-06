@@ -78,7 +78,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, Patty" />
+  <meta name="keywords" content="填坑," />
 
 
 
@@ -96,16 +96,18 @@
 
 
 
-<meta name="description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="温暖的弦">
-<meta property="og:url" content="https://pattyxp.github.io/tags/Dispatch/index.html">
+<meta name="description" content="前言在做需求的时候，之前类似的页面也做过，没有发现在reloadSections的时候有抖动的情况，但是此次就是出现了，没办法，自己的坑自己填 过程第一次在添加self.tableView.estimatedRowHeight = xx; 之后发现已经正常了，开心 再次操作发现又出现问题了 网上查了翻资料，有说将高度进行缓存操作，在- (void)tableView:(UITableView *)">
+<meta name="keywords" content="填坑">
+<meta property="og:type" content="article">
+<meta property="og:title" content="reloadSection的坑">
+<meta property="og:url" content="https://pattyxp.github.io/2018/07/06/reloadSection的坑/index.html">
 <meta property="og:site_name" content="温暖的弦">
-<meta property="og:description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
+<meta property="og:description" content="前言在做需求的时候，之前类似的页面也做过，没有发现在reloadSections的时候有抖动的情况，但是此次就是出现了，没办法，自己的坑自己填 过程第一次在添加self.tableView.estimatedRowHeight = xx; 之后发现已经正常了，开心 再次操作发现又出现问题了 网上查了翻资料，有说将高度进行缓存操作，在- (void)tableView:(UITableView *)">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-07-06T07:56:07.122Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="温暖的弦">
-<meta name="twitter:description" content="Life&apos;s like a movie, write your own ending, keep believing, keep pretending.">
+<meta name="twitter:title" content="reloadSection的坑">
+<meta name="twitter:description" content="前言在做需求的时候，之前类似的页面也做过，没有发现在reloadSections的时候有抖动的情况，但是此次就是出现了，没办法，自己的坑自己填 过程第一次在添加self.tableView.estimatedRowHeight = xx; 之后发现已经正常了，开心 再次操作发现又出现问题了 网上查了翻资料，有说将高度进行缓存操作，在- (void)tableView:(UITableView *)">
 
 
 
@@ -134,13 +136,13 @@
 
 
 
-  <link rel="canonical" href="https://pattyxp.github.io/tags/Dispatch/"/>
+  <link rel="canonical" href="https://pattyxp.github.io/2018/07/06/reloadSection的坑/"/>
 
 
 
 
 
-  <title>标签: Dispatch | 温暖的弦</title>
+  <title>reloadSection的坑 | 温暖的弦</title>
   
 
 
@@ -165,7 +167,7 @@
     
   
 
-  <div class="container sidebar-position-left  ">
+  <div class="container sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -259,54 +261,164 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block tag">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>Dispatch<small>标签</small>
-        </h1>
-      </div>
+  
 
-      
-        
+  
+  
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/07/06/reloadSection的坑/">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/2018/06/07/Dispatch系列/" itemprop="url">
-              
-                <span itemprop="name">Dispatch系列</span>
-              
-            </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">reloadSection的坑</h1>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-06-07T09:46:16+08:00"
-              content="2018-06-07" >
-          06-07
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-06T15:23:30+08:00">
+                2018-07-06
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在做需求的时候，之前类似的页面也做过，没有发现在<code>reloadSections</code>的时候有抖动的情况，但是此次就是出现了，没办法，自己的坑自己填</p>
+<h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><p>第一次在添加<code>self.tableView.estimatedRowHeight = xx;</code> 之后发现已经正常了，开心</p>
+<p>再次操作发现又出现问题了</p>
+<p>网上查了翻资料，有说将高度进行缓存操作，在<code>- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath</code>进行缓存，在<code>heightForRow</code>方法进行取，取不到再存</p>
+<p>结合两者，终于不抖动了</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>一般情况下，抖动都是因为预估高度和实际高度不对导致的，通过设置预估高度都能达到效果，此次实践发现还有缓存高度的事，真神奇</p>
 
       
     </div>
+    
+    
+    
 
+    
+
+
+    
+      <div>
+      <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+      </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/填坑/" rel="tag"><i class="fa fa-tag"></i> 填坑</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/02/WWDC-Notification/" rel="next" title="WWDC-Notification">
+                <i class="fa fa-chevron-left"></i> WWDC-Notification
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -314,6 +426,12 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8zNjQyMC8xMjk1NQ=="></div>
+    
+  </div>
+
 
         </div>
         
@@ -334,8 +452,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/flower.jpg"
@@ -395,6 +522,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#过程"><span class="nav-number">2.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论"><span class="nav-number">3.</span> <span class="nav-text">结论</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -526,10 +669,10 @@
 
 
   
-    <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
 <script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
 
-  
+
 
   
 
@@ -558,6 +701,17 @@
 
 
 
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
   
 
 

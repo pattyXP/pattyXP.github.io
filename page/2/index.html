@@ -275,6 +275,131 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/22/记录一次坑/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/22/记录一次坑/" itemprop="url">记录一次坑</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-22T10:02:47+08:00">
+                2018-03-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="坑一"><a href="#坑一" class="headerlink" title="坑一"></a>坑一</h2><p>这真是一次莫名其妙的经历<br>场景如下:<br>有一个页面，底下有个按钮，之前都测试的OK,莫名其妙的突然之间不管点击什么地方，都会走按钮的逻辑，检查发现按钮的点击区域没有扩大，甚至点击返回按钮都被触动按钮点击事件，同样的页面，如果没有显示这个按钮一切逻辑倒是正常的，找同事看了下，笑话说如果真的是这样的效果，能做到也不容易啊</p>
+<p>后面发现可能是我电脑缓存的问题，于是把相关的库和工程的缓存都给清理了下，世界清静了 ~ ~ ~</p>
+<h2 id="坑二"><a href="#坑二" class="headerlink" title="坑二"></a>坑二</h2><p>更新Alfred (3.6.1), 原先好好的锁屏功能<code>lock</code> 无法识别了，每次都打开QQ的联系人列表，一直没搞明白，后来查到是因为QQ的联系人列表快捷键冲突的问题导致的（哎，当时怎么没往那方面去思考呢~），修改QQ的联系人快捷键，直接废弃好了，反正感觉不常用，终于可以快捷键锁屏了,速度比之前版本快多了  ~ ~ ~ </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/20/ReactiveObjc-RACSubject/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2047,180 +2172,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/03/Objc关联对象的实现/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/02/03/Objc关联对象的实现/" itemprop="url">Objc关联对象的实现</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-03T15:36:52+08:00">
-                2018-02-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>今天主要来聊一聊以下三个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">id objc_getAssociatedObject(id object, const void *key) &#123;</span><br><span class="line">    return _object_get_associative_reference(object, (void *)key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void objc_setAssociatedObject(id object, const void *key, id value, objc_AssociationPolicy policy) &#123;</span><br><span class="line">    _object_set_associative_reference(object, (void *)key, value, policy);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void objc_removeAssociatedObjects(id object)</span><br><span class="line">&#123;</span><br><span class="line">    if (object &amp;&amp; object-&gt;hasAssociatedObjects()) &#123;</span><br><span class="line">        _object_remove_assocations(object);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>分类添加属性的时候，由于系统没有办法自动将属性添加set和get方法，需要自动实现，就需要以上的方法来实现</p>
-<h2 id="事例code"><a href="#事例code" class="headerlink" title="事例code"></a>事例code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">@interface Dog: NSObject</span><br><span class="line">@end</span><br><span class="line">@implementation Dog</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface Dog(DanceCategory)</span><br><span class="line">@property (nonatomic, strong) NSString *categoryProperty;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Dog(DanceCategory)</span><br><span class="line">- (NSString *)categoryProperty</span><br><span class="line">&#123;</span><br><span class="line">    return objc_getAssociatedObject(self, _cmd);</span><br><span class="line">&#125;</span><br><span class="line">- (void)setCategoryProperty:(NSString *)categoryProperty</span><br><span class="line">&#123;</span><br><span class="line">    objc_setAssociatedObject(self, @selector(categoryProperty), categoryProperty, OBJC_ASSOCIATION_RETAIN_NONATOMIC);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        Dog *dd = [[Dog alloc] init];</span><br><span class="line">        dd.categoryProperty = @&quot;分类属性&quot;;</span><br><span class="line">        dd.categoryProperty;</span><br><span class="line">        objc_removeAssociatedObjects(dd);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><p>先看下设置属性的方法调用顺序<br><img src="/images/分类属性-调用堆栈.png" alt="调用堆栈.png"></p>
-<h3 id="object-set-associative-reference"><a href="#object-set-associative-reference" class="headerlink" title="object_set_associative_reference"></a>object_set_associative_reference</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy) &#123;</span><br><span class="line"></span><br><span class="line">    ObjcAssociation old_association(0, nil); //生成旧对象</span><br><span class="line">    id new_value = value ? acquireValue(value, policy) : nil;  </span><br><span class="line">    &#123;</span><br><span class="line">        AssociationsManager manager;</span><br><span class="line">        AssociationsHashMap &amp;associations(manager.associations());</span><br><span class="line">        disguised_ptr_t disguised_object = DISGUISE(object);</span><br><span class="line">        if (new_value) &#123;</span><br><span class="line">            AssociationsHashMap::iterator i = associations.find(disguised_object);</span><br><span class="line">            if (i != associations.end()) &#123;</span><br><span class="line">                // secondary table exists</span><br><span class="line">                ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">                ObjectAssociationMap::iterator j = refs-&gt;find(key);</span><br><span class="line">                if (j != refs-&gt;end()) &#123;</span><br><span class="line">                    old_association = j-&gt;second; //如果存在之前的值，给旧对象赋值</span><br><span class="line">                    j-&gt;second = ObjcAssociation(policy, new_value);</span><br><span class="line">                &#125; else &#123;</span><br><span class="line">                    (*refs)[key] = ObjcAssociation(policy, new_value);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                // create the new association (first time).</span><br><span class="line">                ObjectAssociationMap *refs = new ObjectAssociationMap;</span><br><span class="line">                associations[disguised_object] = refs;</span><br><span class="line">                (*refs)[key] = ObjcAssociation(policy, new_value);</span><br><span class="line">                object-&gt;setHasAssociatedObjects();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            // setting the association to nil breaks the association.</span><br><span class="line">            AssociationsHashMap::iterator i = associations.find(disguised_object);</span><br><span class="line">            if (i !=  associations.end()) &#123;</span><br><span class="line">                ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">                ObjectAssociationMap::iterator j = refs-&gt;find(key);</span><br><span class="line">                if (j != refs-&gt;end()) &#123;</span><br><span class="line">                    old_association = j-&gt;second;</span><br><span class="line">                    refs-&gt;erase(j);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    // 如果旧对象有值，进行释放</span><br><span class="line">    if (old_association.hasValue()) ReleaseValue()(old_association);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这里有几个主要的类</p>
-<ul>
-<li>AssociationsManager   全局，持有spinlock_t 和 AssociationsHashMap</li>
-<li>AssociationsHashMap   全局单例</li>
-<li>ObjectAssociationMap  </li>
-<li>ObjcAssociation       真正关联对象的类，包含policy和value</li>
-</ul>
-<p>此处有个简单例子说明下关联对象在内存的存储形式，例子和图片出自此处(<a href="https://draveness.me/ao" target="_blank" rel="noopener">https://draveness.me/ao</a>)<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[]) &#123;</span><br><span class="line">    <span class="keyword">@autoreleasepool</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">NSObject</span> *obj = [<span class="built_in">NSObject</span> new];</span><br><span class="line">        objc_setAssociatedObject(obj, <span class="keyword">@selector</span>(hello), <span class="string">@"Hello"</span>, OBJC_ASSOCIATION_RETAIN_NONATOMIC);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p><img src="/images/association结构.png" alt="association结构"></p>
-<p>接着分析上面源代码:</p>
-<ul>
-<li>初始生成old_association，便于存储旧对象以及清除旧值</li>
-<li>acquireValue 方法内部是对value进行copy或者retain</li>
-<li>初始化生成或者取出唯一的全局单例AssociationsManager 和 AssociationsHashMap</li>
-<li>disguised_object 是根据object生成的</li>
-</ul>
-<p><strong>两种情况</strong><br>下面根据newValue是否为空来处理的</p>
-<ol>
-<li><p>newValue 存在:设置或更新值的时候</p>
-<ul>
-<li>在AssociationsHashMap中根据disguised_object作为key去取对应的object的AssociationsHashMap</li>
-<li><p>如果map存在</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ObjectAssociationMap *refs = i-&gt;second</span><br><span class="line">ObjectAssociationMap::iterator j = refs-&gt;find(key);</span><br><span class="line">if (j != refs-&gt;end()) &#123; //如果存在旧值，将旧值赋值给临时变量old_association，便于最后释放</span><br><span class="line">    old_association = j-&gt;second;</span><br><span class="line">    j-&gt;second = ObjcAssociation(policy, new_value);//然后重新赋值</span><br><span class="line">&#125; else &#123; //如果不存在旧值，给map表设置key和value</span><br><span class="line">    (*refs)[key] = ObjcAssociation(policy, new_value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>如果map不存在，新生成ObjectAssociationMap</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ObjectAssociationMap *refs = new ObjectAssociationMap; //新生成ObjectAssociationMap</span><br><span class="line">associations[disguised_object] = refs; //将disguised_object作为key ,value是ObjectAssociationMap</span><br><span class="line">(*refs)[key] = ObjcAssociation(policy, new_value) //在ObjectAssociationMap中插入key和对应的ObjcAssociation</span><br><span class="line">object-&gt;setHasAssociatedObjects();//标记对象对应的标记位</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>newValue=nil 删除一个关联对象</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">AssociationsHashMap::iterator i = associations.find(disguised_object);</span><br><span class="line">if (i !=  associations.end()) &#123; //如果存在该object对应的map表，</span><br><span class="line">    ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">    ObjectAssociationMap::iterator j = refs-&gt;find(key); //从ObjectAssociationMap表中取出对应的key所对应的association</span><br><span class="line">    if (j != refs-&gt;end()) &#123;</span><br><span class="line">        old_association = j-&gt;second; //将存在的值赋值给old_association</span><br><span class="line">        refs-&gt;erase(j); //从表中将key对应的ObjcAssociation进行擦除</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<ul>
-<li>最后 如果存在旧值，将旧值释放即可<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (old_association.hasValue()) ReleaseValue()(old_association);</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h3 id="object-get-associative-reference"><a href="#object-get-associative-reference" class="headerlink" title="object_get_associative_reference"></a>object_get_associative_reference</h3><p><img src="/images/分类属性-get.png" alt="getAssociation堆栈图"><br>上图是调用对象属性的get方法执行的堆栈结构图</p>
-<p>流程比上面的方法相对简单<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">id _object_get_associative_reference(id object, void *key) &#123;</span><br><span class="line">    id value = nil;</span><br><span class="line">    uintptr_t policy = OBJC_ASSOCIATION_ASSIGN;</span><br><span class="line">    &#123;</span><br><span class="line">        AssociationsManager manager;</span><br><span class="line">        AssociationsHashMap &amp;associations(manager.associations());</span><br><span class="line">        disguised_ptr_t disguised_object = DISGUISE(object);</span><br><span class="line">        AssociationsHashMap::iterator i = associations.find(disguised_object); //从AssociationsHashMap表中查找对象</span><br><span class="line">        if (i != associations.end()) &#123; //如果存在对象的话</span><br><span class="line">            ObjectAssociationMap *refs = i-&gt;second;</span><br><span class="line">            ObjectAssociationMap::iterator j = refs-&gt;find(key); //从对象对应的ObjectAssociationMap表中根据key取出对应的value</span><br><span class="line">            if (j != refs-&gt;end()) &#123; //如果存在value</span><br><span class="line">                ObjcAssociation &amp;entry = j-&gt;second;</span><br><span class="line">                value = entry.value(); //将存在的ObjcAssociation属性对应赋值</span><br><span class="line">                policy = entry.policy();</span><br><span class="line">                if (policy &amp; OBJC_ASSOCIATION_GETTER_RETAIN) ((id(*)(id, SEL))objc_msgSend)(value, SEL_retain);   //对value进行retain</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    if (value &amp;&amp; (policy &amp; OBJC_ASSOCIATION_GETTER_AUTORELEASE)) &#123;</span><br><span class="line">        ((id(*)(id, SEL))objc_msgSend)(value, SEL_autorelease);</span><br><span class="line">    &#125;</span><br><span class="line">    return value; //最后将关联对象 ObjcAssociation 的值进行返回</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="objc-removeAssociatedObjects"><a href="#objc-removeAssociatedObjects" class="headerlink" title="objc_removeAssociatedObjects"></a>objc_removeAssociatedObjects</h2><p>先来看下调用remove方法的函数调用<br><img src="/images/分类属性-remove.png" alt="remove"><br>打印isa的结构，可以看到对象的has_assoc 标记为1，也就是存在关联对象</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">void _object_remove_assocations(id object) &#123;</span><br><span class="line">    vector&lt; ObjcAssociation,ObjcAllocator&lt;ObjcAssociation&gt; &gt; elements;</span><br><span class="line">    &#123;</span><br><span class="line">        AssociationsManager manager;</span><br><span class="line">        AssociationsHashMap &amp;associations(manager.associations());</span><br><span class="line">        if (associations.size() == 0) return; //如果不存在 返回</span><br><span class="line">        disguised_ptr_t disguised_object = DISGUISE(object);</span><br><span class="line">        AssociationsHashMap::iterator i = associations.find(disguised_object); //查找object对应的表</span><br><span class="line">        if (i != associations.end()) &#123;</span><br><span class="line">            // copy all of the associations that need to be removed.</span><br><span class="line">            ObjectAssociationMap *refs = i-&gt;second; //存在的话取出对应的object表</span><br><span class="line">            for (ObjectAssociationMap::iterator j = refs-&gt;begin(), end = refs-&gt;end(); j != end; ++j) &#123;</span><br><span class="line">                elements.push_back(j-&gt;second);//将表的元素存入elements</span><br><span class="line">            &#125;</span><br><span class="line">            delete refs; //移除object对应的表</span><br><span class="line">            associations.erase(i); //同时在AssociationsHashMap表中将object也移除</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    // the calls to releaseValue() happen outside of the lock.</span><br><span class="line">    for_each(elements.begin(), elements.end(), ReleaseValue()); //通过循环将elements元素都进行释放</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文就是对于如何给分类添加属性操作进行解读</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -2266,7 +2222,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">40</span>
+                <span class="site-state-item-count">41</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2279,7 +2235,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-count">11</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -2354,7 +2310,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共69.6k字</span>
+<span class="post-count"> 博客全站共69.8k字</span>
 </div>
 
 
