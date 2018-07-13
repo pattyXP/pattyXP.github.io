@@ -103,7 +103,7 @@
 <meta property="og:site_name" content="温暖的弦">
 <meta property="og:description" content="坑一这真是一次莫名其妙的经历场景如下:有一个页面，底下有个按钮，之前都测试的OK,莫名其妙的突然之间不管点击什么地方，都会走按钮的逻辑，检查发现按钮的点击区域没有扩大，甚至点击返回按钮都被触动按钮点击事件，同样的页面，如果没有显示这个按钮一切逻辑倒是正常的，找同事看了下，笑话说如果真的是这样的效果，能做到也不容易啊 后面发现可能是我电脑缓存的问题，于是把相关的库和工程的缓存都给清理了下，世界清静了">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-07-07T07:39:05.782Z">
+<meta property="og:updated_time" content="2018-07-13T12:47:46.801Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="记录一次坑">
 <meta name="twitter:description" content="坑一这真是一次莫名其妙的经历场景如下:有一个页面，底下有个按钮，之前都测试的OK,莫名其妙的突然之间不管点击什么地方，都会走按钮的逻辑，检查发现按钮的点击区域没有扩大，甚至点击返回按钮都被触动按钮点击事件，同样的页面，如果没有显示这个按钮一切逻辑倒是正常的，找同事看了下，笑话说如果真的是这样的效果，能做到也不容易啊 后面发现可能是我电脑缓存的问题，于是把相关的库和工程的缓存都给清理了下，世界清静了">
@@ -345,6 +345,7 @@
 <p>后面发现可能是我电脑缓存的问题，于是把相关的库和工程的缓存都给清理了下，世界清静了 ~ ~ ~</p>
 <h2 id="坑二"><a href="#坑二" class="headerlink" title="坑二"></a>坑二</h2><p>更新Alfred (3.6.1), 原先好好的锁屏功能<code>lock</code> 无法识别了，每次都打开QQ的联系人列表，一直没搞明白，后来查到是因为QQ的联系人列表快捷键冲突的问题导致的（哎，当时怎么没往那方面去思考呢~），修改QQ的联系人快捷键，直接废弃好了，反正感觉不常用，终于可以快捷键锁屏了,速度比之前版本快多了  ~ ~ ~ </p>
 <h2 id="坑三"><a href="#坑三" class="headerlink" title="坑三"></a>坑三</h2><p>UITextView的光标竟然不显示颜色，看着好奇怪，网上有说是因为背景色和光标颜色(默认白色)一致导致的，结果我修改了背景颜色也没起作用，需要设置光标颜色<code>textView.tintColor</code></p>
+<h2 id="坑四"><a href="#坑四" class="headerlink" title="坑四"></a>坑四</h2><p>大坑来了，iOS8上面，在一个controller.xib里面放入一个view空页面，在空情况下去加载显示，点击的时候crash了<br>日志是说dealloc了，没有去持有，点击事件就不能正确发送了<br>在xib里面存在两个view，且共同显示在一个视图的时候，就不正常，强持有这个view不行，强持有按钮也不行，空页面在加载的时候就被释放了，单独拖出来放在新建的view下面就OK了，真是第一次被这个问题坑到了，本来想着简单点就不去创建新的页面，反而引发这个没想到的问题，好吧，记下来</p>
 
       
     </div>
@@ -527,7 +528,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#坑一"><span class="nav-number">1.</span> <span class="nav-text">坑一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#坑二"><span class="nav-number">2.</span> <span class="nav-text">坑二</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#坑三"><span class="nav-number">3.</span> <span class="nav-text">坑三</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#坑一"><span class="nav-number">1.</span> <span class="nav-text">坑一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#坑二"><span class="nav-number">2.</span> <span class="nav-text">坑二</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#坑三"><span class="nav-number">3.</span> <span class="nav-text">坑三</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#坑四"><span class="nav-number">4.</span> <span class="nav-text">坑四</span></a></li></ol></div>
             
 
           </div>
@@ -576,7 +577,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共69.9k字</span>
+<span class="post-count"> 博客全站共70.1k字</span>
 </div>
 
 
