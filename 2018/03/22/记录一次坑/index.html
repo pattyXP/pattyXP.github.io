@@ -104,7 +104,7 @@
 <meta property="og:description" content="坑一这真是一次莫名其妙的经历场景如下:有一个页面，底下有个按钮，之前都测试的OK,莫名其妙的突然之间不管点击什么地方，都会走按钮的逻辑，检查发现按钮的点击区域没有扩大，甚至点击返回按钮都被触动按钮点击事件，同样的页面，如果没有显示这个按钮一切逻辑倒是正常的，找同事看了下，笑话说如果真的是这样的效果，能做到也不容易啊 后面发现可能是我电脑缓存的问题，于是把相关的库和工程的缓存都给清理了下，世界清静了">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://pattyxp.github.io/images/library_error.png">
-<meta property="og:updated_time" content="2018-08-16T07:23:08.695Z">
+<meta property="og:updated_time" content="2018-08-16T07:24:33.957Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="记录一次坑">
 <meta name="twitter:description" content="坑一这真是一次莫名其妙的经历场景如下:有一个页面，底下有个按钮，之前都测试的OK,莫名其妙的突然之间不管点击什么地方，都会走按钮的逻辑，检查发现按钮的点击区域没有扩大，甚至点击返回按钮都被触动按钮点击事件，同样的页面，如果没有显示这个按钮一切逻辑倒是正常的，找同事看了下，笑话说如果真的是这样的效果，能做到也不容易啊 后面发现可能是我电脑缓存的问题，于是把相关的库和工程的缓存都给清理了下，世界清静了">
@@ -352,6 +352,7 @@
 <h2 id="坑六"><a href="#坑六" class="headerlink" title="坑六"></a>坑六</h2><p>在切换分支的时候，重新install,遇到个error<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">  - Running pre install hooks</span><br><span class="line">[!] The <span class="string">'Pods-xxxx'</span> target has frameworks with conflicting <span class="symbol">names:</span> xxx.framework.</span><br></pre></td></tr></table></figure></p>
 <p>没办法，<code>pod cache clean</code>也不管用，还是老老实实的不使用本地的path</p>
 <h2 id="坑七"><a href="#坑七" class="headerlink" title="坑七"></a>坑七</h2><p>在pods安装的时候，遇到了历史问题 <code>library not found for -lToast</code><br>问题是没有使用过它，没有引入过这个pod啊，所以 按照网上说的方法都不对，<br>最后搜索的时候，倒是发现其在某一处有在Tagets/Build Settings<br><img src="/images/library_error.png" alt="library_error"></p>
+<p>删除历史遗留下来的不需要的库即可</p>
 
       
     </div>

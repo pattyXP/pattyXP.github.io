@@ -355,6 +355,7 @@
 <h2 id="坑六"><a href="#坑六" class="headerlink" title="坑六"></a>坑六</h2><p>在切换分支的时候，重新install,遇到个error<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">  - Running pre install hooks</span><br><span class="line">[!] The <span class="string">'Pods-xxxx'</span> target has frameworks with conflicting <span class="symbol">names:</span> xxx.framework.</span><br></pre></td></tr></table></figure></p>
 <p>没办法，<code>pod cache clean</code>也不管用，还是老老实实的不使用本地的path</p>
 <h2 id="坑七"><a href="#坑七" class="headerlink" title="坑七"></a>坑七</h2><p>在pods安装的时候，遇到了历史问题 <code>library not found for -lToast</code><br>问题是没有使用过它，没有引入过这个pod啊，所以 按照网上说的方法都不对，<br>最后搜索的时候，倒是发现其在某一处有在Tagets/Build Settings<br><img src="/images/library_error.png" alt="library_error"></p>
+<p>删除历史遗留下来的不需要的库即可</p>
 
           
         
