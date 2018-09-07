@@ -275,6 +275,129 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/08/30/mmap的KVO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/30/mmap的KVO/" itemprop="url">mmap的KVO</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-30T10:10:56+08:00">
+                2018-08-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="先来了解下-NSData相关的分类属性和方法"><a href="#先来了解下-NSData相关的分类属性和方法" class="headerlink" title="先来了解下 NSData相关的分类属性和方法"></a>先来了解下 <code>NSData</code>相关的分类属性和方法</h2><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">NSData</span> : <span class="title">NSObject</span> &lt;<span class="title">NSCopying</span>, <span class="title">NSMutableCopying</span>, <span class="title">NSSecureCoding</span>&gt;</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>) <span class="built_in">NSUInteger</span> length;</span><br><span class="line"><span class="comment">/*返回data对象的首指针*/</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>) <span class="keyword">const</span> <span class="keyword">void</span> *bytes <span class="built_in">NS_RETURNS_INNER_POINTER</span>;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">NSData</span> (<span class="title">NSExtendedData</span>)</span></span><br><span class="line"><span class="comment">/*返回一个ASCII编码格式的字符串，采用的格式是data属性列表的格式*/</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">copy</span>) <span class="built_in">NSString</span> *description;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*取出data中指定长度的字节存入buffer这个提前声明的数组中*/</span></span><br><span class="line">- (<span class="keyword">void</span>)getBytes:(<span class="keyword">void</span> *)buffer length:(<span class="built_in">NSUInteger</span>)length;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*取出data中指定位置range的字节存入buffer这个提前声明的数组中*/</span></span><br><span class="line">- (<span class="keyword">void</span>)getBytes:(<span class="keyword">void</span> *)buffer range:(<span class="built_in">NSRange</span>)range;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<h2 id="mman-h"><a href="#mman-h" class="headerlink" title="mman.h"></a>mman.h</h2><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*取消映射*/</span></span><br><span class="line"><span class="keyword">int</span>	munmap(<span class="keyword">void</span> *, size_t) __DARWIN_ALIAS(munmap);</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/07/06/reloadSection的坑/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1783,254 +1906,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/24/ReactiveObjc-常用的变换操作/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/24/ReactiveObjc-常用的变换操作/" itemprop="url">ReactiveObjc 常用的变换操作</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-24T16:47:45+08:00">
-                2018-03-24
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>本文源码为 ReactiveObjc 3.1.0 版本</p>
-<p>除了入门篇介绍的一些常用方法，本篇来介绍下过滤和组合相关的方法底层实现</p>
-<ul>
-<li>filter</li>
-</ul>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)filter:(<span class="built_in">BOOL</span> (^)(<span class="keyword">id</span> value))block &#123;</span><br><span class="line">    <span class="built_in">NSCParameterAssert</span>(block != <span class="literal">nil</span>);</span><br><span class="line"></span><br><span class="line">    Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [[<span class="keyword">self</span> flattenMap:^ <span class="keyword">id</span> (<span class="keyword">id</span> value) &#123;  </span><br><span class="line">        <span class="keyword">if</span> (block(value)) &#123;</span><br><span class="line">            <span class="keyword">return</span> [<span class="keyword">class</span> <span class="keyword">return</span>:value];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">class</span>.empty;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;] setNameWithFormat:<span class="string">@"[%@] -filter:"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>内部调用flattenMap方法，在上篇已经介绍过了，此处略过。<br>如果满足筛选条件的即返回原信号的值，否则原信号的值被“吞”掉，返回空的信号 RACEmptySignal</p>
-<ul>
-<li>ignoreValues<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)ignoreValues &#123;</span><br><span class="line">    return [[self filter:^(id _) &#123;</span><br><span class="line">        return NO;</span><br><span class="line">    &#125;] setNameWithFormat:@&quot;[%@] -ignoreValues&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>ignoreValues 方法是对 filter 方法的封装，原信号的值都会被变换成empty空信号</p>
-<ul>
-<li>ignore:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (instancetype)ignore:(id)value &#123;</span><br><span class="line">    return [[self filter:^ BOOL (id innerValue) &#123;</span><br><span class="line">        return innerValue != value &amp;&amp; ![innerValue isEqual:value];</span><br><span class="line">    &#125;] setNameWithFormat:@&quot;[%@] -ignore: %@&quot;, self.name, [value rac_description]];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>对入参的value进行判断，当原信号和value不同的时候 返回原信号</p>
-<ul>
-<li>distinctUntilChanged<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)distinctUntilChanged &#123;</span><br><span class="line">    Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [[<span class="keyword">self</span> bind:^&#123;</span><br><span class="line">        __block <span class="keyword">id</span> lastValue = <span class="literal">nil</span>;</span><br><span class="line">        __block <span class="built_in">BOOL</span> initial = <span class="literal">YES</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ^(<span class="keyword">id</span> x, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!initial &amp;&amp; (lastValue == x || [x isEqual:lastValue])) <span class="keyword">return</span> [<span class="keyword">class</span> empty];</span><br><span class="line"></span><br><span class="line">            initial = <span class="literal">NO</span>;</span><br><span class="line">            lastValue = x;</span><br><span class="line">            <span class="keyword">return</span> [<span class="keyword">class</span> <span class="keyword">return</span>:x];</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;] setNameWithFormat:<span class="string">@"[%@] -distinctUntilChanged"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>每次变换中都记录一下原信号上一次发送过来的值，并与这一次进行比较，如果是相同的值，返回empty信号。只有和原信号上一次发送的值不同，变换后的新信号才把这个值发送出来。</p>
-<ul>
-<li>take<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)take:(<span class="built_in">NSUInteger</span>)count &#123;</span><br><span class="line">	Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (count == <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">class</span>.empty;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> [[<span class="keyword">self</span> bind:^&#123;</span><br><span class="line">		__block <span class="built_in">NSUInteger</span> taken = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> ^ <span class="keyword">id</span> (<span class="keyword">id</span> value, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">			<span class="keyword">if</span> (taken &lt; count) &#123;</span><br><span class="line">				++taken;</span><br><span class="line">				<span class="keyword">if</span> (taken == count) *stop = <span class="literal">YES</span>;</span><br><span class="line">				<span class="keyword">return</span> [<span class="keyword">class</span> <span class="keyword">return</span>:value];</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;] setNameWithFormat:<span class="string">@"[%@] -take: %lu"</span>, <span class="keyword">self</span>.name, (<span class="keyword">unsigned</span> <span class="keyword">long</span>)count];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>take:实现也非常简单，借助bind函数来实现的。<br>入参的count是原信号取值的个数,在bind的闭包中,taken计数从0开始取原信号的值,当taken取到count个数的时候，就停止取值。</p>
-<ul>
-<li>takeLast<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)takeLast:(<span class="built_in">NSUInteger</span>)count &#123;</span><br><span class="line">	<span class="keyword">return</span> [[RACSignal createSignal:^(<span class="keyword">id</span>&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		<span class="built_in">NSMutableArray</span> *valuesTaken = [<span class="built_in">NSMutableArray</span> arrayWithCapacity:count];</span><br><span class="line">		<span class="keyword">return</span> [<span class="keyword">self</span> subscribeNext:^(<span class="keyword">id</span> x) &#123;</span><br><span class="line">			[valuesTaken addObject:x ? : RACTupleNil.tupleNil];</span><br><span class="line"></span><br><span class="line">			<span class="keyword">while</span> (valuesTaken.count &gt; count) &#123;</span><br><span class="line">				[valuesTaken removeObjectAtIndex:<span class="number">0</span>];</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; error:^(<span class="built_in">NSError</span> *error) &#123;</span><br><span class="line">			[subscriber sendError:error];</span><br><span class="line">		&#125; completed:^&#123;</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">id</span> value <span class="keyword">in</span> valuesTaken) &#123;</span><br><span class="line">				[subscriber sendNext:value == RACTupleNil.tupleNil ? <span class="literal">nil</span> : value];</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			[subscriber sendCompleted];</span><br><span class="line">		&#125;];</span><br><span class="line">	&#125;] setNameWithFormat:<span class="string">@"[%@] -takeLast: %lu"</span>, <span class="keyword">self</span>.name, (<span class="keyword">unsigned</span> <span class="keyword">long</span>)count];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>和take相反，先将接受到的值都存储在可变数组valuesTaken上，当数组的数量超过入参count的值，就将之前的数据进行移除<br>订阅完成之后，通过for循环一次次的发送值<br>注:<br>1.如果值是空的RACTupleNil.tupleNil，就发送nil<br>2.如果原信号一直没有completed，那么takeLast:就一直没法发出任何信号来。</p>
-<ul>
-<li>takeUntilBlock<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)takeUntilBlock:(BOOL (^)(id x))predicate &#123;</span><br><span class="line">	NSCParameterAssert(predicate != nil);</span><br><span class="line"></span><br><span class="line">	Class class = self.class;</span><br><span class="line"></span><br><span class="line">	return [[self bind:^&#123;</span><br><span class="line">		return ^ id (id value, BOOL *stop) &#123;</span><br><span class="line">			if (predicate(value)) return nil;</span><br><span class="line"></span><br><span class="line">			return [class return:value];</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -takeUntilBlock:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>内部也是借助bind方法实现，根据传入的predicate闭包作为筛选条件，如果predicate( )闭包满足条件，那么新信号置为nil,停止发送新信号.</p>
-<ul>
-<li>takeWhileBlock<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)takeWhileBlock:(BOOL (^)(id x))predicate &#123;</span><br><span class="line">	NSCParameterAssert(predicate != nil);</span><br><span class="line"></span><br><span class="line">	return [[self takeUntilBlock:^ BOOL (id x) &#123;</span><br><span class="line">		return !predicate(x);</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -takeWhileBlock:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>内部调用takeUntilBlock，只是判断条件和之相反<br>如果满足条件，返回 非空的值，<br>如果不满足条件 返回 nil，停止发送新信号</p>
-<ul>
-<li>takeUntil<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)takeUntil:(RACSignal *)signalTrigger &#123;</span><br><span class="line">	return [[RACSignal createSignal:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		RACCompoundDisposable *disposable = [RACCompoundDisposable compoundDisposable];</span><br><span class="line">		void (^triggerCompletion)(void) = ^&#123;</span><br><span class="line">			[disposable dispose];</span><br><span class="line">			[subscriber sendCompleted];</span><br><span class="line">		&#125;;</span><br><span class="line"></span><br><span class="line">		RACDisposable *triggerDisposable = [signalTrigger subscribeNext:^(id _) &#123;</span><br><span class="line">			triggerCompletion();</span><br><span class="line">		&#125; completed:^&#123;</span><br><span class="line">			triggerCompletion();</span><br><span class="line">		&#125;];</span><br><span class="line"></span><br><span class="line">		[disposable addDisposable:triggerDisposable];</span><br><span class="line"></span><br><span class="line">		if (!disposable.disposed) &#123;</span><br><span class="line">			RACDisposable *selfDisposable = [self subscribeNext:^(id x) &#123;</span><br><span class="line">				[subscriber sendNext:x];</span><br><span class="line">			&#125; error:^(NSError *error) &#123;</span><br><span class="line">				[subscriber sendError:error];</span><br><span class="line">			&#125; completed:^&#123;</span><br><span class="line">				[disposable dispose];</span><br><span class="line">				[subscriber sendCompleted];</span><br><span class="line">			&#125;];</span><br><span class="line"></span><br><span class="line">			[disposable addDisposable:selfDisposable];</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		return disposable;</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -takeUntil: %@&quot;, self.name, signalTrigger];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>产生一个新信号，在新信号中 订阅原信号，只要原信号没有销毁就会一直执行 <code>sendNext</code> ,<br>当入参signalTrigger调用sendNext,那么就会触发triggerCompletion<br>取消原信号，向新产生的信号发送sendCompleted</p>
-<ul>
-<li>skip<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)skip:(NSUInteger)skipCount &#123;</span><br><span class="line">	Class class = self.class;</span><br><span class="line"></span><br><span class="line">	return [[self bind:^&#123;</span><br><span class="line">		__block NSUInteger skipped = 0;</span><br><span class="line"></span><br><span class="line">		return ^(id value, BOOL *stop) &#123;</span><br><span class="line">			if (skipped &gt;= skipCount) return [class return:value];</span><br><span class="line"></span><br><span class="line">			skipped++;</span><br><span class="line">			return class.empty;</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -skip: %lu&quot;, self.name, (unsigned long)skipCount];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>借助bind方法，判断执行的次数，如果满足skipCount次数，则发送原信号，否则发送空信号</p>
-<p>skip方法和take方法是补全关系，take是取前几次，skip是跳过前面几次</p>
-<ul>
-<li>skipUntilBlock</li>
-</ul>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)skipUntilBlock:(<span class="built_in">BOOL</span> (^)(<span class="keyword">id</span> x))predicate &#123;</span><br><span class="line">	<span class="built_in">NSCParameterAssert</span>(predicate != <span class="literal">nil</span>);</span><br><span class="line"></span><br><span class="line">	Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> [[<span class="keyword">self</span> bind:^&#123;</span><br><span class="line">		__block <span class="built_in">BOOL</span> skipping = <span class="literal">YES</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> ^ <span class="keyword">id</span> (<span class="keyword">id</span> value, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">			<span class="keyword">if</span> (skipping) &#123;</span><br><span class="line">				<span class="keyword">if</span> (predicate(value)) &#123;</span><br><span class="line">					skipping = <span class="literal">NO</span>;</span><br><span class="line">				&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">					<span class="keyword">return</span> <span class="keyword">class</span>.empty;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">return</span> [<span class="keyword">class</span> <span class="keyword">return</span>:value];</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;] setNameWithFormat:<span class="string">@"[%@] -skipUntilBlock:"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>skipUntilBlock 和 takeUntilBlock 实现类似<br>以入参 predicate()闭包判断，如果满足条件，skipping = NO,原信号发送的每个值都原封不动的发送出去。<br>不满足条件的时候，即会一直skip原信号的值</p>
-<ul>
-<li>skipWhileBlock<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)skipWhileBlock:(BOOL (^)(id x))predicate &#123;</span><br><span class="line">	NSCParameterAssert(predicate != nil);</span><br><span class="line"></span><br><span class="line">	return [[self skipUntilBlock:^ BOOL (id x) &#123;</span><br><span class="line">		return !predicate(x);</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -skipWhileBlock:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>skipWhileBlock 方法底层调用skipUntilBlock ,只是判断条件是 不满足predicate()闭包</p>
-<ul>
-<li>catch<br>高阶操作，是因为这里原信号发生错误之后，错误会升阶成一个信号。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)catch:(RACSignal * (^)(NSError *error))catchBlock &#123;</span><br><span class="line">	NSCParameterAssert(catchBlock != NULL);</span><br><span class="line"></span><br><span class="line">	return [[RACSignal createSignal:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		RACSerialDisposable *catchDisposable = [[RACSerialDisposable alloc] init];</span><br><span class="line"></span><br><span class="line">		RACDisposable *subscriptionDisposable = [self subscribeNext:^(id x) &#123;</span><br><span class="line">			[subscriber sendNext:x];</span><br><span class="line">		&#125; error:^(NSError *error) &#123;</span><br><span class="line">			RACSignal *signal = catchBlock(error);</span><br><span class="line">			NSCAssert(signal != nil, @&quot;Expected non-nil signal from catch block on %@&quot;, self);</span><br><span class="line">			catchDisposable.disposable = [signal subscribe:subscriber];</span><br><span class="line">		&#125; completed:^&#123;</span><br><span class="line">			[subscriber sendCompleted];</span><br><span class="line">		&#125;];</span><br><span class="line"></span><br><span class="line">		return [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">			[catchDisposable dispose];</span><br><span class="line">			[subscriptionDisposable dispose];</span><br><span class="line">		&#125;];</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -catch:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>当对原信号进行订阅的时候，如果出现错误，会去执行catchBlock()闭包，入参为刚刚产生的error。catchBlock( )闭包产生的是一个新的RACSignal，并再次用之前的订阅者订阅该信号。</p>
-<ul>
-<li>catchTo<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)catchTo:(RACSignal *)signal &#123;</span><br><span class="line">    return [[self catch:^(NSError *error) &#123;</span><br><span class="line">        return signal;</span><br><span class="line">    &#125;] setNameWithFormat:@&quot;[%@] -catchTo: %@&quot;, self.name, signal];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>底层调用catch方法,实际是对catch方法的封装,如果订阅发生错误，都返回入参signal</p>
-<ul>
-<li>then<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)then:(RACSignal * (^)(void))block &#123;</span><br><span class="line">    NSCParameterAssert(block != nil);</span><br><span class="line"></span><br><span class="line">    return [[[self</span><br><span class="line">        ignoreValues]</span><br><span class="line">        concat:[RACSignal defer:block]]</span><br><span class="line">        setNameWithFormat:@&quot;[%@] -then:&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>将操作进行延迟到 原信号发送完毕之后，再执行block闭包</p>
-<ul>
-<li>defer<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSignal *)defer:(RACSignal * (^)(void))block &#123;</span><br><span class="line">    NSCParameterAssert(block != NULL);</span><br><span class="line"></span><br><span class="line">    return [[RACSignal createSignal:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">        return [block() subscribe:subscriber];</span><br><span class="line">    &#125;] setNameWithFormat:@&quot;+defer:&quot;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>当defer返回的新信号被订阅的时候，才会执行入参block( )闭包，block产生信号，订阅者订阅block产生的信号</p>
-<ul>
-<li>startWith<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)startWith:(id)value &#123;</span><br><span class="line">	return [[[self.class return:value]</span><br><span class="line">		concat:self]</span><br><span class="line">		setNameWithFormat:@&quot;[%@] -startWith: %@&quot;, self.name, RACDescription(value)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>先通过return方法产生 RACReturnSignal,发送产生value，然后这个信号发送完毕之后接上原信号。得到的新的信号就是在原信号前面新加了一个值。</p>
-<ul>
-<li>scanWithStart:reduceWithIndex<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)scanWithStart:(<span class="keyword">id</span>)startingValue reduceWithIndex:(<span class="keyword">id</span> (^)(<span class="keyword">id</span>, <span class="keyword">id</span>, <span class="built_in">NSUInteger</span>))reduceBlock &#123;</span><br><span class="line">    <span class="built_in">NSCParameterAssert</span>(reduceBlock != <span class="literal">nil</span>);</span><br><span class="line"></span><br><span class="line">    Class <span class="keyword">class</span> = <span class="keyword">self</span>.class;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [[<span class="keyword">self</span> bind:^&#123;</span><br><span class="line">        __block <span class="keyword">id</span> running = startingValue;</span><br><span class="line">        __block <span class="built_in">NSUInteger</span> index = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ^(<span class="keyword">id</span> value, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">            running = reduceBlock(running, value, index++);</span><br><span class="line">            <span class="keyword">return</span> [<span class="keyword">class</span> <span class="keyword">return</span>:running];</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;] setNameWithFormat:<span class="string">@"[%@] -scanWithStart: %@ reduceWithIndex:"</span>, <span class="keyword">self</span>.name, [startingValue rac_description]];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>内部调用bind方法<br>原信号的每个信号都会由变换函数reduceBlock( )进行变换<br>初始值是入参startingValue,然后index进行自增</p>
-<p>事例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signalA = [RACSignal createSignal:^RACDisposable *(id&lt;RACSubscriber&gt; subscriber)</span><br><span class="line">                      &#123;</span><br><span class="line">                          [subscriber sendNext:@1];</span><br><span class="line">                          [subscriber sendNext:@2];</span><br><span class="line">                          [subscriber sendNext:@4];</span><br><span class="line">                          return [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">                          &#125;];</span><br><span class="line">                      &#125;];</span><br><span class="line"></span><br><span class="line">RACSignal *signalB = [signalA scanWithStart:@(2) reduceWithIndex:^id(NSNumber * running, NSNumber * next, NSUInteger index) &#123;</span><br><span class="line">    return @(running.intValue * next.intValue + index);</span><br><span class="line">&#125;];</span><br><span class="line">[signalB subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;%@&quot;, x);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure></p>
-<p>打印<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2    // 2 * 1 + 0 = 2</span><br><span class="line">5    // 2 * 2 + 1 = 5</span><br><span class="line">22  // 5 * 4 + 2 = 22</span><br></pre></td></tr></table></figure></p>
-<ul>
-<li>scanWithStart:reduce<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (__kindof RACStream *)scanWithStart:(<span class="keyword">id</span>)startingValue reduce:(<span class="keyword">id</span> (^)(<span class="keyword">id</span> running, <span class="keyword">id</span> next))reduceBlock &#123;</span><br><span class="line">	<span class="built_in">NSCParameterAssert</span>(reduceBlock != <span class="literal">nil</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> [[<span class="keyword">self</span></span><br><span class="line">		scanWithStart:startingValue</span><br><span class="line">		reduceWithIndex:^(<span class="keyword">id</span> running, <span class="keyword">id</span> next, <span class="built_in">NSUInteger</span> index) &#123;</span><br><span class="line">			<span class="keyword">return</span> reduceBlock(running, next);</span><br><span class="line">		&#125;]</span><br><span class="line">		setNameWithFormat:<span class="string">@"[%@] -scanWithStart: %@ reduce:"</span>, <span class="keyword">self</span>.name, RACDescription(startingValue)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>内部是对 <code>scanWithStart:reduceWithIndex</code> 方法的简化,返回的是入参 reduceBlock ，不进行自增</p>
-<ul>
-<li><p>combineLatestWith<br>从名字就可以看到，是将两个信号进行组合<br>当只接收到一个信号的时候，return<br>当收到两个信号的时候，将两者进行打包<code>RACTuplePack(lastSelfValue, lastOtherValue)</code>,然后发送给订阅者</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)combineLatestWith:(RACSignal *)signal &#123;</span><br><span class="line">	NSCParameterAssert(signal != nil);</span><br><span class="line"></span><br><span class="line">	return [[RACSignal createSignal:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		RACCompoundDisposable *disposable = [RACCompoundDisposable compoundDisposable];</span><br><span class="line"></span><br><span class="line">		__block id lastSelfValue = nil;</span><br><span class="line">		__block BOOL selfCompleted = NO;</span><br><span class="line"></span><br><span class="line">		__block id lastOtherValue = nil;</span><br><span class="line">		__block BOOL otherCompleted = NO;</span><br><span class="line"></span><br><span class="line">		void (^sendNext)(void) = ^&#123;</span><br><span class="line">			@synchronized (disposable) &#123;</span><br><span class="line">				if (lastSelfValue == nil || lastOtherValue == nil) return;</span><br><span class="line">				[subscriber sendNext:RACTuplePack(lastSelfValue, lastOtherValue)];</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;;</span><br><span class="line"></span><br><span class="line">		RACDisposable *selfDisposable = [self subscribeNext:^(id x) &#123;</span><br><span class="line">			@synchronized (disposable) &#123;</span><br><span class="line">				lastSelfValue = x ?: RACTupleNil.tupleNil;</span><br><span class="line">				sendNext();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; error:^(NSError *error) &#123;</span><br><span class="line">			[subscriber sendError:error];</span><br><span class="line">		&#125; completed:^&#123;</span><br><span class="line">			@synchronized (disposable) &#123;</span><br><span class="line">				selfCompleted = YES;</span><br><span class="line">				if (otherCompleted) [subscriber sendCompleted];//只有两者都完成，才会发送完成信号</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;];</span><br><span class="line"></span><br><span class="line">		[disposable addDisposable:selfDisposable];</span><br><span class="line"></span><br><span class="line">		RACDisposable *otherDisposable = [signal subscribeNext:^(id x) &#123;</span><br><span class="line">			@synchronized (disposable) &#123;</span><br><span class="line">				lastOtherValue = x ?: RACTupleNil.tupleNil;</span><br><span class="line">				sendNext();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; error:^(NSError *error) &#123;</span><br><span class="line">			[subscriber sendError:error];</span><br><span class="line">		&#125; completed:^&#123;</span><br><span class="line">			@synchronized (disposable) &#123;</span><br><span class="line">				otherCompleted = YES;</span><br><span class="line">				if (selfCompleted) [subscriber sendCompleted]; //只有两者都完成，才会发送完成信号</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;];</span><br><span class="line"></span><br><span class="line">		[disposable addDisposable:otherDisposable];</span><br><span class="line"></span><br><span class="line">		return disposable;</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -combineLatestWith: %@&quot;, self.name, signal];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>combineLatest</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSignal *)combineLatest:(id&lt;NSFastEnumeration&gt;)signals &#123;</span><br><span class="line">	return [[self join:signals block:^(RACSignal *left, RACSignal *right) &#123;</span><br><span class="line">		return [left combineLatestWith:right];</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;+combineLatest: %@&quot;, signals];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>combineLatest:的实现就是把入参数组里面的每个信号都调用一次join: block:方法。传入的闭包是把两个信号combineLatestWith:一下。combineLatest:的实现就是2个操作的组合。</p>
-<ul>
-<li>join:block<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">+ (__kindof RACStream *)join:(id&lt;NSFastEnumeration&gt;)streams block:(RACStream * (^)(id, id))block &#123;</span><br><span class="line">	RACStream *current = nil;</span><br><span class="line">  // 第一步</span><br><span class="line">	for (RACStream *stream in streams) &#123;</span><br><span class="line">		if (current == nil) &#123;</span><br><span class="line">			current = [stream map:^(id x) &#123;</span><br><span class="line">				return RACTuplePack(x);</span><br><span class="line">			&#125;];</span><br><span class="line"></span><br><span class="line">			continue;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		current = block(current, stream);</span><br><span class="line">	&#125;</span><br><span class="line">  // 第二步</span><br><span class="line">	if (current == nil) return [self empty];</span><br><span class="line"></span><br><span class="line">	return [current map:^(RACTuple *xs) &#123;</span><br><span class="line"></span><br><span class="line">		NSMutableArray *values = [[NSMutableArray alloc] init];</span><br><span class="line">    //第三步</span><br><span class="line">		while (xs != nil) &#123;</span><br><span class="line">			[values insertObject:xs.last ?: RACTupleNil.tupleNil atIndex:0];</span><br><span class="line">			xs = (xs.count &gt; 1 ? xs.first : nil);</span><br><span class="line">		&#125;</span><br><span class="line">    //第四步</span><br><span class="line">		return [RACTuple tupleWithObjectsFromArray:values];</span><br><span class="line">	&#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>此方法将当前信号流遍历<br>1.先依次打包信号流，首先将第一个信号打包成元组，然后将第一个元组和第二个信号传入block执行，依次类推，知道所有的信号都打包了<br>block操作返回信号，类似于zip，将两个信号进行压缩，只有两个信号都执行完毕才会将最新的值打包出去<br>2.如果current为空，返回空信号<br>3.这一步是把之前第一步打包出来的结果，还原回原信号的过程。经过第一步的循环之后，current会是类似这个样子，(((1), 2), 3)，第三步就是为了把这种多重元组解出来，每个信号流都依次按照顺序放在数组里。注意观察current的特点，最外层的元组，是一个值和一个元组，所以从最外层的元组开始，一层一层往里“剥”。while循环每次都取最外层元组的last，即那个单独的值，插入到数组的第0号位置，然后取出first即是里面一层的元组。然后依次循环。由于每次都插入到数组0号的位置，类似于链表的头插法，最终数组里面的顺序肯定也保证是原信号的顺序<br>4.把还原成原信号顺序 的数组 包装成元组，返回给map操作的闭包<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="keyword">instancetype</span>)tupleWithObjectsFromArray:(<span class="built_in">NSArray</span> *)array &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> tupleWithObjectsFromArray:array convertNullsToNils:<span class="literal">NO</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (<span class="keyword">instancetype</span>)tupleWithObjectsFromArray:(<span class="built_in">NSArray</span> *)array convertNullsToNils:(<span class="built_in">BOOL</span>)convert &#123;</span><br><span class="line">    RACTuple *tuple = [[<span class="keyword">self</span> alloc] init];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (convert) &#123;</span><br><span class="line">        <span class="built_in">NSMutableArray</span> *newArray = [<span class="built_in">NSMutableArray</span> arrayWithCapacity:array.count];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">id</span> object <span class="keyword">in</span> array) &#123;</span><br><span class="line">            [newArray addObject:(object == <span class="built_in">NSNull</span>.null ? RACTupleNil.tupleNil : object)];</span><br><span class="line">        &#125;</span><br><span class="line">        tuple.backingArray = newArray;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        tuple.backingArray = [array <span class="keyword">copy</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> tuple;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>入参convert为NO，将array进行copy 返回元组</p>
-<ul>
-<li>switchToLatest</li>
-</ul>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)switchToLatest &#123;</span><br><span class="line">	<span class="comment">// block4</span></span><br><span class="line">	<span class="keyword">return</span> [[RACSignal createSignal:^(<span class="keyword">id</span>&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		<span class="comment">// block5</span></span><br><span class="line">		RACMulticastConnection *connection = [<span class="keyword">self</span> publish]; <span class="comment">//产生热信号</span></span><br><span class="line"></span><br><span class="line">		RACDisposable *subscriptionDisposable = [[connection.signal</span><br><span class="line">			flattenMap:^(RACSignal *x) &#123;  <span class="comment">//对原信号进行变换</span></span><br><span class="line"></span><br><span class="line">				<span class="built_in">NSCAssert</span>(x == <span class="literal">nil</span> || [x isKindOfClass:RACSignal.class], <span class="string">@"-switchToLatest requires that the source signal (%@) send signals. Instead we got: %@"</span>, <span class="keyword">self</span>, x);</span><br><span class="line"></span><br><span class="line">				<span class="keyword">return</span> [x takeUntil:[connection.signal concat:[RACSignal never]]];</span><br><span class="line">			&#125;]</span><br><span class="line">			subscribe:subscriber];</span><br><span class="line"></span><br><span class="line">		RACDisposable *connectionDisposable = [connection connect];</span><br><span class="line">		<span class="keyword">return</span> [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">			[subscriptionDisposable dispose];</span><br><span class="line">			[connectionDisposable dispose];</span><br><span class="line">		&#125;];</span><br><span class="line">	&#125;] setNameWithFormat:<span class="string">@"[%@] -switchToLatest"</span>, <span class="keyword">self</span>.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>switchToLatest只能用在高阶信号,通过<code>[self publish];</code>产生热信号<br><code>connection.signal</code> 是 RACSubject 类型, 通过<code>flattenMap</code>方法对信号进行变换<br><code>connection.signal</code>会先<code>concat:</code>一个never信号,</p>
-<p>flattenMap:变换中x是一个信号，对x进行takeUntil:变换，效果就是下一个信号到来之前，x会一直发送信号，一旦下一个信号到来，x就会被取消订阅，开始订阅新的信号。</p>
-<ul>
-<li>zipWith 和 concat</li>
-<li>reduceEach / flattenMap / map /<br><a href="https://pattyxp.github.io/2018/03/12/ReactiveObjc%E5%85%A5%E9%97%A8/">请看这篇文章</a></li>
-</ul>
-<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="https://www.jianshu.com/p/707ece08257e" target="_blank" rel="noopener">https://www.jianshu.com/p/707ece08257e</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2081,7 +1956,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">41</span>
+                <span class="site-state-item-count">42</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2169,7 +2044,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共70.3k字</span>
+<span class="post-count"> 博客全站共70.5k字</span>
 </div>
 
 

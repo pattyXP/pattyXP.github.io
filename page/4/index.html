@@ -275,6 +275,134 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/11/图片压缩算法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/11/图片压缩算法/" itemprop="url">图片压缩算法</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-11T10:16:25+08:00">
+                2018-01-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>压缩，可以拆分为压 和 缩</p>
+<p>压，就是将图片的体积变小，图片的质量肯定下降<br>缩，就是将图片的尺寸变小，这样图片体积也会变小</p>
+<p>有时候，需要上传图片到后台服务器，但是如单反照相机拍出来的图片轻则十几兆，一般服务器都会有一个图片压缩的上限，不可能接收很大的图片体积的，所以我们前端需要做处理。根据服务端能够接受的图片大小和图片体积，处理上传需要的最大图片质量。</p>
+<p>因此可以先处理图片的尺寸，压缩到符合要求的尺寸之后，再看图片的大小是否还超过规定范围，超过的话再继续压缩体积</p>
+<p>设计上可以设计为UIImage的分类，因为这是对图片的处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line">static const float kMaxFileSize = xxx;</span><br><span class="line">static const float kMaxLayout = xxx;</span><br><span class="line"></span><br><span class="line">- (NSData *)imageCompressTargetPx:(NSInteger)targetPx maxFileSize:(uint64_t)maxFileSize &#123;</span><br><span class="line">    UIImage *newImage = nil;             // 尺寸压缩后的新图</span><br><span class="line">    BOOL drawImge = NO;                  // 是否需要重绘图片 默认是NO</span><br><span class="line"></span><br><span class="line">    CGFloat width = self.size.width;     // 源图片的宽</span><br><span class="line">    CGFloat height = self.size.height;   // 原图片的高</span><br><span class="line">    CGFloat scaledWidth = targetPx;      // 压缩时的宽度 默认是参照像素</span><br><span class="line">    CGFloat scaledHeight = targetPx;     // 压缩时的高度 默认是参照像素</span><br><span class="line"></span><br><span class="line">    if (maxFileSize &lt;= 0) &#123;</span><br><span class="line">        maxFileSize = kMaxFileSize;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">   //压缩指定尺寸</span><br><span class="line">    CGSize newSize = [self copressTargetLimitSize:self.size];</span><br><span class="line">    if (newSize.width != width ||newSize.height != height) &#123;</span><br><span class="line">        drawImge = YES;</span><br><span class="line">        scaledWidth = newSize.width;</span><br><span class="line">        scaledHeight = newSize.height;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 如果图片需要重绘 就按照新的宽高压缩重绘图片</span><br><span class="line">    if (drawImge == YES) &#123;</span><br><span class="line">        UIGraphicsBeginImageContext(CGSizeMake(scaledWidth, scaledHeight));</span><br><span class="line">        [self drawInRect:CGRectMake(0, 0, scaledWidth,scaledHeight)];</span><br><span class="line">        newImage =UIGraphicsGetImageFromCurrentImageContext();</span><br><span class="line">        // 使当前的context出堆栈</span><br><span class="line">        UIGraphicsEndImageContext();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (newImage == nil) &#123;</span><br><span class="line">        newImage = self;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 如果图片大小大于要求大小,进行质量压缩</span><br><span class="line">    NSData * scaledImageData = nil;</span><br><span class="line">    if (UIImageJPEGRepresentation(newImage, 1) == nil) &#123;</span><br><span class="line">        scaledImageData = UIImagePNGRepresentation(newImage);</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        scaledImageData = UIImageJPEGRepresentation(newImage, 1.0);</span><br><span class="line">        CGFloat scale = 0.9;</span><br><span class="line">        while(scaledImageData.length &gt;= maxFileSize)&#123;</span><br><span class="line">            scaledImageData = UIImageJPEGRepresentation(newImage, scale);</span><br><span class="line">            scale -= 0.1;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return scaledImageData;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#pragma mark -private</span><br><span class="line"></span><br><span class="line">- (CGSize)copressTargetLimitSize:(CGSize)originSize</span><br><span class="line">&#123;</span><br><span class="line">    CGFloat width = originSize.width;     // 源图片的宽</span><br><span class="line">    CGFloat height = originSize.height;   // 原图片的高</span><br><span class="line">    BOOL drawImge = NO;                  // 是否需要重绘图片 默认是NO</span><br><span class="line">    CGFloat scaledWidth = kMaxLayout;      // 压缩时的宽度 默认是参照像素</span><br><span class="line">    CGFloat scaledHeight = kMaxLayout;     // 压缩时的高度 默认是参照像素</span><br><span class="line"></span><br><span class="line">    CGFloat targetPx = kMaxLayout;         // 压缩时的宽度 默认是参照像素</span><br><span class="line"></span><br><span class="line">    CGFloat max = MAX(width, height);</span><br><span class="line">    CGFloat min = MIN(width, height);</span><br><span class="line">    CGFloat factor = min/max;</span><br><span class="line"></span><br><span class="line">    if (width &lt;= 0 &amp;&amp; height &lt;= 0) &#123;</span><br><span class="line">        return originSize;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        drawImge = YES;</span><br><span class="line"></span><br><span class="line">        if (width &gt; height) &#123;</span><br><span class="line">            scaledWidth = targetPx;</span><br><span class="line">            scaledHeight = targetPx *factor;</span><br><span class="line">        &#125;else if (height &gt; width) &#123;</span><br><span class="line">            scaledHeight = targetPx;</span><br><span class="line">            scaledWidth = targetPx *factor;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return CGSizeMake(scaledWidth, scaledHeight);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/10/Objc isa的存在/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -929,10 +1057,10 @@
             <h2 id="第一段"><a href="#第一段" class="headerlink" title="第一段"></a>第一段</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@interface TestObject ()</span><br><span class="line">@property (nonatomic, strong) NSString *name;</span><br><span class="line">@end</span><br><span class="line">@implementation TestObject</span><br><span class="line">- (void)test&#123;</span><br><span class="line">    ^&#123;</span><br><span class="line">        NSLog(@&quot;%@&quot;,self.name);</span><br><span class="line">    &#125;();</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
 <p>经过clang -rewrite-objc xx.m 之后得到 TestObject.cpp ，精简之后得到如下源码</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"> // @interface TestObject ()</span><br><span class="line"> // @property (nonatomic, strong) NSString *name;</span><br><span class="line"> /* @end */</span><br><span class="line"></span><br><span class="line">// @implementation TestObject</span><br><span class="line"></span><br><span class="line">struct __TestObject__test_block_impl_0 &#123;</span><br><span class="line">    struct __block_impl impl;</span><br><span class="line">    struct __TestObject__test_block_desc_0* Desc;</span><br><span class="line">    TestObject *self;</span><br><span class="line">    __TestObject__test_block_impl_0(void *fp, struct __TestObject__test_block_desc_0 *desc, TestObject *_self, int flags=0) : self(_self) &#123;</span><br><span class="line">        impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">        impl.Flags = flags;</span><br><span class="line">        impl.FuncPtr = fp;</span><br><span class="line">        Desc = desc;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">static void __TestObject__test_block_func_0(struct __TestObject__test_block_impl_0 *__cself) &#123;</span><br><span class="line">    TestObject *self = __cself-&gt;self; // bound by copy</span><br><span class="line"></span><br><span class="line">    NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_TestObject_b2287f_mi_0,((NSString *(*)(id, SEL))(void *)objc_msgSend)((id)self, sel_registerName(&quot;name&quot;)));</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">  //这里可以观察到，在test_block_impl中，block持有了对象TestObject *self;</span><br><span class="line">  通过持有self,获取到self.name，block内部如果对self.name作修改会影响外部的self.name的值</span><br></pre></td></tr></table></figure>
-<h2 id="第二段"><a href="#第二段" class="headerlink" title="第二段"></a>第二段</h2><p> OC源码<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">@interface TestObject ()</span><br><span class="line">@end</span><br><span class="line">@implementation TestObject</span><br><span class="line"></span><br><span class="line">int global_i = 1;</span><br><span class="line">static int static_global_j = 2;</span><br><span class="line"></span><br><span class="line">- (void)test</span><br><span class="line">&#123;</span><br><span class="line">    static int static_global_k = 3;</span><br><span class="line">    __block int value = 4;</span><br><span class="line"></span><br><span class="line">    void(^pig)()= ^()&#123;</span><br><span class="line">        global_i++;</span><br><span class="line">        static_global_j++;</span><br><span class="line">        static_global_k++;</span><br><span class="line">        value++;</span><br><span class="line">         NSLog(@&quot;Block中 变量 = %d  %d %d %d&quot;, global_i,static_global_j,static_global_k,value);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    global_i++;</span><br><span class="line">    static_global_j++;</span><br><span class="line">    static_global_k++;</span><br><span class="line">    value++;</span><br><span class="line">    NSLog(@&quot;Block中 变量 = %d  %d %d %d&quot;, global_i,static_global_j,static_global_k,value);</span><br><span class="line"></span><br><span class="line">    pig();</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<h2 id="第二段"><a href="#第二段" class="headerlink" title="第二段"></a>第二段</h2><p> OC源码<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">@interface TestObject ()</span><br><span class="line">@end</span><br><span class="line">@implementation TestObject</span><br><span class="line"></span><br><span class="line">int global_i = 1;</span><br><span class="line">static int static_global_j = 2;</span><br><span class="line"></span><br><span class="line">- (void)test</span><br><span class="line">&#123;</span><br><span class="line">    static int static_global_k = 3;</span><br><span class="line">    __block int value = 4;</span><br><span class="line">    int autoValue = 5;</span><br><span class="line"></span><br><span class="line">    void(^pig)()= ^()&#123;</span><br><span class="line">        global_i++;</span><br><span class="line">        static_global_j++;</span><br><span class="line">        static_global_k++;</span><br><span class="line">        value++;</span><br><span class="line">         NSLog(@&quot;Block中 变量 = %d  %d %d %d %d&quot;, global_i,static_global_j,static_global_k,value,autoValue);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    global_i++;</span><br><span class="line">    static_global_j++;</span><br><span class="line">    static_global_k++;</span><br><span class="line">    value++;</span><br><span class="line">    autoValue++;</span><br><span class="line">    NSLog(@&quot;Block中 变量 = %d  %d %d %d&quot;, global_i,static_global_j,static_global_k,value);</span><br><span class="line"></span><br><span class="line">    pig();</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
 <p>经过编译之后，得到大致的源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">可见block里引用局部静态变量和外部变量</span><br><span class="line"></span><br><span class="line">//新增结构体__Block_byref_value_0，内部持有变量value，此处修改会同时修改外部变量</span><br><span class="line">struct __Block_byref_value_0 &#123;</span><br><span class="line">  void *__isa;</span><br><span class="line">__Block_byref_value_0 *__forwarding;</span><br><span class="line"> int __flags;</span><br><span class="line"> int __size;</span><br><span class="line"> int value;  </span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">struct __TestObject__test_block_impl_0 &#123;</span><br><span class="line">  struct __block_impl impl;</span><br><span class="line">  struct __TestObject__test_block_desc_0* Desc;</span><br><span class="line">  int *static_global_k;   </span><br><span class="line">  __Block_byref_value_0 *value; // by ref</span><br><span class="line">  __TestObject__test_block_impl_0(void *fp, struct __TestObject__test_block_desc_0 *desc, int *_static_global_k, __Block_byref_value_0 *_value, int flags=0) : static_global_k(_static_global_k), value(_value-&gt;__forwarding) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">在__TestObject__test_block_impl_0中</span><br><span class="line">static_global_k和__Block_byref_value_0 *value</span><br><span class="line">被Block从外面捕获进来，成为__TestObject__test_block_impl_0这个结构体的成员变量了。</span><br></pre></td></tr></table></figure></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">static void __TestObject__test_block_func_0(struct __TestObject__test_block_impl_0 *__cself) &#123;</span><br><span class="line">  __Block_byref_value_0 *value = __cself-&gt;value; // bound by ref  捕获引用地址</span><br><span class="line">  int *static_global_k = __cself-&gt;static_global_k; // bound by copy</span><br><span class="line"></span><br><span class="line">        global_i++;</span><br><span class="line">        static_global_j++;</span><br><span class="line">        (*static_global_k)++;</span><br><span class="line">        (value-&gt;__forwarding-&gt;value)++;</span><br><span class="line">         NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_TestObject_fb5e34_mi_0, global_i,static_global_j,(*static_global_k),(value-&gt;__forwarding-&gt;value));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>block捕获了自动变量value的地址，所以可以改变value在block外的值</p>
+<p>总结:<br>block 捕获autoValue自动变量的值，而不是变量的地址，相当于捕获一个常量一样，所以不能修改变量的值，否则会编译失败<br>__block捕获了自动变量value的地址，所以可以改变value在block外的值</p>
 <h2 id="循环引用"><a href="#循环引用" class="headerlink" title="循环引用"></a>循环引用</h2><p>OC代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">typedef void (^drink)();</span><br><span class="line"></span><br><span class="line">@interface Person : NSObject</span><br><span class="line">@property (nonatomic, strong) drink doDrink;</span><br><span class="line">@property (nonatomic, strong) NSString *eat;</span><br><span class="line">@end</span><br><span class="line">@implementation Person</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@interface BlockViewController ()</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation BlockViewController</span><br><span class="line"></span><br><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line"></span><br><span class="line">    Person *person = [[Person alloc] init];</span><br><span class="line">    person.eat = @&quot;山珍海味&quot;;</span><br><span class="line">    __weak typeof(Person*) weakSelf = person;</span><br><span class="line">    person.doDrink = ^&#123;</span><br><span class="line">        NSLog(@&quot;person eat = %@&quot;,weakSelf.eat);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>clang这样编译是不过的，将<strong>weak替换为</strong>unsafe_unretained，然后 clang -x objective-c -rewrite-objc -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer<br>/SDKs/iPhoneSimulator.sdk xx.m<br>clang之后源码，精简如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">struct __BlockViewController__viewDidLoad_block_impl_0 &#123;</span><br><span class="line">  struct __block_impl impl;</span><br><span class="line">  struct __BlockViewController__viewDidLoad_block_desc_0* Desc;</span><br><span class="line">  typeof(Person *) weakSelf;</span><br><span class="line">  __BlockViewController__viewDidLoad_block_impl_0(void *fp, struct __BlockViewController__viewDidLoad_block_desc_0 *desc, typeof(Person *) _weakSelf, int flags=0) : weakSelf(_weakSelf) &#123;</span><br><span class="line">    impl.isa = &amp;_NSConcreteStackBlock;</span><br><span class="line">    impl.Flags = flags;</span><br><span class="line">    impl.FuncPtr = fp;</span><br><span class="line">    Desc = desc;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">static void __BlockViewController__viewDidLoad_block_func_0(struct __BlockViewController__viewDidLoad_block_impl_0 *__cself) &#123;</span><br><span class="line">  typeof(Person *) weakSelf = __cself-&gt;weakSelf; // bound by copy</span><br><span class="line"></span><br><span class="line">        NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_p__6yw5xxfs5t1b0fdlr5183_5c0000gn_T_BlockViewController_7d49b7_mi_1,((NSString *(*)(id, SEL))(void *)objc_msgSend)((id)weakSelf, sel_registerName(&quot;eat&quot;)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">block持有的是typeof(Person *) weakSelf;</span><br><span class="line">底层实现objc_initWeak 和 objc_storeWeak</span><br></pre></td></tr></table></figure></p>
 <p>##总结:</p>
@@ -1769,160 +1897,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/04/MJRefresh解析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/04/MJRefresh解析/" itemprop="url">MJRefresh解析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-04T10:53:46+08:00">
-                2018-01-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="解析前阅读api"><a href="#解析前阅读api" class="headerlink" title="解析前阅读api"></a>解析前阅读api</h2><p>MJRefreshComponent.h</p>
-<p>1.MJRefreshState 有5个状态，如果我设计，只会想到4个， willRefresh和 pulling状态会认为是一致的<br>2.刚开始看的时候，觉得监听只需要contentOffset和pan手势就够了</p>
-<p>解析前总结：<br>设计一个UIView，把刷新控件都初始化好，然后状态就根据拖动刷新的状态去更新就好了。<br>依据拖动的手势和位移，修改父类scrollView的contentSize，显示刷新控件和隐藏控件，调用刷新的方法和回调方法即可。</p>
-<h2 id="疑问code"><a href="#疑问code" class="headerlink" title="疑问code"></a>疑问code</h2><p>beginRefreshing方法里，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (self.window) &#123;</span><br><span class="line">    self.state = MJRefreshStateRefreshing;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>有时候window为null，原因是view没有完全加载完成或者在ViewDidload中才刚刚加载完,view的window属性无法被获取<br>正确应该使用UIApplication.keywindow</p>
-<h2 id="文件结构功能图-Github上已有-http-t-cn-RYHwK6n"><a href="#文件结构功能图-Github上已有-http-t-cn-RYHwK6n" class="headerlink" title="文件结构功能图 Github上已有(http://t.cn/RYHwK6n)"></a>文件结构功能图 Github上已有(<a href="http://t.cn/RYHwK6n" target="_blank" rel="noopener">http://t.cn/RYHwK6n</a>)</h2><p><strong>MJRefreshComponent</strong> 这个类作为该控件的基类，涵盖了基类所具备的一些：状态，回调block，子类继承的方法等</p>
-<p>##Header<br><strong>MJRefreshHeader</strong>    MJRefreshHeader继承于MJRefreshComponent，它做了这几件事：初始化方法，初始化y和高度，状态切换等</p>
-<p>疑问点:<br>一开始不明白基类MJRefreshComponent为什么申明的状态有五个<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">/** 刷新控件的状态 */</span><br><span class="line">typedef NS_ENUM(NSInteger, MJRefreshState) &#123;</span><br><span class="line">    /** 普通闲置状态 */</span><br><span class="line">    MJRefreshStateIdle = 1,</span><br><span class="line">    /** 松开就可以进行刷新的状态 */</span><br><span class="line">    MJRefreshStatePulling,</span><br><span class="line">    /** 正在刷新中的状态 */</span><br><span class="line">    MJRefreshStateRefreshing,</span><br><span class="line">    /** 即将刷新的状态 */</span><br><span class="line">    MJRefreshStateWillRefresh,</span><br><span class="line">    /** 所有数据加载完毕，没有更多的数据了 */</span><br><span class="line">    MJRefreshStateNoMoreData</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>以为MJRefreshStatePulling是多余的，我设计的话应该只会有4个，<br>现在明白了，header刷新的时候，状态切换的因素有两个：一个是下拉的距离是否超过临界值，另一个是 手指是否离开屏幕。<br>即使在下拉的距离超过了临界距离（状态栏 + 导航栏 + header高度），如果手指没有离开屏幕，那么也不能马上进行刷新，而是将状态切换为：可以刷新。<br>一旦手指离开了屏幕，马上将状态切换为正在刷新。</p>
-<p><strong>MJRefreshStateHeader</strong> 带有状态文字的刷新控件<br>stateLabel 和 lastUpdatedTimeLabel ，根据状态的切换变化内容，显示时间的label还可以依据用户自定义的日期格式显示，<br>lastUpdatedTimeLabel可以隐藏</p>
-<p><strong>MJRefreshNormalHeader</strong> 带有_arrowView和loadingView<br>根据刷新的state来隐藏和显示这两个视图</p>
-<p><strong>MJRefreshGifHeader</strong> 左侧是一个gif动画<br>可以根据不同状态配置不同的照片和动画时间</p>
-<p>##Footer</p>
-<p><strong>MJRefreshFooter:</strong><br>与header相比，只是多了设置MJRefreshStateNoMoreData状态</p>
-<p>提供以下几个功能:<br>初始化视图<br>没有数据时候重设对应状态<br>没有数据时候对应的操作<br>是否支持自动隐藏视图，如果支持，将替换系统的reloadData方法为自定义的方法，内部实现是多执行一句mj_reloadDataBlock回调</p>
-<p>在视图添加或者移除的时候，设置setMj_reloadDataBlock方法，之前奇怪为什么header的时候没有，这个功能是为了刷新数据结束的时候根据当前的cell个数（tableview或collectionview的数据源为空）来判断是否需要隐藏footerView</p>
-<p><strong>MJRefreshBackFooter</strong> 需要上拉才会触发刷新动作<br>当状态结束，恢复初始状态 （？？？ 回弹体现什么）<br><strong>MJRefreshAutoFooter</strong> 自动上拉加载类。滑动到底部触发刷新动作，无需上拉操作。<br>triggerAutomaticallyRefreshPercent 底部控件出现多少就开始自动刷新<br>automaticallyRefresh 是否自动刷新，默认YES</p>
-<p><strong>MJRefreshBackStateFooter</strong> 提供label ，可以设置不同状态下的标签内容<br><strong>MJRefreshBackNormalFooter</strong> 提供箭头和loading圆圈，根据状态显示和隐藏<br><strong>MJRefreshBackGifFooter</strong> 提供设置gif动画的一组图片</p>
-<p><strong>MJRefreshAutoStateFooter</strong> 相比较MJRefreshBackStateFooter，给stateLabel添加了手势，当点击的时候如果当前是默认状态就执行刷新<br><strong>MJRefreshAutoNormalFooter</strong> 提供箭头和loading圆圈，根据状态显示和隐藏<br><strong>MJRefreshAutoGifFooter</strong> 提供设置gif动画的一组图片</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>MJRefreshHeader: 负责header的高度和调整header自身在外部的位置。<br>MJRefreshStateHeader:负责header内部的stateLabel和lastUpdatedTimeLabel的布局和不同状态下内部文字的显示。<br>MJRefreshNormalHeader:负责header内部的loadingView以及arrowView的布局和不同状态下的显示。<br>MJRefreshGifHeader:负责header内部的Gif动画的布局和不同状态下的显示。</p>
-<p>MJRefreshFooter: 负责footer高度和监听scrollView数据的变化<br>MJRefreshBackFooter:跟Header的封装思路是一样的<br>MJRefreshAutoFooter:类似于MJRefreshHeader类的功能</p>
-<p>以下设计思路和对应的header一致<br>MJRefreshBackStateFooter：封装思路类似于MJRefreshStateHeader<br>MJRefreshBackNormalFooter：封装思路类似于MJRefreshNormalHeader<br>MJRefreshBackGifFooter：封装思路类似于MJRefreshGifHeader<br>MJRefreshAutoStateFooter：封装思路类似于MJRefreshStateHeader<br>MJRefreshAutoNormalFooter：封装思路类似于MJRefreshNormalHeader<br>MJRefreshAutoGifFooter：封装思路类似于MJRefreshGifHeader</p>
-<p>通过一个基类来定义一些状态和一些需要子类实现的接口。通过一层一层地继承，让每一层的子类各司其职，只完成真正属于自己的任务，提高了框架的可定制性，而且对于功能的扩展和bug的追踪也很有帮助，非常值得我们参考与借鉴。</p>
-<p>##优秀code</p>
-<p>1.很多地方设置控件的frame的时候，都是通过先判断其约束的个数如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (self.lastUpdatedTimeLabel.constraints.count == 0) &#123;&#125;</span><br></pre></td></tr></table></figure>
-<p>然后再设置约束，就比较仔细</p>
-<p>2.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MJRefreshCheckState 状态检查，通过宏来与之前状态比较，一样就return</span><br></pre></td></tr></table></figure></p>
-<p>3.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">willMoveToSuperview方法，在里面判断移除之前的观察者</span><br></pre></td></tr></table></figure></p>
-<p>4.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (CGFloat)mj_textWith &#123;</span><br><span class="line">    CGFloat stringWidth = 0;</span><br><span class="line">    CGSize size = CGSizeMake(MAXFLOAT, MAXFLOAT);</span><br><span class="line">    if (self.text.length &gt; 0) &#123;</span><br><span class="line">#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) &amp;&amp; __IPHONE_OS_VERSION_MAX_ALLOWED &gt;= 70000</span><br><span class="line">        stringWidth =[self.text</span><br><span class="line">                      boundingRectWithSize:size</span><br><span class="line">                      options:NSStringDrawingUsesLineFragmentOrigin</span><br><span class="line">                      attributes:@&#123;NSFontAttributeName:self.font&#125;</span><br><span class="line">                      context:nil].size.width;</span><br><span class="line">#else</span><br><span class="line"></span><br><span class="line">        stringWidth = [self.text sizeWithFont:self.font</span><br><span class="line">                             constrainedToSize:size</span><br><span class="line">                                 lineBreakMode:NSLineBreakByCharWrapping].width;</span><br><span class="line">#endif</span><br><span class="line">    &#125;</span><br><span class="line">    return stringWidth;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>5.多语言设置</p>
-<h2 id="阅读资料："><a href="#阅读资料：" class="headerlink" title="阅读资料："></a>阅读资料：</h2><p><a href="http://www.jianshu.com/p/89ca6437c5e9" target="_blank" rel="noopener">http://www.jianshu.com/p/89ca6437c5e9</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1973,7 +1947,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">41</span>
+                <span class="site-state-item-count">42</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2061,7 +2035,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共70.3k字</span>
+<span class="post-count"> 博客全站共70.5k字</span>
 </div>
 
 
