@@ -275,6 +275,130 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2019/01/02/2019Flag/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/02/2019Flag/" itemprop="url">2019Flag</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-02T13:49:40+08:00">
+                2019-01-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>2019年到了，刚过完元旦，立立Flag<br>回想去年，自己买了好几本技术书籍，就看完了一本，过后也没有再翻阅几遍。<br>懒真的是随着年龄越来越大越严重了，不过今年天气还真是太冷了</p>
+<p>2019年展望<br>1.多看技术书籍，买来的书籍要常翻阅，3个月看完一本不算长吧<br>2.算法学习<br>3.技术栈扩展<br>3.语言:swift学习，写些工具</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2019/01/02/atomic引发的思考/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1643,187 +1767,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/04/02/ReactiveObjc-RACChannel/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/04/02/ReactiveObjc-RACChannel/" itemprop="url">ReactiveObjc-RACChannel</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-02T14:10:56+08:00">
-                2018-04-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="RACChannel"><a href="#RACChannel" class="headerlink" title="RACChannel"></a>RACChannel</h2><p>在 RAC 的世界中，消息不仅仅会单向流动，也存在双向流动，对应到 OC，如viewModel的属性和View的属性相互影响,这就体现出 RACChannel的作用,从概念上讲，RACChannel可以看作是双向连接，由两个可控制的信号并行工作。</p>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RACChannel</span>&lt;<span class="title">ValueType</span>&gt; : <span class="title">NSObject</span></span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) RACChannelTerminal&lt;ValueType&gt; *leadingTerminal;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) RACChannelTerminal&lt;ValueType&gt; *followingTerminal;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
-<p> RACChannel 和 RACChannelTerminal 息息相关</p>
-<h3 id="RACChannelTerminal"><a href="#RACChannelTerminal" class="headerlink" title="RACChannelTerminal"></a>RACChannelTerminal</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RACChannelTerminal</span>&lt;<span class="title">ValueType</span>&gt; : <span class="title">RACSignal</span>&lt;<span class="title">ValueType</span>&gt; &lt;<span class="title">RACSubscriber</span>&gt;</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)init __attribute__((unavailable(<span class="string">"Instantiate a RACChannel instead"</span>)));</span><br><span class="line">- (<span class="keyword">void</span>)sendNext:(<span class="keyword">nullable</span> ValueType)value;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/// The values for this terminal.</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) RACSignal&lt;ValueType&gt; *values;</span><br><span class="line"><span class="comment">/// A subscriber will will send values to the other terminal.</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) <span class="keyword">id</span>&lt;RACSubscriber&gt; otherTerminal;</span><br></pre></td></tr></table></figure>
-<p>RACChannelTerminal 既可以发送信号，也可以订阅信号</p>
-<ul>
-<li>初始化<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)initWithValues:(RACSignal *)values otherTerminal:(<span class="keyword">id</span>&lt;RACSubscriber&gt;)otherTerminal &#123;</span><br><span class="line">	<span class="built_in">NSCParameterAssert</span>(values != <span class="literal">nil</span>);</span><br><span class="line">	<span class="built_in">NSCParameterAssert</span>(otherTerminal != <span class="literal">nil</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line"></span><br><span class="line">	_values = values;</span><br><span class="line">	_otherTerminal = otherTerminal;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>其中 values、otherTerminal 分别表示 RACChannelTerminal 的两个端点。在订阅者调用 -subscribeNext: 等方法发起订阅时，实际上订阅的是self.values 信号；如果向当前端点发送消息，会使用 self.otherTerminal 来发送消息，不是使用 self.values 的订阅者来发送消息</p>
-<ul>
-<li>RACSignal<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (RACDisposable *)subscribe:(<span class="keyword">id</span>&lt;RACSubscriber&gt;)subscriber &#123;</span><br><span class="line">	<span class="keyword">return</span> [<span class="keyword">self</span>.values subscribe:subscriber]; <span class="comment">//实际被订阅的是values</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>执行<code>RACReplaySubject</code>对象的<code>subscribe</code>方法,向订阅者发送values</p>
-<ul>
-<li>遵循<code>RACSubscriber</code> 协议<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">- (<span class="keyword">void</span>)sendNext:(<span class="keyword">id</span>)value &#123;</span><br><span class="line">	[<span class="keyword">self</span>.otherTerminal sendNext:value]; <span class="comment">//实际调用self.otherTerminal 发送消息</span></span><br><span class="line">&#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h3 id="RACChannel-初始化"><a href="#RACChannel-初始化" class="headerlink" title="RACChannel 初始化"></a>RACChannel 初始化</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">	<span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line"></span><br><span class="line">	<span class="comment">// We don't want any starting value from the leadingSubject, but we do want</span></span><br><span class="line">	<span class="comment">// error and completion to be replayed.</span></span><br><span class="line">	RACReplaySubject *leadingSubject = [[RACReplaySubject replaySubjectWithCapacity:<span class="number">0</span>] setNameWithFormat:<span class="string">@"leadingSubject"</span>];</span><br><span class="line">	RACReplaySubject *followingSubject = [[RACReplaySubject replaySubjectWithCapacity:<span class="number">1</span>] setNameWithFormat:<span class="string">@"followingSubject"</span>];</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Propagate errors and completion to everything.</span></span><br><span class="line">	[[leadingSubject ignoreValues] subscribe:followingSubject];</span><br><span class="line">	[[followingSubject ignoreValues] subscribe:leadingSubject];</span><br><span class="line"></span><br><span class="line">	_leadingTerminal = [[[RACChannelTerminal alloc] initWithValues:leadingSubject otherTerminal:followingSubject] setNameWithFormat:<span class="string">@"leadingTerminal"</span>];</span><br><span class="line">	_followingTerminal = [[[RACChannelTerminal alloc] initWithValues:followingSubject otherTerminal:leadingSubject] setNameWithFormat:<span class="string">@"followingTerminal"</span>];</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>RACReplaySubject 将之前发送的值都进行保存，订阅的时候会向当前的订阅者遍历调用之前接收到的values<br>根据传入的参数capacity，<br><code>leadingSubject</code>的capacity为0, 不需要订阅的时候就执行消息发送<br><code>followingSubject</code>的capacity为1,需要在订阅的时候执行最新一次接收的值，供外部订阅需要初始值</p>
-</li>
-<li><p>leadingSubject 和 followingSubject 相互订阅<br>默认都接收Completed和Error信号，防止任一信号结束另一个还在执行的问题</p>
-</li>
-</ul>
-<h3 id="事例"><a href="#事例" class="headerlink" title="事例"></a>事例</h3><p>RACChannel 采用了双向绑定的思想，在使用过程中，一般通过它的子类 RACKVOChannel 实现</p>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RACChannelTo(<span class="keyword">self</span>,nameA) = RACChannelTo(<span class="keyword">self</span>,nameB);</span><br><span class="line"><span class="keyword">self</span>.nameA = <span class="string">@"John"</span>;</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"nameA:%@-nameB:%@"</span>,<span class="keyword">self</span>.nameA,<span class="keyword">self</span>.nameB);</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>源码<br><code>RACChannelTo</code>是宏，<code>RACChannelTo(self,nameA)</code>展开</p>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[RACKVOChannel alloc] initWithTarget:<span class="keyword">self</span> keyPath:<span class="string">@"nameA"</span> nilValue:<span class="literal">nil</span>][<span class="string">@"followingTerminal"</span>]</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>作用<br>为nameA和nameB 分别创建了channelA和channelB<br>调用channelA[@”followingTerminal”] = channelB[@”followingTerminal”]</p>
-</li>
-</ul>
-<p>打印<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nameA:John-nameB:John</span><br></pre></td></tr></table></figure></p>
-<ul>
-<li>实现原理<br>覆写下面两个方法，实现双向绑定<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">RACKVOChannel</span> (<span class="title">RACChannelTo</span>)</span></span><br><span class="line"></span><br><span class="line">- (RACChannelTerminal *)objectForKeyedSubscript:(<span class="built_in">NSString</span> *)key &#123;</span><br><span class="line">	<span class="built_in">NSCParameterAssert</span>(key != <span class="literal">nil</span>);</span><br><span class="line"></span><br><span class="line">	RACChannelTerminal *terminal = [<span class="keyword">self</span> valueForKey:key];</span><br><span class="line">	<span class="built_in">NSCAssert</span>([terminal isKindOfClass:RACChannelTerminal.class], <span class="string">@"Key \"%@\" does not identify a channel terminal"</span>, key);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> terminal;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setObject:(RACChannelTerminal *)otherTerminal forKeyedSubscript:(<span class="built_in">NSString</span> *)key &#123;</span><br><span class="line">	<span class="built_in">NSCParameterAssert</span>(otherTerminal != <span class="literal">nil</span>);</span><br><span class="line"></span><br><span class="line">	RACChannelTerminal *selfTerminal = [<span class="keyword">self</span> objectForKeyedSubscript:key];</span><br><span class="line">	[otherTerminal subscribe:selfTerminal];</span><br><span class="line">	[[selfTerminal skip:<span class="number">1</span>] subscribe:otherTerminal];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>内部实际是对 <code>followingTerminal</code>相互订阅,在反向绑定的时候就可以skip:1来节约性能</p>
-<h2 id="RACChannel-扩展"><a href="#RACChannel-扩展" class="headerlink" title="RACChannel 扩展"></a>RACChannel 扩展</h2><p>这些函数都会返回一个对应的RACChannelTerminal,可以定制使用结合</p>
-<ul>
-<li>[NSUserDefaults rac_channelTerminalForKey:]</li>
-<li>[UIDatePicker rac_newDateChannelWithNilValue:]</li>
-<li>[UISegmentedControl rac_newSelectedSegmentIndexChannelWithNilValue:]</li>
-<li>[UISlider rac_newValueChannelWithNilValue:]</li>
-<li>[UITextField rac_newTextChannel:]</li>
-</ul>
-<h2 id="RAC相关的宏"><a href="#RAC相关的宏" class="headerlink" title="RAC相关的宏"></a>RAC相关的宏</h2><ul>
-<li><code>RAC(TARGET, [KEYPATH, [NIL_VALUE]])</code></li>
-</ul>
-<p>EXAMPLES:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RAC(<span class="keyword">self</span>, objectProperty) = objectSignal;</span><br><span class="line">RAC(<span class="keyword">self</span>, stringProperty, <span class="string">@"foobar"</span>) = stringSignal;</span><br><span class="line">RAC(<span class="keyword">self</span>, integerProperty, @<span class="number">42</span>) = integerSignal;</span><br></pre></td></tr></table></figure></p>
-<p>RAC()总是出现在等号左边，等号右边是一个RACSignal，表示的意义是将一个对象的一个属性和一个signal绑定，signal每产生一个value（id类型），都会自动执行：<code>[TARGET setValue:value ?: NIL_VALUE forKeyPath:KEYPATH];</code></p>
-<ul>
-<li><code>RACObserve(TARGET, KEYPATH)</code> :观察TARGET的KEYPATH属性，相当于KVO，产生一个RACSignal<br>EXAMPLES:<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *selfSignal = RACObserve(<span class="keyword">self</span>, arrayController.items);</span><br><span class="line"></span><br><span class="line">@weakify(<span class="keyword">self</span>);</span><br><span class="line">   RACSignal *signal3 = [anotherSignal flattenMap:^(<span class="built_in">NSArrayController</span> *arrayController) &#123;</span><br><span class="line">       <span class="comment">// Avoids a retain cycle because of RACObserve implicitly referencing self.</span></span><br><span class="line">       @strongify(<span class="keyword">self</span>);</span><br><span class="line">       <span class="keyword">return</span> RACObserve(arrayController, items);</span><br><span class="line">  &#125;];</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p><a href="http://blog.sunnyxx.com/2014/03/06/rac_1_macros/" target="_blank" rel="noopener">http://blog.sunnyxx.com/2014/03/06/rac_1_macros/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1874,7 +1817,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">43</span>
+                <span class="site-state-item-count">44</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1962,7 +1905,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共71.1k字</span>
+<span class="post-count"> 博客全站共71.3k字</span>
 </div>
 
 
