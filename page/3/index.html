@@ -275,6 +275,142 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/12/Objc-protocol篇/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/02/12/Objc-protocol篇/" itemprop="url">Objc-protocol篇</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-12T11:28:59+08:00">
+                2018-02-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>本篇研究以下问题</p>
+<ul>
+<li>Protocol的实践</li>
+</ul>
+<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">@protocol DogProtocol</span><br><span class="line">@required</span><br><span class="line">- (void)printName;</span><br><span class="line">@optional</span><br><span class="line">- (void)printAge;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface Dog: NSObject</span><br><span class="line">@property (nonatomic, strong) NSString *name;</span><br><span class="line">@property (nonatomic) NSInteger age;</span><br><span class="line">@property (nonatomic, weak) id delegate;</span><br><span class="line">- (void)printDetails;</span><br><span class="line">@end</span><br><span class="line">@implementation Dog</span><br><span class="line">-(void)printDetails</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;I&apos;m Dog&quot;);</span><br><span class="line">    [self.delegate printName];</span><br><span class="line">    [self.delegate printAge];</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@interface SampleClass:NSObject&lt;DogProtocol&gt;</span><br><span class="line">@property (nonatomic, strong) Dog *littleDog;</span><br><span class="line">- (void)startAction;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation SampleClass</span><br><span class="line"></span><br><span class="line">- (void)startAction&#123;</span><br><span class="line">    Dog *dog = [[Dog alloc]init];</span><br><span class="line">    dog.name = @&quot;PattyDog&quot;;</span><br><span class="line">    dog.age = 10;</span><br><span class="line">    dog.delegate = self;</span><br><span class="line"></span><br><span class="line">    self.littleDog = dog;</span><br><span class="line">    [dog printDetails];</span><br><span class="line">&#125;</span><br><span class="line">- (void)printName</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;name:%@&quot;,self.littleDog.name);</span><br><span class="line">&#125;</span><br><span class="line">- (void)printAge</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;age:%zd&quot;,self.littleDog.age);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        SampleClass *sample = [[SampleClass alloc] init];</span><br><span class="line">        [sample startAction];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查看控制台打印输出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">I&apos;m Dog</span><br><span class="line">name:PattyDog</span><br><span class="line">age:10</span><br></pre></td></tr></table></figure></p>
+<h2 id="protocol-t结构"><a href="#protocol-t结构" class="headerlink" title="protocol_t结构"></a>protocol_t结构</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">struct protocol_t : objc_object &#123;</span><br><span class="line">    const char *mangledName;</span><br><span class="line">    struct protocol_list_t *protocols;</span><br><span class="line">    method_list_t *instanceMethods;</span><br><span class="line">    method_list_t *classMethods;</span><br><span class="line">    method_list_t *optionalInstanceMethods;</span><br><span class="line">    method_list_t *optionalClassMethods;</span><br><span class="line">    property_list_t *instanceProperties;</span><br><span class="line">    uint32_t size;   // sizeof(protocol_t)</span><br><span class="line">    uint32_t flags;</span><br><span class="line">    // Fields below this point are not always present on disk.</span><br><span class="line">    const char **_extendedMethodTypes;</span><br><span class="line">    const char *_demangledName;</span><br><span class="line">    property_list_t *_classProperties;</span><br><span class="line"></span><br><span class="line">    const char *demangledName();</span><br><span class="line"></span><br><span class="line">    const char *nameForLogging() &#123;</span><br><span class="line">        return demangledName();</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="分别申明-required和-optional方法"><a href="#分别申明-required和-optional方法" class="headerlink" title="分别申明@required和@optional方法"></a>分别申明@required和@optional方法</h2><p>下面打印验证协议方法<br>打印方法类似之前文章中介绍消息缓存<br>现在查看SampleClass遵循的协议</p>
+<p><img src="/images/protocol_t.png" alt="protocol_t结构证明"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">2018-02-13 09:51:09.129854+0800 debug-objc[26530:1205183] 0x100002610</span><br><span class="line">(lldb) p (objc_class *)0x100002610</span><br><span class="line">(objc_class *) $0 = 0x0000000100002610</span><br><span class="line">(lldb) p (class_data_bits_t *)0x0000000100002630</span><br><span class="line">(class_data_bits_t *) $1 = 0x0000000100002630</span><br><span class="line">(lldb) p (class_rw_t *)$1-&gt;data()</span><br><span class="line">(class_rw_t *) $2 = 0x0000000100a21a80</span><br><span class="line">(lldb) p $2-&gt;protocols</span><br><span class="line">(protocol_array_t) $3 = &#123;</span><br><span class="line">  list_array_tt&lt;unsigned long, protocol_list_t&gt; = &#123;</span><br><span class="line">     = &#123;</span><br><span class="line">      list = 0x0000000100002370</span><br><span class="line">      arrayAndFlag = 4294976368</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $3.beginLists()</span><br><span class="line">(protocol_list_t **) $4 = 0x0000000100a21aa0</span><br><span class="line">(lldb) p **$4</span><br><span class="line">(protocol_list_t) $5 = (count = 1, list = protocol_ref_t [] @ 0x00007fbc7e780c58)</span><br><span class="line">(lldb) p $5.list[0]</span><br><span class="line">(protocol_ref_t) $6 = 4294977080</span><br><span class="line">(lldb) p (protocol_t *)$6</span><br><span class="line">(protocol_t *) $7 = 0x0000000100002638</span><br><span class="line">(lldb) p *$7</span><br><span class="line">(protocol_t) $8 = &#123;</span><br><span class="line">  objc_object = &#123;</span><br><span class="line">    isa = &#123;</span><br><span class="line">      cls = Protocol</span><br><span class="line">      bits = 4302295240</span><br><span class="line">       = &#123;</span><br><span class="line">        nonpointer = 0</span><br><span class="line">        has_assoc = 0</span><br><span class="line">        has_cxx_dtor = 0</span><br><span class="line">        shiftcls = 537786905</span><br><span class="line">        magic = 0</span><br><span class="line">        weakly_referenced = 0</span><br><span class="line">        deallocating = 0</span><br><span class="line">        has_sidetable_rc = 0</span><br><span class="line">        extra_rc = 0</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  mangledName = 0x0000000100001f5e &quot;DogProtocol&quot;   //证明协议名称</span><br><span class="line">  protocols = 0x0000000000000000</span><br><span class="line">  instanceMethods = 0x0000000100002320</span><br><span class="line">  classMethods = 0x0000000000000000</span><br><span class="line">  optionalInstanceMethods = 0x0000000100002340</span><br><span class="line">  optionalClassMethods = 0x0000000000000000</span><br><span class="line">  instanceProperties = 0x0000000000000000</span><br><span class="line">  size = 96</span><br><span class="line">  flags = 0</span><br><span class="line">  _extendedMethodTypes = 0x0000000100002360</span><br><span class="line">  _demangledName = 0x0000000000000000 &lt;no value available&gt;</span><br><span class="line">  _classProperties = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $8.instanceMethods  //打印实例方法</span><br><span class="line">(method_list_t *) $9 = 0x0000000100002320</span><br><span class="line">(lldb) p $9-&gt;get(0)</span><br><span class="line">(method_t) $10 = &#123;</span><br><span class="line">  name = &quot;printName&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p *$9</span><br><span class="line">(method_list_t) $11 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 3&gt; = &#123;</span><br><span class="line">    entsizeAndFlags = 24</span><br><span class="line">    count = 1</span><br><span class="line">    first = &#123;</span><br><span class="line">      name = &quot;printName&quot;</span><br><span class="line">      types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">      imp = 0x0000000000000000</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从打印记录可以看到，SampleClass 含有的协议是”DogProtocol”<br>协议含有的实例方法列表 只有required方法<br>如果将DogProtocol协议中的@optional申明注释，打印协议里面的实例方法</p>
+<h2 id="required申明方法"><a href="#required申明方法" class="headerlink" title="required申明方法"></a>required申明方法</h2><p>可以看到协议的实例方法列表含有两个方法,分别是printName和printAge，都是@required申明的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p *$7</span><br><span class="line">(protocol_t) $8 = &#123;</span><br><span class="line">  objc_object = &#123;</span><br><span class="line">    isa = &#123;</span><br><span class="line">      cls = Protocol</span><br><span class="line">      bits = 4302295240</span><br><span class="line">       = &#123;</span><br><span class="line">        nonpointer = 0</span><br><span class="line">        has_assoc = 0</span><br><span class="line">        has_cxx_dtor = 0</span><br><span class="line">        shiftcls = 537786905</span><br><span class="line">        magic = 0</span><br><span class="line">        weakly_referenced = 0</span><br><span class="line">        deallocating = 0</span><br><span class="line">        has_sidetable_rc = 0</span><br><span class="line">        extra_rc = 0</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  mangledName = 0x0000000100001f5e &quot;DogProtocol&quot;</span><br><span class="line">  protocols = 0x0000000000000000</span><br><span class="line">  instanceMethods = 0x0000000100002320</span><br><span class="line">  classMethods = 0x0000000000000000</span><br><span class="line">  optionalInstanceMethods = 0x0000000000000000</span><br><span class="line">  optionalClassMethods = 0x0000000000000000</span><br><span class="line">  instanceProperties = 0x0000000000000000</span><br><span class="line">  size = 96</span><br><span class="line">  flags = 0</span><br><span class="line">  _extendedMethodTypes = 0x0000000100002358</span><br><span class="line">  _demangledName = 0x0000000000000000 &lt;no value available&gt;</span><br><span class="line">  _classProperties = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $8.instanceMethods()</span><br><span class="line">error: called object type &apos;method_list_t *&apos; is not a function or function pointer</span><br><span class="line">(lldb) p $8.instanceMethods</span><br><span class="line">(method_list_t *) $9 = 0x0000000100002320</span><br><span class="line">(lldb) p *$9</span><br><span class="line">(method_list_t) $10 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 3&gt; = &#123;</span><br><span class="line">    entsizeAndFlags = 24</span><br><span class="line">    count = 2</span><br><span class="line">    first = &#123;</span><br><span class="line">      name = &quot;printName&quot;</span><br><span class="line">      types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">      imp = 0x0000000000000000</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10.get(0)</span><br><span class="line">(method_t) $11 = &#123;</span><br><span class="line">  name = &quot;printName&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10-&gt;get(1)</span><br><span class="line">(method_t) $12 = &#123;</span><br><span class="line">  name = &quot;printAge&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="默认不申明"><a href="#默认不申明" class="headerlink" title="默认不申明"></a>默认不申明</h2><p>打印说明默认的就是required<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p *$9</span><br><span class="line">(method_list_t) $10 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 3&gt; = &#123;</span><br><span class="line">    entsizeAndFlags = 24</span><br><span class="line">    count = 2</span><br><span class="line">    first = &#123;</span><br><span class="line">      name = &quot;printName&quot;</span><br><span class="line">      types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">      imp = 0x0000000000000000</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10.get(0)</span><br><span class="line">(method_t) $11 = &#123;</span><br><span class="line">  name = &quot;printName&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10.get(1)</span><br><span class="line">(method_t) $12 = &#123;</span><br><span class="line">  name = &quot;printAge&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="将方法都申明为optional"><a href="#将方法都申明为optional" class="headerlink" title="将方法都申明为optional"></a>将方法都申明为optional</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@protocol DogProtocol</span><br><span class="line">@optional</span><br><span class="line">- (void)printName;</span><br><span class="line">- (void)printAge;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>打印,可以看到协议的实例方法为空，但是optionalInstanceMethods有两个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p (objc_class *)0x100002608</span><br><span class="line">(objc_class *) $0 = 0x0000000100002608</span><br><span class="line">(lldb) p (class_data_bits_t *)0x0000000100002628</span><br><span class="line">(class_data_bits_t *) $1 = 0x0000000100002628</span><br><span class="line">(lldb) p (class_rw_t *)$1-&gt;data()</span><br><span class="line">(class_rw_t *) $2 = 0x0000000100b909a0</span><br><span class="line">(lldb) p $2-&gt;protocols</span><br><span class="line">(protocol_array_t) $3 = &#123;</span><br><span class="line">  list_array_tt&lt;unsigned long, protocol_list_t&gt; = &#123;</span><br><span class="line">     = &#123;</span><br><span class="line">      list = 0x0000000100002368</span><br><span class="line">      arrayAndFlag = 4294976360</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $3.beginLists()</span><br><span class="line">(protocol_list_t **) $4 = 0x0000000100b909c0</span><br><span class="line">(lldb) p $5.list[0]</span><br><span class="line">error: use of undeclared identifier &apos;$5&apos;</span><br><span class="line">(lldb) p **$4</span><br><span class="line">(protocol_list_t) $5 = (count = 1, list = protocol_ref_t [] @ 0x00007fbc7e1dad48)</span><br><span class="line">(lldb) p $5.list[0]</span><br><span class="line">(protocol_ref_t) $6 = 4294977072</span><br><span class="line">(lldb) p (protocol_t *)$6</span><br><span class="line">(protocol_t *) $7 = 0x0000000100002630</span><br><span class="line">(lldb) p *$7</span><br><span class="line">(protocol_t) $8 = &#123;</span><br><span class="line">  objc_object = &#123;</span><br><span class="line">    isa = &#123;</span><br><span class="line">      cls = Protocol</span><br><span class="line">      bits = 4302295240</span><br><span class="line">       = &#123;</span><br><span class="line">        nonpointer = 0</span><br><span class="line">        has_assoc = 0</span><br><span class="line">        has_cxx_dtor = 0</span><br><span class="line">        shiftcls = 537786905</span><br><span class="line">        magic = 0</span><br><span class="line">        weakly_referenced = 0</span><br><span class="line">        deallocating = 0</span><br><span class="line">        has_sidetable_rc = 0</span><br><span class="line">        extra_rc = 0</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  mangledName = 0x0000000100001f5e &quot;DogProtocol&quot;</span><br><span class="line">  protocols = 0x0000000000000000</span><br><span class="line">  instanceMethods = 0x0000000000000000</span><br><span class="line">  classMethods = 0x0000000000000000</span><br><span class="line">  optionalInstanceMethods = 0x0000000100002320</span><br><span class="line">  optionalClassMethods = 0x0000000000000000</span><br><span class="line">  instanceProperties = 0x0000000000000000</span><br><span class="line">  size = 96</span><br><span class="line">  flags = 0</span><br><span class="line">  _extendedMethodTypes = 0x0000000100002358</span><br><span class="line">  _demangledName = 0x0000000000000000 &lt;no value available&gt;</span><br><span class="line">  _classProperties = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $8.optionalInstanceMethods</span><br><span class="line">(method_list_t *) $9 = 0x0000000100002320</span><br><span class="line">(lldb) p *$9</span><br><span class="line">(method_list_t) $10 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 3&gt; = &#123;</span><br><span class="line">    entsizeAndFlags = 24</span><br><span class="line">    count = 2</span><br><span class="line">    first = &#123;</span><br><span class="line">      name = &quot;printName&quot;</span><br><span class="line">      types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">      imp = 0x0000000000000000</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10.get(0)</span><br><span class="line">(method_t) $11 = &#123;</span><br><span class="line">  name = &quot;printName&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10.get(1)</span><br><span class="line">(method_t) $12 = &#123;</span><br><span class="line">  name = &quot;printAge&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/11/Objc-category篇/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1697,148 +1833,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/01/12/Objc对象的初始化/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/12/Objc对象的初始化/" itemprop="url">Objc对象的初始化</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-12T14:13:13+08:00">
-                2018-01-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本Objc系列的文章，都是笔者在学习的阶段，翻阅他人笔记，自己查看源码记录以加深印象，并非全部原创</p>
-<blockquote>
-<p>本文直接运行的是runtime Objc4-706版本，debug-objc的target，mac运行，在main.m文件添加code NSObject*obj=[[NSObject alloc]init];，打上断点一步步调试</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        PattyCat *pcat = [PattyCat alloc];</span><br><span class="line">        [pcat init];</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在main方法里，打上断点，进入调试看如何初始化对象</p>
-<h2 id="alloc"><a href="#alloc" class="headerlink" title="alloc"></a>alloc</h2><p>先看下大致的流程<br><img src="/images/alloc流程图.png" alt="alloc流程"></p>
-<p>断点首先进入 NSObject.mm中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">+ (id)alloc &#123;</span><br><span class="line">    return _objc_rootAlloc(self);</span><br><span class="line">&#125;</span><br><span class="line">id</span><br><span class="line">_objc_rootAlloc(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    return callAlloc(cls, false/*checkNil*/, true/*allocWithZone*/);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static ALWAYS_INLINE id</span><br><span class="line">callAlloc(Class cls, bool checkNil, bool allocWithZone=false)</span><br><span class="line">&#123;</span><br><span class="line">    if (slowpath(checkNil &amp;&amp; !cls)) return nil; //根据传参，此行不执行</span><br><span class="line"></span><br><span class="line">      ...</span><br><span class="line">      id obj = class_createInstance(cls, 0);</span><br><span class="line">          if (slowpath(!obj)) return callBadAllocHandler(cls);</span><br><span class="line">          return obj;</span><br><span class="line">      ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>执行断点调试，发现最终调用class_createInstance<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line">class_createInstance(Class cls, size_t extraBytes)</span><br><span class="line">&#123;</span><br><span class="line">    return _class_createInstanceFromZone(cls, extraBytes, nil);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>对象初始化中最重要的操作都在_class_createInstanceFromZone 方法中执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static __attribute__((always_inline))</span><br><span class="line">id</span><br><span class="line">_class_createInstanceFromZone(Class cls, size_t extraBytes, void *zone,</span><br><span class="line">                              bool cxxConstruct = true,</span><br><span class="line">                              size_t *outAllocatedSize = nil)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    size_t size = cls-&gt;instanceSize(extraBytes);</span><br><span class="line"></span><br><span class="line">    id obj;</span><br><span class="line">    if (!zone  &amp;&amp;  fast) &#123;</span><br><span class="line">        obj = (id)calloc(1, size);</span><br><span class="line">        if (!obj) return nil;</span><br><span class="line">        obj-&gt;initInstanceIsa(cls, hasCxxDtor);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>到此，alloc方法执行完毕，所以重点就是分配了一块内存空间，初始化isa</p>
-<p>在分配空间之前，需要先获取cls实例内存空间的大小，方法cls-&gt;instanceSize可以分析下<br>可见这是按照16字节对齐的方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">size_t instanceSize(size_t extraBytes) &#123;</span><br><span class="line">       size_t size = alignedInstanceSize() + extraBytes;</span><br><span class="line">       // CF requires all objects be at least 16 bytes.</span><br><span class="line">       if (size &lt; 16) size = 16;</span><br><span class="line">       return size;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// Class&apos;s ivar size rounded up to a pointer-size boundary.</span><br><span class="line">uint32_t alignedInstanceSize() &#123;</span><br><span class="line">    return word_align(unalignedInstanceSize());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static inline uint32_t word_align(uint32_t x) &#123;</span><br><span class="line">    return (x + WORD_MASK) &amp; ~WORD_MASK;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// May be unaligned depending on class&apos;s ivars.</span><br><span class="line">uint32_t unalignedInstanceSize() &#123;</span><br><span class="line">    assert(isRealized());</span><br><span class="line">    return data()-&gt;ro-&gt;instanceSize;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>拿到对象的大小之后，calloc分配空间，然后初始化对象的initIsa<br>obj-&gt;initInstanceIsa(cls, hasCxxDtor);进行对象的isa结构体初始化<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">inline void</span><br><span class="line">objc_object::initInstanceIsa(Class cls, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!cls-&gt;instancesRequireRawIsa());</span><br><span class="line">    assert(hasCxxDtor == cls-&gt;hasCxxDtor());</span><br><span class="line"></span><br><span class="line">    initIsa(cls, true, hasCxxDtor);</span><br><span class="line">&#125;</span><br><span class="line">inline void</span><br><span class="line">objc_object::initIsa(Class cls, bool nonpointer, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">        ...</span><br><span class="line">        isa_t newisa(0);</span><br><span class="line">        ...</span><br><span class="line">        newisa.bits = ISA_MAGIC_VALUE;</span><br><span class="line">        newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">        newisa.shiftcls = (uintptr_t)cls &gt;&gt; 3;</span><br><span class="line">        isa = newisa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="init"><a href="#init" class="headerlink" title="init"></a>init</h2><p>可见init只是返回了当前的对象obj<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">- (id)init &#123;</span><br><span class="line">    return _objc_rootInit(self);</span><br><span class="line">&#125;</span><br><span class="line">id</span><br><span class="line">objc_retain(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    if (!obj) return obj;</span><br><span class="line">    if (obj-&gt;isTaggedPointer()) return obj;</span><br><span class="line">    return obj-&gt;retain();</span><br><span class="line">&#125;</span><br><span class="line">inline id</span><br><span class="line">objc_object::retain()</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    if (fastpath(!ISA()-&gt;hasCustomRR())) &#123;</span><br><span class="line">        return rootRetain();</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line">objc_object::rootRetain()</span><br><span class="line">&#123;</span><br><span class="line">    return rootRetain(false, false);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">objc_object::rootRetain(bool tryRetain, bool handleOverflow)</span><br><span class="line">&#123;</span><br><span class="line">    if (isTaggedPointer()) return (id)this;</span><br><span class="line"></span><br><span class="line">    bool sideTableLocked = false;</span><br><span class="line">    bool transcribeToSideTable = false;</span><br><span class="line"></span><br><span class="line">    isa_t oldisa;</span><br><span class="line">    isa_t newisa;</span><br><span class="line"></span><br><span class="line">    do &#123;</span><br><span class="line">        transcribeToSideTable = false;</span><br><span class="line">        oldisa = LoadExclusive(&amp;isa.bits);</span><br><span class="line">        newisa = oldisa;</span><br><span class="line">        ...</span><br><span class="line">        uintptr_t carry;</span><br><span class="line">        newisa.bits = addc(newisa.bits, RC_ONE, 0, &amp;carry);  // extra_rc++</span><br><span class="line"></span><br><span class="line">       ...</span><br><span class="line">    &#125; while (slowpath(!StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits)));</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">    return (id)this;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">最终返回自身</span><br><span class="line">return this</span><br></pre></td></tr></table></figure></p>
-<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><pre><code>#define fastpath(x) (__builtin_expect(bool(x), 1))
-#define slowpath(x) (__builtin_expect(bool(x), 0))
-
-__builtin_expect的作用
-  这个指令是gcc引入的，作用是&quot;允许程序员将最有可能执行的分支告诉编译器&quot;。这个指令的写法为：__builtin_expect(EXP, N)。意思是：EXP==N的概率很大。一般的使用方法是将__builtin_expect指令封装为宏
-</code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文内容还是比较简单的，对象的初始化，只是分配内存空间，初始化isa结构体，isa的初始化，可以查看另一篇文章isa的存在</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1889,7 +1883,7 @@ __builtin_expect的作用
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-count">43</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1953,7 +1947,7 @@ __builtin_expect的作用
 <div class="copyright" >
   
   &copy; 
-  <span itemprop="copyrightYear">2018</span>
+  <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -1977,7 +1971,7 @@ __builtin_expect的作用
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共70.6k字</span>
+<span class="post-count"> 博客全站共71.1k字</span>
 </div>
 
 

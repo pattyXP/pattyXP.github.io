@@ -275,6 +275,220 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/26/ReactiveObjc-RACCommand/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Patty">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/flower.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="温暖的弦">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/26/ReactiveObjc-RACCommand/" itemprop="url">ReactiveObjc-RACCommand</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-26T10:57:28+08:00">
+                2018-03-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文源码为 ReactiveObjc 3.1.0 版本</p>
+<p>在ReactiveObjc 世界中，不仅仅存在RACSignal这样的信号，还存在一些绑定关系的操作集合，比如按钮的点击事件，按钮点击的时候，事物操作事先就定义好了，RACCommand 可以应用于此</p>
+<h2 id="RACCommand"><a href="#RACCommand" class="headerlink" title="RACCommand"></a>RACCommand</h2><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RACCommand</span>&lt;<span class="title">__contravariant</span> <span class="title">InputType</span>, <span class="title">__covariant</span> <span class="title">ValueType</span>&gt; : <span class="title">NSObject</span></span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) RACSignal&lt;RACSignal&lt;ValueType&gt; *&gt; *executionSignals;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) RACSignal&lt;<span class="built_in">NSNumber</span> *&gt; *executing;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) RACSignal&lt;<span class="built_in">NSNumber</span> *&gt; *enabled;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) RACSignal&lt;<span class="built_in">NSError</span> *&gt; *errors;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithSignalBlock:(RACSignal&lt;ValueType&gt; * (^)(InputType _Nullable input))signalBlock;</span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithEnabled:(<span class="keyword">nullable</span> RACSignal&lt;<span class="built_in">NSNumber</span> *&gt; *)enabledSignal signalBlock:(RACSignal&lt;ValueType&gt; * (^)(InputType _Nullable input))signalBlock;</span><br><span class="line">- (RACSignal&lt;ValueType&gt; *)execute:(<span class="keyword">nullable</span> InputType)input;</span><br></pre></td></tr></table></figure>
+<p>RACCommand 继承自NSObject，是一个对象，但是可以用于创建和订阅信号</p>
+<p>对外声明包含四个属性</p>
+<ul>
+<li><p>executionSignals<br>属于高阶信号，需要进行降级操作,通常使用 flatten，switchToLatest，concat<br>如果在允许Concurrent并发的RACCommand中一般使用flatten。<br>在不允许Concurrent并发的RACCommand中一般使用switchToLatest</p>
+</li>
+<li><p>executing:当前RACCommand是否在执行</p>
+</li>
+<li><p>enabled:RACCommand是否可用</p>
+</li>
+<li><p>errors:RACCommand执行过程中产生的错误信号</p>
+</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RACCommand</span> () </span>&#123;</span><br><span class="line">	<span class="comment">// Atomic backing variable for `allowsConcurrentExecution`.</span></span><br><span class="line">	<span class="keyword">volatile</span> uint32_t _allowsConcurrentExecution;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// A subject that sends added execution signals.</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) RACSubject *addedExecutionSignalsSubject;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// A subject that sends the new value of `allowsConcurrentExecution` whenever it changes.</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) RACSubject *allowsConcurrentExecutionSubject;</span><br><span class="line"></span><br><span class="line"><span class="comment">// `enabled`, but without a hop to the main thread.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// Values from this signal may arrive on any thread.</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) RACSignal *immediateEnabled;</span><br><span class="line"></span><br><span class="line"><span class="comment">// The signal block that the receiver was initialized with.</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">copy</span>, <span class="keyword">readonly</span>) RACSignal * (^signalBlock)(<span class="keyword">id</span> input);</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>allowsConcurrentExecution :是否允许并发执行<br>定义类型是volatile</li>
+</ul>
+<p>在使用时 重写 get 和 set方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">#pragma mark Properties</span><br><span class="line"></span><br><span class="line">- (BOOL)allowsConcurrentExecution &#123;</span><br><span class="line">	return _allowsConcurrentExecution != 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)setAllowsConcurrentExecution:(BOOL)allowed &#123;</span><br><span class="line">	if (allowed) &#123;</span><br><span class="line">		OSAtomicOr32Barrier(1, &amp;_allowsConcurrentExecution); //原子运算，保证只执行一次</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		OSAtomicAnd32Barrier(0, &amp;_allowsConcurrentExecution);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	[self.allowsConcurrentExecutionSubject sendNext:@(_allowsConcurrentExecution)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>RACCommand 对外暴露两个初始化方法和一个execute方法</p>
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (id)initWithSignalBlock:(RACSignal * (^)(id input))signalBlock &#123;</span><br><span class="line">    return [self initWithEnabled:nil signalBlock:signalBlock];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>内部调用 initWithEnabled:signalBlock 方法，对 executionSignals，executing，enabled，errors的初始化<br>初始化方法比较复杂，内部创建了7个高阶信号，如果先简略信号的创建，实现如下<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)initWithEnabled:(RACSignal *)enabledSignal signalBlock:(RACSignal&lt;<span class="keyword">id</span>&gt; * (^)(<span class="keyword">id</span> input))signalBlock &#123;</span><br><span class="line">	<span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line"></span><br><span class="line">	_addedExecutionSignalsSubject = [RACSubject new];</span><br><span class="line">	_signalBlock = [signalBlock <span class="keyword">copy</span>];</span><br><span class="line"></span><br><span class="line">	_executionSignals = ...;</span><br><span class="line">	_errors = ...;</span><br><span class="line">	RACSignal *immediateExecuting = ...;</span><br><span class="line">	_executing = ...;</span><br><span class="line">	RACSignal *moreExecutionsAllowed = ...;</span><br><span class="line">	_immediateEnabled =...;</span><br><span class="line">	_enabled = ...;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>immediateExecuting 表示当前是否有任务在执行<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *immediateExecuting = [[[[<span class="keyword">self</span>.addedExecutionSignalsSubject</span><br><span class="line">		flattenMap:^(RACSignal *signal) &#123;</span><br><span class="line">			<span class="keyword">return</span> [[[signal</span><br><span class="line">				catchTo:[RACSignal empty]]</span><br><span class="line">				then:^&#123;</span><br><span class="line">					<span class="keyword">return</span> [RACSignal <span class="keyword">return</span>:@<span class="number">-1</span>];</span><br><span class="line">				&#125;]</span><br><span class="line">				startWith:@<span class="number">1</span>];</span><br><span class="line">		&#125;]</span><br><span class="line">		scanWithStart:@<span class="number">0</span> reduce:^(<span class="built_in">NSNumber</span> *running, <span class="built_in">NSNumber</span> *next) &#123;</span><br><span class="line">			<span class="keyword">return</span> @(running.integerValue + next.integerValue);</span><br><span class="line">		&#125;]</span><br><span class="line">		map:^(<span class="built_in">NSNumber</span> *count) &#123;</span><br><span class="line">			<span class="keyword">return</span> @(count.integerValue &gt; <span class="number">0</span>);</span><br><span class="line">		&#125;]</span><br><span class="line">		startWith:@NO];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>1.flattenMap 将每一个信号的开始和结束的时间点转换成 1 和 -1 两个信号<br>    catchTo: 将捕获到的错误信号都返回 RACEmptySignal空信号,当信号发送完毕，执行then方法的block生成RACReturnSignal信号,发送-1.<br>    startWith 先发送1，然后执行原信号<br>2.scanWithStart 初始化值为0，累加原信号发出的所有的值<br>3.map 将大于0的信号转为 YES<br>4.startWith 在信号序列最前面加入 @NO，表示在最开始时，没有任何动作在执行。</p>
+<p><a href="https://pattyxp.github.io/2018/03/24/ReactiveObjc-%E5%B8%B8%E7%94%A8%E7%9A%84%E5%8F%98%E6%8D%A2%E6%93%8D%E4%BD%9C/">具体方法的实现分析查看</a></p>
+<p>整个流程如下<a href="https://github.com/Draveness/analyze/blob/43d828b6f516a57e12eeff69913ff49cc94a0f36/contents/ReactiveObjC/RACCommand.md" target="_blank" rel="noopener">图片来源</a><br><img src="/images/ImmediateExecutingSignal.png" alt="ImmediateExecutingSignal"></p>
+<ul>
+<li>moreExecutionsAllowed 判断是否允许并发执行<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *moreExecutionsAllowed = [RACSignal</span><br><span class="line">		if:[self.allowsConcurrentExecutionSubject startWith:@NO]</span><br><span class="line">		then:[RACSignal return:@YES]</span><br><span class="line">		else:[immediateExecuting not]];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>如果允许并发执行，那么执行then操作，否则执行else操作<br>else操作是对 immediateExecuting 取反</p>
+<ul>
+<li>executionSignals<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">_executionSignals = [[[self.addedExecutionSignalsSubject</span><br><span class="line">  map:^(RACSignal *signal) &#123;</span><br><span class="line">    return [signal catchTo:[RACSignal empty]];</span><br><span class="line">  &#125;]</span><br><span class="line">  deliverOn:RACScheduler.mainThreadScheduler]</span><br><span class="line">  setNameWithFormat:@&quot;%@ -executionSignals&quot;, self];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>map 函数操作是对信号进行变换,当接收到错误信号会返回空信号<br>executionSignals 将返回的信号都派发到在主线程中。</p>
+<p>catchTo方法<a href="https://pattyxp.github.io/2018/03/24/ReactiveObjc-%E5%B8%B8%E7%94%A8%E7%9A%84%E5%8F%98%E6%8D%A2%E6%93%8D%E4%BD%9C/">此文有介绍</a></p>
+<ul>
+<li>executing信号 :判断是否正在执行<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">_executing = [[[[[immediateExecuting</span><br><span class="line">	deliverOn:RACScheduler.mainThreadScheduler]</span><br><span class="line">	// This is useful before the first value arrives on the main thread.</span><br><span class="line">	startWith:@NO]</span><br><span class="line">	distinctUntilChanged]</span><br><span class="line">	replayLast]</span><br><span class="line">	setNameWithFormat:@&quot;%@ -executing&quot;, self];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>信号在主线程执行，<br>内部调用distinctUntilChanged,初始值为NO，当值变化的时候，通过 replayLast方法 生成 <code>[RACReplaySubject replaySubjectWithCapacity:1]</code>保存最新值的信号，不关心过去的值<br>返回热信号 RACMulticastConnection</p>
+<ul>
+<li>enabled : 判断RACCommand对象是否能够执行<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">_immediateEnabled = [[[[RACSignal</span><br><span class="line">	combineLatest:@[ enabledSignal, moreExecutionsAllowed ]]</span><br><span class="line">	and]</span><br><span class="line">	takeUntil:self.rac_willDeallocSignal]</span><br><span class="line">	replayLast];</span><br><span class="line"></span><br><span class="line">_enabled = [[[[[self.immediateEnabled</span><br><span class="line">		take:1]</span><br><span class="line">		concat:[[self.immediateEnabled skip:1] deliverOn:RACScheduler.mainThreadScheduler]]</span><br><span class="line">		distinctUntilChanged]</span><br><span class="line">		replayLast]</span><br><span class="line">		setNameWithFormat:@&quot;%@ -enabled&quot;, self];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>依赖于私有信号immediateEnabled<br>这里涉及到了combineLatest:的变换操作，<a href="https://pattyxp.github.io/2018/03/24/ReactiveObjc-%E5%B8%B8%E7%94%A8%E7%9A%84%E5%8F%98%E6%8D%A2%E6%93%8D%E4%BD%9C/">这个操作在这里有介绍</a>。combineLatest:的作用就是把后面数组里面传入的每个信号，不管是谁发送出来一个信号，都会把数组里面所有信号的最新的值组合到一个RACTuple里面。immediateEnabled会把每个RACTuple里面的元素都进行逻辑and运算，这样immediateEnabled信号里面装的也都是BOOL值了。<br>当前 RACCommand 执行 dealloc 之后就不会执行<code>self.rac_willDeallocSignal</code>信号</p>
+<p>_enabled 与 enabledSignal、moreExecutionsAllowed、rac_willDeallocSignal 都有关系</p>
+<p>immediateEnabled 在每次原信号发送消息时都会重新计算<br>_enabled 有点差别,调用了<code>-distinctUntilChanged</code>方法，所以如果连续几次值相同就不会再次发送任何消息。<br>调用skip:方法，第一个值以后的每个值都发送在主线程上<br>-take:1和 -concat: 第一个值在一订阅的时候就发送出去了，同订阅者所在线程一致。</p>
+<ul>
+<li>errors 信号初始化<br>RACCommand 能将error信号进行收集统一处理<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">RACMulticastConnection *errorsConnection = [[[self.addedExecutionSignalsSubject</span><br><span class="line">  flattenMap:^(RACSignal *signal) &#123;</span><br><span class="line">    return [[signal</span><br><span class="line">      ignoreValues]</span><br><span class="line">      catch:^(NSError *error) &#123;</span><br><span class="line">        return [RACSignal return:error];</span><br><span class="line">      &#125;];</span><br><span class="line">  &#125;]</span><br><span class="line">  deliverOn:RACScheduler.mainThreadScheduler]</span><br><span class="line">  publish];</span><br><span class="line"></span><br><span class="line">_errors = [errorsConnection.signal setNameWithFormat:@&quot;%@ -errors&quot;, self];</span><br><span class="line">[errorsConnection connect];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>内部调用 ignoreValues/catch 方法 进行信号转换<br>将addedExecutionSignalsSubject 内原信号的错误信息都返回 RACReturnSignal对象</p>
+<ul>
+<li>execute 执行</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)execute:(id)input &#123;</span><br><span class="line"></span><br><span class="line">	//判断能够执行任务</span><br><span class="line">	BOOL enabled = [[self.immediateEnabled first] boolValue];</span><br><span class="line">	if (!enabled) &#123;</span><br><span class="line"></span><br><span class="line">		NSError *error = [NSError errorWithDomain:RACCommandErrorDomain code:RACCommandErrorNotEnabled userInfo:@&#123;</span><br><span class="line">			NSLocalizedDescriptionKey: NSLocalizedString(@&quot;The command is disabled and cannot be executed&quot;, nil),</span><br><span class="line">			RACUnderlyingCommandErrorKey: self</span><br><span class="line">		&#125;];</span><br><span class="line">		//如果不能执行，直接返回 Error信号</span><br><span class="line">		return [RACSignal error:error];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	//根据初始化时候的signalBlock产生信号</span><br><span class="line">	RACSignal *signal = self.signalBlock(input);</span><br><span class="line">	NSCAssert(signal != nil, @&quot;nil signal returned from signal block for value: %@&quot;, input);</span><br><span class="line"></span><br><span class="line">	//将冷信号转为热信号</span><br><span class="line">	RACMulticastConnection *connection = [[signal</span><br><span class="line">		subscribeOn:RACScheduler.mainThreadScheduler]</span><br><span class="line">		multicast:[RACReplaySubject subject]];</span><br><span class="line"></span><br><span class="line">	//只有在此处对 addedExecutionSignalsSubject对象进行操作 ，生产信息</span><br><span class="line">	[self.addedExecutionSignalsSubject sendNext:connection.signal];</span><br><span class="line"></span><br><span class="line">	// 将 RACSignal 和 RACReplaySubject 进行连接</span><br><span class="line">	[connection connect];</span><br><span class="line">	return [connection.signal setNameWithFormat:@&quot;%@ -execute: %@&quot;, self, RACDescription(input)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行 signalBlock 返回一个 RACSignal 之后，会将当前信号包装成一个 RACMulticastConnection，然后调用 -sendNext: 方法发送到 addedExecutionSignalsSubject 上，执行 -connect 方法订阅原有的信号，最后返回。</p>
+<ul>
+<li>事例</li>
+</ul>
+<p>通常 RACCommand 特别适合网络请求或者 UI相关操作上，可以结合MVVM模式进行使用，<a href="https://github.com/Draveness/analyze/blob/43d828b6f516a57e12eeff69913ff49cc94a0f36/contents/ReactiveObjC/RACCommand.md" target="_blank" rel="noopener">来源</a><br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">RACCommand *command = [[RACCommand alloc] initWithSignalBlock:^RACSignal * _Nonnull(<span class="built_in">NSNumber</span> * _Nullable input) &#123;</span><br><span class="line">		<span class="comment">// block1</span></span><br><span class="line">		<span class="keyword">return</span> [RACSignal createSignal:^RACDisposable * _Nullable(<span class="keyword">id</span>&lt;RACSubscriber&gt;  _Nonnull subscriber) &#123;</span><br><span class="line">				<span class="comment">// block2</span></span><br><span class="line">				<span class="built_in">NSInteger</span> integer = [input integerValue];</span><br><span class="line">				[subscriber sendNext:@(integerValue)];</span><br><span class="line">				[subscriber sendCompleted];</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">		&#125;];</span><br><span class="line">&#125;];</span><br><span class="line">[[command.executionSignals switchToLatest] subscribeNext:^(<span class="keyword">id</span>  _Nullable x) &#123;</span><br><span class="line">		<span class="comment">//block3</span></span><br><span class="line">		<span class="built_in">NSLog</span>(<span class="string">@"value:%@"</span>, x);</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">[command execute:@<span class="number">1</span>];</span><br></pre></td></tr></table></figure></p>
+<p>订阅 executionSignals和错误信号 来获取请求结果<br>打印<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">value:1</span><br></pre></td></tr></table></figure></p>
+<p>分析下流程</p>
+<ol>
+<li>先创建 RACCommand 对象，将入参进行copy<code>[signalBlock copy]</code><br>  初始化内部的信号</li>
+<li>执行<code>[[command.executionSignals switchToLatest]</code></li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (RACSignal *)switchToLatest &#123;</span><br><span class="line">	// block4</span><br><span class="line">	return [[RACSignal createSignal:^(id&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">		// block5</span><br><span class="line">		RACMulticastConnection *connection = [self publish]; //产生热信号</span><br><span class="line"></span><br><span class="line">		RACDisposable *subscriptionDisposable = [[connection.signal</span><br><span class="line">			flattenMap:^(RACSignal *x) &#123;  //对原信号进行变换</span><br><span class="line"></span><br><span class="line">				NSCAssert(x == nil || [x isKindOfClass:RACSignal.class], @&quot;-switchToLatest requires that the source signal (%@) send signals. Instead we got: %@&quot;, self, x);</span><br><span class="line"></span><br><span class="line">				return [x takeUntil:[connection.signal concat:[RACSignal never]]];</span><br><span class="line">			&#125;]</span><br><span class="line">			subscribe:subscriber];</span><br><span class="line"></span><br><span class="line">		RACDisposable *connectionDisposable = [connection connect];</span><br><span class="line">		return [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">			[subscriptionDisposable dispose];</span><br><span class="line">			[connectionDisposable dispose];</span><br><span class="line">		&#125;];</span><br><span class="line">	&#125;] setNameWithFormat:@&quot;[%@] -switchToLatest&quot;, self.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>此处执行 block4,产生新的信号，将block进行copy</li>
+<li><p>对<code>[[command.executionSignals switchToLatest] subscribeNext]</code><br>  执行subscribeNext操作，此处将 switchToLatest产生的信号执行订阅操作，调用信号的 didSubscriber闭包, 此处执行 block5<br> 通过<code>flattenMap</code>对热信号的signal进行变换操作产生新的信号signal1</p>
+<p> <code>[x takeUntil:[connection.signal concat:[RACSignal never]]];</code><br> 先执行<code>concat</code>方法产生新的信号signal2，<code>takeUntil</code>会一直订阅signal2，signal2如果没有收到新值会一直执行<code>sendNext</code>直到signal2有新值会取消订阅信号x，向订阅者发送<code>sendCompleted</code></p>
+<p> 执行<code>[connection connect];</code><br>5.执行<code>execute</code>方法，<code>RACSignal *signal = self.signalBlock(input);</code>调用初始化command时候保存的闭包,此处执行 block1<br> 执行<code>[self.addedExecutionSignalsSubject sendNext:connection.signal];</code><br> 接着执行<code>[connection connect];</code></p>
+</li>
+<li>执行block2</li>
+<li>执行block3</li>
+</ol>
+<ul>
+<li>注意<br>1.如果此处在末尾添加<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[command execute:@2];</span><br><span class="line">[command execute:@3];</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>那么只能收到第一个打印结果<code>value:1</code><br>因为RACCommand 默认是非并发执行的，需要等待命令执行结束才能执行下一次操作，所以在<code>execute</code>方法内部，每次都会判断是否可以执行任务，第二次执行的时候进入if条件语句，返回 Error信号，不打印内容</p>
+<p>2.如果此处在末尾添加<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[RACScheduler.mainThreadScheduler afterDelay:0.1</span><br><span class="line">                                    schedule:^&#123;</span><br><span class="line">                                        [command execute:@2];</span><br><span class="line">                                    &#125;];</span><br><span class="line">[RACScheduler.mainThreadScheduler afterDelay:0.2</span><br><span class="line">                                    schedule:^&#123;</span><br><span class="line">                                        [command execute:@3];</span><br><span class="line">                                    &#125;];</span><br></pre></td></tr></table></figure></p>
+<p>可以收到打印结果<br>每次执行execute方法， executionSignals 中发送了新的信号时，switchToLatest 方法返回的信号都会订阅这个最新的信号，这里也就保证了每次都会打印出最新的信号中的值。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>RACCommand 将外部的变量 InputType 转换成了使用 RACSignal 包裹的 ValueType 对象。<br>从 -execute: 方法中获得输入InputType，最后以向信号发送消息的方式，向订阅者推送结果。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/03/24/ReactiveObjc-常用的变换操作/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2122,142 +2336,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://pattyxp.github.io/2018/02/12/Objc-protocol篇/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Patty">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/flower.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="温暖的弦">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/02/12/Objc-protocol篇/" itemprop="url">Objc-protocol篇</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-12T11:28:59+08:00">
-                2018-02-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>本篇研究以下问题</p>
-<ul>
-<li>Protocol的实践</li>
-</ul>
-<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">@protocol DogProtocol</span><br><span class="line">@required</span><br><span class="line">- (void)printName;</span><br><span class="line">@optional</span><br><span class="line">- (void)printAge;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface Dog: NSObject</span><br><span class="line">@property (nonatomic, strong) NSString *name;</span><br><span class="line">@property (nonatomic) NSInteger age;</span><br><span class="line">@property (nonatomic, weak) id delegate;</span><br><span class="line">- (void)printDetails;</span><br><span class="line">@end</span><br><span class="line">@implementation Dog</span><br><span class="line">-(void)printDetails</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;I&apos;m Dog&quot;);</span><br><span class="line">    [self.delegate printName];</span><br><span class="line">    [self.delegate printAge];</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@interface SampleClass:NSObject&lt;DogProtocol&gt;</span><br><span class="line">@property (nonatomic, strong) Dog *littleDog;</span><br><span class="line">- (void)startAction;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation SampleClass</span><br><span class="line"></span><br><span class="line">- (void)startAction&#123;</span><br><span class="line">    Dog *dog = [[Dog alloc]init];</span><br><span class="line">    dog.name = @&quot;PattyDog&quot;;</span><br><span class="line">    dog.age = 10;</span><br><span class="line">    dog.delegate = self;</span><br><span class="line"></span><br><span class="line">    self.littleDog = dog;</span><br><span class="line">    [dog printDetails];</span><br><span class="line">&#125;</span><br><span class="line">- (void)printName</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;name:%@&quot;,self.littleDog.name);</span><br><span class="line">&#125;</span><br><span class="line">- (void)printAge</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;age:%zd&quot;,self.littleDog.age);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#pragma mark -main</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line"></span><br><span class="line">        SampleClass *sample = [[SampleClass alloc] init];</span><br><span class="line">        [sample startAction];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>查看控制台打印输出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">I&apos;m Dog</span><br><span class="line">name:PattyDog</span><br><span class="line">age:10</span><br></pre></td></tr></table></figure></p>
-<h2 id="protocol-t结构"><a href="#protocol-t结构" class="headerlink" title="protocol_t结构"></a>protocol_t结构</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">struct protocol_t : objc_object &#123;</span><br><span class="line">    const char *mangledName;</span><br><span class="line">    struct protocol_list_t *protocols;</span><br><span class="line">    method_list_t *instanceMethods;</span><br><span class="line">    method_list_t *classMethods;</span><br><span class="line">    method_list_t *optionalInstanceMethods;</span><br><span class="line">    method_list_t *optionalClassMethods;</span><br><span class="line">    property_list_t *instanceProperties;</span><br><span class="line">    uint32_t size;   // sizeof(protocol_t)</span><br><span class="line">    uint32_t flags;</span><br><span class="line">    // Fields below this point are not always present on disk.</span><br><span class="line">    const char **_extendedMethodTypes;</span><br><span class="line">    const char *_demangledName;</span><br><span class="line">    property_list_t *_classProperties;</span><br><span class="line"></span><br><span class="line">    const char *demangledName();</span><br><span class="line"></span><br><span class="line">    const char *nameForLogging() &#123;</span><br><span class="line">        return demangledName();</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h2 id="分别申明-required和-optional方法"><a href="#分别申明-required和-optional方法" class="headerlink" title="分别申明@required和@optional方法"></a>分别申明@required和@optional方法</h2><p>下面打印验证协议方法<br>打印方法类似之前文章中介绍消息缓存<br>现在查看SampleClass遵循的协议</p>
-<p><img src="/images/protocol_t.png" alt="protocol_t结构证明"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">2018-02-13 09:51:09.129854+0800 debug-objc[26530:1205183] 0x100002610</span><br><span class="line">(lldb) p (objc_class *)0x100002610</span><br><span class="line">(objc_class *) $0 = 0x0000000100002610</span><br><span class="line">(lldb) p (class_data_bits_t *)0x0000000100002630</span><br><span class="line">(class_data_bits_t *) $1 = 0x0000000100002630</span><br><span class="line">(lldb) p (class_rw_t *)$1-&gt;data()</span><br><span class="line">(class_rw_t *) $2 = 0x0000000100a21a80</span><br><span class="line">(lldb) p $2-&gt;protocols</span><br><span class="line">(protocol_array_t) $3 = &#123;</span><br><span class="line">  list_array_tt&lt;unsigned long, protocol_list_t&gt; = &#123;</span><br><span class="line">     = &#123;</span><br><span class="line">      list = 0x0000000100002370</span><br><span class="line">      arrayAndFlag = 4294976368</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $3.beginLists()</span><br><span class="line">(protocol_list_t **) $4 = 0x0000000100a21aa0</span><br><span class="line">(lldb) p **$4</span><br><span class="line">(protocol_list_t) $5 = (count = 1, list = protocol_ref_t [] @ 0x00007fbc7e780c58)</span><br><span class="line">(lldb) p $5.list[0]</span><br><span class="line">(protocol_ref_t) $6 = 4294977080</span><br><span class="line">(lldb) p (protocol_t *)$6</span><br><span class="line">(protocol_t *) $7 = 0x0000000100002638</span><br><span class="line">(lldb) p *$7</span><br><span class="line">(protocol_t) $8 = &#123;</span><br><span class="line">  objc_object = &#123;</span><br><span class="line">    isa = &#123;</span><br><span class="line">      cls = Protocol</span><br><span class="line">      bits = 4302295240</span><br><span class="line">       = &#123;</span><br><span class="line">        nonpointer = 0</span><br><span class="line">        has_assoc = 0</span><br><span class="line">        has_cxx_dtor = 0</span><br><span class="line">        shiftcls = 537786905</span><br><span class="line">        magic = 0</span><br><span class="line">        weakly_referenced = 0</span><br><span class="line">        deallocating = 0</span><br><span class="line">        has_sidetable_rc = 0</span><br><span class="line">        extra_rc = 0</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  mangledName = 0x0000000100001f5e &quot;DogProtocol&quot;   //证明协议名称</span><br><span class="line">  protocols = 0x0000000000000000</span><br><span class="line">  instanceMethods = 0x0000000100002320</span><br><span class="line">  classMethods = 0x0000000000000000</span><br><span class="line">  optionalInstanceMethods = 0x0000000100002340</span><br><span class="line">  optionalClassMethods = 0x0000000000000000</span><br><span class="line">  instanceProperties = 0x0000000000000000</span><br><span class="line">  size = 96</span><br><span class="line">  flags = 0</span><br><span class="line">  _extendedMethodTypes = 0x0000000100002360</span><br><span class="line">  _demangledName = 0x0000000000000000 &lt;no value available&gt;</span><br><span class="line">  _classProperties = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $8.instanceMethods  //打印实例方法</span><br><span class="line">(method_list_t *) $9 = 0x0000000100002320</span><br><span class="line">(lldb) p $9-&gt;get(0)</span><br><span class="line">(method_t) $10 = &#123;</span><br><span class="line">  name = &quot;printName&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p *$9</span><br><span class="line">(method_list_t) $11 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 3&gt; = &#123;</span><br><span class="line">    entsizeAndFlags = 24</span><br><span class="line">    count = 1</span><br><span class="line">    first = &#123;</span><br><span class="line">      name = &quot;printName&quot;</span><br><span class="line">      types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">      imp = 0x0000000000000000</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>从打印记录可以看到，SampleClass 含有的协议是”DogProtocol”<br>协议含有的实例方法列表 只有required方法<br>如果将DogProtocol协议中的@optional申明注释，打印协议里面的实例方法</p>
-<h2 id="required申明方法"><a href="#required申明方法" class="headerlink" title="required申明方法"></a>required申明方法</h2><p>可以看到协议的实例方法列表含有两个方法,分别是printName和printAge，都是@required申明的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p *$7</span><br><span class="line">(protocol_t) $8 = &#123;</span><br><span class="line">  objc_object = &#123;</span><br><span class="line">    isa = &#123;</span><br><span class="line">      cls = Protocol</span><br><span class="line">      bits = 4302295240</span><br><span class="line">       = &#123;</span><br><span class="line">        nonpointer = 0</span><br><span class="line">        has_assoc = 0</span><br><span class="line">        has_cxx_dtor = 0</span><br><span class="line">        shiftcls = 537786905</span><br><span class="line">        magic = 0</span><br><span class="line">        weakly_referenced = 0</span><br><span class="line">        deallocating = 0</span><br><span class="line">        has_sidetable_rc = 0</span><br><span class="line">        extra_rc = 0</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  mangledName = 0x0000000100001f5e &quot;DogProtocol&quot;</span><br><span class="line">  protocols = 0x0000000000000000</span><br><span class="line">  instanceMethods = 0x0000000100002320</span><br><span class="line">  classMethods = 0x0000000000000000</span><br><span class="line">  optionalInstanceMethods = 0x0000000000000000</span><br><span class="line">  optionalClassMethods = 0x0000000000000000</span><br><span class="line">  instanceProperties = 0x0000000000000000</span><br><span class="line">  size = 96</span><br><span class="line">  flags = 0</span><br><span class="line">  _extendedMethodTypes = 0x0000000100002358</span><br><span class="line">  _demangledName = 0x0000000000000000 &lt;no value available&gt;</span><br><span class="line">  _classProperties = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $8.instanceMethods()</span><br><span class="line">error: called object type &apos;method_list_t *&apos; is not a function or function pointer</span><br><span class="line">(lldb) p $8.instanceMethods</span><br><span class="line">(method_list_t *) $9 = 0x0000000100002320</span><br><span class="line">(lldb) p *$9</span><br><span class="line">(method_list_t) $10 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 3&gt; = &#123;</span><br><span class="line">    entsizeAndFlags = 24</span><br><span class="line">    count = 2</span><br><span class="line">    first = &#123;</span><br><span class="line">      name = &quot;printName&quot;</span><br><span class="line">      types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">      imp = 0x0000000000000000</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10.get(0)</span><br><span class="line">(method_t) $11 = &#123;</span><br><span class="line">  name = &quot;printName&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10-&gt;get(1)</span><br><span class="line">(method_t) $12 = &#123;</span><br><span class="line">  name = &quot;printAge&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="默认不申明"><a href="#默认不申明" class="headerlink" title="默认不申明"></a>默认不申明</h2><p>打印说明默认的就是required<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p *$9</span><br><span class="line">(method_list_t) $10 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 3&gt; = &#123;</span><br><span class="line">    entsizeAndFlags = 24</span><br><span class="line">    count = 2</span><br><span class="line">    first = &#123;</span><br><span class="line">      name = &quot;printName&quot;</span><br><span class="line">      types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">      imp = 0x0000000000000000</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10.get(0)</span><br><span class="line">(method_t) $11 = &#123;</span><br><span class="line">  name = &quot;printName&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10.get(1)</span><br><span class="line">(method_t) $12 = &#123;</span><br><span class="line">  name = &quot;printAge&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="将方法都申明为optional"><a href="#将方法都申明为optional" class="headerlink" title="将方法都申明为optional"></a>将方法都申明为optional</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@protocol DogProtocol</span><br><span class="line">@optional</span><br><span class="line">- (void)printName;</span><br><span class="line">- (void)printAge;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
-<p>打印,可以看到协议的实例方法为空，但是optionalInstanceMethods有两个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p (objc_class *)0x100002608</span><br><span class="line">(objc_class *) $0 = 0x0000000100002608</span><br><span class="line">(lldb) p (class_data_bits_t *)0x0000000100002628</span><br><span class="line">(class_data_bits_t *) $1 = 0x0000000100002628</span><br><span class="line">(lldb) p (class_rw_t *)$1-&gt;data()</span><br><span class="line">(class_rw_t *) $2 = 0x0000000100b909a0</span><br><span class="line">(lldb) p $2-&gt;protocols</span><br><span class="line">(protocol_array_t) $3 = &#123;</span><br><span class="line">  list_array_tt&lt;unsigned long, protocol_list_t&gt; = &#123;</span><br><span class="line">     = &#123;</span><br><span class="line">      list = 0x0000000100002368</span><br><span class="line">      arrayAndFlag = 4294976360</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $3.beginLists()</span><br><span class="line">(protocol_list_t **) $4 = 0x0000000100b909c0</span><br><span class="line">(lldb) p $5.list[0]</span><br><span class="line">error: use of undeclared identifier &apos;$5&apos;</span><br><span class="line">(lldb) p **$4</span><br><span class="line">(protocol_list_t) $5 = (count = 1, list = protocol_ref_t [] @ 0x00007fbc7e1dad48)</span><br><span class="line">(lldb) p $5.list[0]</span><br><span class="line">(protocol_ref_t) $6 = 4294977072</span><br><span class="line">(lldb) p (protocol_t *)$6</span><br><span class="line">(protocol_t *) $7 = 0x0000000100002630</span><br><span class="line">(lldb) p *$7</span><br><span class="line">(protocol_t) $8 = &#123;</span><br><span class="line">  objc_object = &#123;</span><br><span class="line">    isa = &#123;</span><br><span class="line">      cls = Protocol</span><br><span class="line">      bits = 4302295240</span><br><span class="line">       = &#123;</span><br><span class="line">        nonpointer = 0</span><br><span class="line">        has_assoc = 0</span><br><span class="line">        has_cxx_dtor = 0</span><br><span class="line">        shiftcls = 537786905</span><br><span class="line">        magic = 0</span><br><span class="line">        weakly_referenced = 0</span><br><span class="line">        deallocating = 0</span><br><span class="line">        has_sidetable_rc = 0</span><br><span class="line">        extra_rc = 0</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  mangledName = 0x0000000100001f5e &quot;DogProtocol&quot;</span><br><span class="line">  protocols = 0x0000000000000000</span><br><span class="line">  instanceMethods = 0x0000000000000000</span><br><span class="line">  classMethods = 0x0000000000000000</span><br><span class="line">  optionalInstanceMethods = 0x0000000100002320</span><br><span class="line">  optionalClassMethods = 0x0000000000000000</span><br><span class="line">  instanceProperties = 0x0000000000000000</span><br><span class="line">  size = 96</span><br><span class="line">  flags = 0</span><br><span class="line">  _extendedMethodTypes = 0x0000000100002358</span><br><span class="line">  _demangledName = 0x0000000000000000 &lt;no value available&gt;</span><br><span class="line">  _classProperties = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $8.optionalInstanceMethods</span><br><span class="line">(method_list_t *) $9 = 0x0000000100002320</span><br><span class="line">(lldb) p *$9</span><br><span class="line">(method_list_t) $10 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 3&gt; = &#123;</span><br><span class="line">    entsizeAndFlags = 24</span><br><span class="line">    count = 2</span><br><span class="line">    first = &#123;</span><br><span class="line">      name = &quot;printName&quot;</span><br><span class="line">      types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">      imp = 0x0000000000000000</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10.get(0)</span><br><span class="line">(method_t) $11 = &#123;</span><br><span class="line">  name = &quot;printName&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $10.get(1)</span><br><span class="line">(method_t) $12 = &#123;</span><br><span class="line">  name = &quot;printAge&quot;</span><br><span class="line">  types = 0x0000000100001f6a &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000000000000</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2308,7 +2386,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-count">43</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2372,7 +2450,7 @@
 <div class="copyright" >
   
   &copy; 
-  <span itemprop="copyrightYear">2018</span>
+  <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -2396,7 +2474,7 @@
 <span id="busuanzi_container_site_uv">
   本站总访问量<span id="busuanzi_value_site_uv"></span>次
 </span>
-<span class="post-count"> 博客全站共70.6k字</span>
+<span class="post-count"> 博客全站共71.1k字</span>
 </div>
 
 
